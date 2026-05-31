@@ -1,2 +1,5 @@
 *.sh text eol=lf
 *.ico binary
+.agents/** text eol=lf
+.opencode/** text eol=lf
+skills-lock.json text eol=lf
