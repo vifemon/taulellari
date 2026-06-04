@@ -6,9 +6,9 @@ Este documento actua como registro de estado y planificacion de tareas del proye
 
 Estado: en desarrollo.
 
-- [ ] **Configuracion del entorno:** inicializacion de Next.js, TypeScript y configuracion de tests con Vitest.
-- [ ] **Herramientas del agente:** puesta a punto de `tools/`, incluyendo control de base de datos con `db_tool.sh`, git y scripts operativos.
-- [ ] **Base de datos y modelado:** instalacion de Drizzle ORM y creacion de tablas `usuarios` y `publicaciones`.
+- [x] **Configuracion del entorno:** inicializacion de Next.js, TypeScript y configuracion de tests con Vitest.
+- [x] **Herramientas del agente:** puesta a punto de `tools/`, incluyendo control de base de datos con `db_tool.sh`, git y scripts operativos.
+- [x] **Base de datos y modelado:** instalacion de Drizzle ORM, schema de `usuarios` y `publicaciones`, y migracion inicial para crear las tablas.
 - [ ] **Autenticacion:** API de backend para registro rapido por email.
 - [ ] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
 - [ ] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 2 fotos y capturar geolocalizacion con coordenadas basicas.
@@ -32,4 +32,4 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es completar la base del PMV: confirmar la configuracion inicial de Next.js, TypeScript, Vitest y herramientas del agente, y despues avanzar con Drizzle ORM y el modelado de `usuarios` y `publicaciones`.
+El siguiente paso tecnico pendiente es implementar la autenticacion de Fase 1: API de backend para registro rapido por email y sesion basica del usuario autenticado.
