@@ -51,12 +51,20 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 ### Publicaciones
 
 - `id`
+- `titulo`
 - `ruta_local_foto_1`
-- `ruta_local_foto_2`, opcional, maximo 2 fotos por publicacion
+- `ruta_local_foto_2`, opcional
+- `ruta_local_foto_3`, opcional, maximo 3 fotos por publicacion
 - `latitud`
 - `longitud`
 - `usuario_id`, relacion con usuarios
 - `creado_en`
+
+## Geolocalizacion
+
+- **Estrategia de ubicacion:** se implementara un input de autocompletado utilizando la API de Mapbox.
+- **Precision:** el buscador debe permitir filtrar y autocompletar calles e incluir numeros de portal especificos para seleccionar domicilios exactos.
+- **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 
 ## Decisiones De Producto Y Diseno
 
@@ -66,7 +74,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - La carga de imagenes debe estar optimizada para uso movil.
 - El uso principal sera en la calle mientras se pasea por Valencia.
 - La subida de fotos desde el movil debe ser rapida y sencilla.
-- La obtencion de coordenadas GPS debe sentirse nativa, directa y sin friccion.
+- La obtencion de coordenadas debe sentirse nativa, directa y sin friccion, priorizando la seleccion precisa de direccion con numero de portal mediante Mapbox.
 
 ## Restricciones Importantes
 

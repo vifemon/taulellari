@@ -11,7 +11,7 @@ Estado: en desarrollo.
 - [x] **Base de datos y modelado:** instalacion de Drizzle ORM, schema de `usuarios` y `publicaciones`, y migracion inicial para crear las tablas.
 - [ ] **Autenticacion:** API de backend para registro rapido por email.
 - [ ] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
-- [ ] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 2 fotos y capturar geolocalizacion con coordenadas basicas.
+- [ ] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 3 fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
 - [ ] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas.
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
