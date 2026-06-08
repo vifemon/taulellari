@@ -20,6 +20,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Servidor de produccion:** Raspberry Pi como servidor domestico gestionado con Portainer.
 - **Acceso y seguridad:** uso privado y local a traves de VPN con Wireguard.
 - **Almacenamiento de fotos:** sistema de archivos local en un disco duro SSD conectado a la Raspberry Pi, mapeado mediante un volumen fisico de Docker.
+- **Directorio configurable de fotos:** la app usara `PHOTO_STORAGE_DIR` absoluto para escribir las imagenes en el volumen local; si no se configura, en desarrollo usara `uploads/`.
 - **Restriccion de infraestructura:** no se usan servicios en la nube para imagenes como S3, Cloudinary u otros equivalentes.
 - **Base de datos:** PostgreSQL independiente corriendo en su propio contenedor Docker junto a la app.
 
@@ -64,6 +65,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 ## Geolocalizacion
 
 - **Estrategia de ubicacion:** se implementara un input de autocompletado utilizando la API de Mapbox.
+- **Configuracion:** el token de Mapbox se cargara desde `MAPBOX_ACCESS_TOKEN` y no debe versionarse en el repositorio.
 - **Precision:** el buscador debe permitir filtrar y autocompletar calles e incluir numeros de portal especificos para seleccionar domicilios exactos.
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 

@@ -10,8 +10,8 @@ Estado: en desarrollo.
 - [x] **Herramientas del agente:** puesta a punto de `tools/`, incluyendo control de base de datos con `db_tool.sh`, git y scripts operativos.
 - [x] **Base de datos y modelado:** instalacion de Drizzle ORM, schema de `usuarios` y `publicaciones`, y migracion inicial para crear las tablas.
 - [x] **Autenticacion:** API de backend para registro rapido por email, cierre de sesion y consulta de usuario autenticado mediante cookie HTTP-only firmada.
-- [ ] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
-- [ ] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 3 fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
+- [x] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
+- [x] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 3 fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
 - [ ] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas.
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
@@ -32,4 +32,4 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es implementar el modulo de captura y almacenamiento: API de subida multipart para imagenes, escritura en almacenamiento local y formulario mobile-first con titulo, hasta 3 fotos y direccion Mapbox.
+El siguiente paso tecnico pendiente es implementar la galeria visual: pantalla principal fluida para ver las fotos ya subidas y preparar la lectura protegida de imagenes desde almacenamiento local.

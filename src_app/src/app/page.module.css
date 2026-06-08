@@ -1,142 +1,278 @@
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(75, 118, 197, 0.34), transparent 28rem),
+    radial-gradient(circle at 90% 10%, rgba(216, 154, 80, 0.24), transparent 22rem),
+    linear-gradient(135deg, #f7efe1 0%, #f1e0c7 38%, #18386a 38%, #10284f 100%);
+  color: #17213a;
   font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  padding: 20px;
+}
+
+.page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
 }
 
 .main {
+  position: relative;
+  display: grid;
+  min-height: calc(100vh - 40px);
+  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 520px);
+  align-items: end;
+  gap: 32px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.hero {
+  align-self: stretch;
   display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
   flex-direction: column;
-  align-items: flex-start;
   justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  min-height: 560px;
+  border: 1px solid rgba(18, 44, 88, 0.22);
+  border-radius: 36px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.34)),
+    repeating-linear-gradient(45deg, rgba(24, 56, 106, 0.08) 0 14px, transparent 14px 28px);
+  box-shadow: 0 30px 80px rgba(12, 28, 54, 0.2);
+  padding: clamp(28px, 6vw, 72px);
+  overflow: hidden;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.hero::after {
+  content: "";
+  align-self: flex-end;
+  width: min(58vw, 360px);
+  aspect-ratio: 1;
+  border-radius: 30% 70% 54% 46% / 34% 32% 68% 66%;
+  background:
+    radial-gradient(circle at 34% 32%, #fff 0 7%, transparent 8%),
+    repeating-conic-gradient(from 18deg, #1b4f9c 0deg 18deg, #f9f0df 18deg 36deg);
+  border: 14px solid rgba(255, 255, 255, 0.56);
+  box-shadow: inset 0 0 0 1px rgba(27, 79, 156, 0.22), 0 24px 60px rgba(18, 44, 88, 0.26);
+  transform: rotate(-7deg);
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
-}
-
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
+.eyebrow,
+.kicker {
   width: fit-content;
-  font-weight: 500;
+  border: 1px solid rgba(24, 56, 106, 0.24);
+  border-radius: 999px;
+  color: #18386a;
+  font-family: var(--font-geist-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 8px 12px;
+  text-transform: uppercase;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
+.hero h1,
+.cardHeader h2 {
+  color: #10284f;
+  font-size: clamp(42px, 7vw, 92px);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+  max-width: 720px;
+  text-wrap: balance;
+}
+
+.hero p:not(.eyebrow),
+.cardHeader p {
+  color: rgba(23, 33, 58, 0.78);
+  font-size: clamp(16px, 2.2vw, 20px);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 36px;
+  background: rgba(255, 252, 244, 0.92);
+  box-shadow: 0 28px 90px rgba(7, 19, 38, 0.34);
+  padding: clamp(22px, 4vw, 34px);
+  backdrop-filter: blur(18px);
+}
+
+.cardHeader {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.cardHeader h2 {
+  font-size: clamp(28px, 5vw, 46px);
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
   gap: 8px;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.field span,
+.fileDrop span,
+.userBar span {
+  color: rgba(23, 33, 58, 0.62);
+  font-family: var(--font-geist-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.field input {
+  min-height: 54px;
+  width: 100%;
+  border: 1px solid rgba(24, 56, 106, 0.18);
+  border-radius: 18px;
+  background: #fffaf0;
+  color: #17213a;
+  font: inherit;
+  outline: none;
+  padding: 0 16px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.field input:focus {
+  border-color: #1b4f9c;
+  box-shadow: 0 0 0 4px rgba(27, 79, 156, 0.12);
+  transform: translateY(-1px);
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.suggestions {
+  display: grid;
+  gap: 8px;
+  margin-top: -6px;
+}
 
+.suggestions button {
+  border: 1px solid rgba(24, 56, 106, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #17213a;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.35;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.suggestions button:hover,
+.suggestions button:focus-visible {
+  border-color: rgba(27, 79, 156, 0.52);
+  outline: none;
+}
+
+.coordinates,
+.status {
+  border-radius: 16px;
+  background: rgba(27, 79, 156, 0.09);
+  color: #18386a;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px 14px;
+}
+
+.fileDrop {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-height: 132px;
+  border: 1px dashed rgba(27, 79, 156, 0.44);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(216, 154, 80, 0.18), transparent 8rem),
+    rgba(27, 79, 156, 0.07);
+  cursor: pointer;
+  padding: 20px;
+}
+
+.fileDrop strong {
+  align-self: end;
+  color: #10284f;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.fileDrop input {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.primaryButton {
+  min-height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background: #10284f;
+  color: #fffaf0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  padding: 0 22px;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.userBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 18px;
+  background: #f2dfbd;
+  padding: 12px 14px;
+}
+
+.userBar strong {
+  color: #10284f;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 880px) {
   .page {
-    --background: #000;
-    --foreground: #000;
+    padding: 12px;
+  }
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+  .main {
+    min-height: calc(100vh - 24px);
+    grid-template-columns: 1fr;
+  }
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .hero {
+    min-height: auto;
+    gap: 28px;
+  }
+
+  .hero::after {
+    width: min(70vw, 260px);
   }
 }
