@@ -1,6 +1,6 @@
-# Roadmap: Xe! quin xapat!
+# Roadmap: Taulellari
 
-Este documento actua como registro de estado y planificacion de tareas del proyecto. Divide el desarrollo de **Xe! quin xapat!** en tres fases evolutivas y sirve para identificar que tareas estan completadas y cual es el siguiente paso tecnico a ejecutar.
+Este documento actua como registro de estado y planificacion de tareas del proyecto. Divide el desarrollo de **Taulellari** en tres fases evolutivas y sirve para identificar que tareas estan completadas y cual es el siguiente paso tecnico a ejecutar.
 
 ## Fase 1: Producto Minimo Viable
 
