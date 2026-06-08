@@ -38,6 +38,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 - **Acceso:** registro e inicio de sesion simplificado solo mediante correo electronico.
 - **Contrasenas:** no se contemplan contrasenas complejas inicialmente.
+- **Sesion:** cookie HTTP-only firmada en servidor mediante `AUTH_SECRET`.
 - **Rol:** el usuario autenticado es el unico que puede subir publicaciones y geolocalizarlas.
 
 ## Modelo De Datos Base

@@ -8,6 +8,13 @@
       "when": 1780596035079,
       "tag": "0000_mature_proudstar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780943394537,
+      "tag": "0001_magenta_iron_monger",
+      "breakpoints": true
     }
   ]
 }
