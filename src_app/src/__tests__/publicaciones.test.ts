@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { parseMapboxSuggestions } from "../mapbox/geocoding";
 import {
+  getPhotoContentType,
+  getPublicationPhotoEntries,
+} from "../publicaciones/photos";
+import {
   MAX_PHOTOS_PER_PUBLICATION,
   validatePhotoFiles,
   validatePublicationFields,
@@ -86,5 +90,28 @@ describe("Mapbox parsing", () => {
         longitude: -0.3768,
       },
     ]);
+  });
+});
+
+describe("publication photos", () => {
+  it("returns only existing photo entries", () => {
+    expect(
+      getPublicationPhotoEntries({
+        rutaLocalFoto1: "/data/1.jpg",
+        rutaLocalFoto2: null,
+        rutaLocalFoto3: "/data/3.webp",
+      }),
+    ).toEqual([
+      { index: 1, path: "/data/1.jpg" },
+      { index: 3, path: "/data/3.webp" },
+    ]);
+  });
+
+  it("detects image content types from file extensions", () => {
+    expect(getPhotoContentType("/data/photo.JPG")).toBe("image/jpeg");
+    expect(getPhotoContentType("/data/photo.webp")).toBe("image/webp");
+    expect(getPhotoContentType("/data/photo.unknown")).toBe(
+      "application/octet-stream",
+    );
   });
 });

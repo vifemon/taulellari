@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 
-import { getDb } from "@/db/client";
-import { usuarios } from "@/db/schema";
+import { findUserById } from "@/db/repositories";
 import { getAuthSecret, SESSION_COOKIE_NAME, verifySessionToken } from "./session";
 
 export type AuthUser = {
@@ -19,11 +17,5 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return null;
   }
 
-  const [user] = await getDb()
-    .select({ id: usuarios.id, email: usuarios.email })
-    .from(usuarios)
-    .where(eq(usuarios.id, session.userId))
-    .limit(1);
-
-  return user ?? null;
+  return findUserById(session.userId);
 }

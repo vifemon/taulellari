@@ -1,11 +1,39 @@
 import { getCurrentUser } from "@/auth/current-user";
-import { getDb } from "@/db/client";
-import { publicaciones } from "@/db/schema";
+import {
+  createPublication,
+  listPublicationsForUser,
+} from "@/db/repositories";
+import { getPublicationPhotoEntries } from "@/publicaciones/photos";
 import { removeSavedPhotos, savePublicationPhotos } from "@/publicaciones/storage";
 import {
   validatePhotoFiles,
   validatePublicationFields,
 } from "@/publicaciones/validation";
+
+export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return Response.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  const rows = await listPublicationsForUser(user.id);
+
+  return Response.json({
+    publicaciones: rows.map((publication) => ({
+      id: publication.id,
+      titulo: publication.titulo,
+      direccionTexto: publication.direccionTexto,
+      latitud: publication.latitud,
+      longitud: publication.longitud,
+      creadoEn: publication.creadoEn,
+      fotos: getPublicationPhotoEntries(publication).map((photo) => ({
+        index: photo.index,
+        url: `/api/publicaciones/${publication.id}/fotos/${photo.index}`,
+      })),
+    })),
+  });
+}
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -38,19 +66,16 @@ export async function POST(request: Request) {
   const savedPaths = await savePublicationPhotos(photos);
 
   try {
-    const [publication] = await getDb()
-      .insert(publicaciones)
-      .values({
-        titulo: fields.data.titulo,
-        rutaLocalFoto1: savedPaths[0],
-        rutaLocalFoto2: savedPaths[1],
-        rutaLocalFoto3: savedPaths[2],
-        direccionTexto: fields.data.direccionTexto,
-        latitud: fields.data.latitud,
-        longitud: fields.data.longitud,
-        usuarioId: user.id,
-      })
-      .returning({ id: publicaciones.id });
+    const publication = await createPublication({
+      titulo: fields.data.titulo,
+      rutaLocalFoto1: savedPaths[0],
+      rutaLocalFoto2: savedPaths[1],
+      rutaLocalFoto3: savedPaths[2],
+      direccionTexto: fields.data.direccionTexto,
+      latitud: fields.data.latitud,
+      longitud: fields.data.longitud,
+      usuarioId: user.id,
+    });
 
     return Response.json({ publication }, { status: 201 });
   } catch (error) {

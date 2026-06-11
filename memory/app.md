@@ -23,6 +23,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Directorio configurable de fotos:** la app usara `PHOTO_STORAGE_DIR` absoluto para escribir las imagenes en el volumen local; si no se configura, en desarrollo usara `uploads/`.
 - **Restriccion de infraestructura:** no se usan servicios en la nube para imagenes como S3, Cloudinary u otros equivalentes.
 - **Base de datos:** PostgreSQL independiente corriendo en su propio contenedor Docker junto a la app.
+- **Desarrollo local en Windows:** durante `npm run dev`, si `NODE_ENV` es `development`, la app usa SQLite local en `dev.db` mediante Drizzle para probar login, publicaciones y galeria sin levantar PostgreSQL.
 
 ## Stack Tecnologico
 
@@ -33,6 +34,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Enfoque CSS:** mobile-first.
 - **Diseño:** interfaz visual potente, con protagonismo absoluto de las imagenes.
 - **ORM:** Drizzle ORM para interactuar con PostgreSQL.
+- **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 
 ## Gestion De Usuarios: Fase 1

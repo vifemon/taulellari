@@ -120,6 +120,7 @@ export function CaptureForm() {
       setUser(data.user);
       setAuthStatus("authenticated");
       setMessage("Sesion iniciada. Ya puedes catalogar una pieza.");
+      window.dispatchEvent(new Event("taulellari:auth"));
     } catch {
       setMessage("No se pudo iniciar sesion");
     } finally {
@@ -171,6 +172,7 @@ export function CaptureForm() {
       setSuggestions([]);
       setFiles([]);
       setMessage("Publicacion guardada en el archivo local.");
+      window.dispatchEvent(new Event("taulellari:publication-created"));
     } catch {
       setMessage("No se pudo guardar la publicacion");
     } finally {

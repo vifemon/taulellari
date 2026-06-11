@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { normalizeEmail } from "@/auth/email";
@@ -8,8 +7,7 @@ import {
   SESSION_COOKIE_NAME,
   sessionCookieOptions,
 } from "@/auth/session";
-import { getDb } from "@/db/client";
-import { usuarios } from "@/db/schema";
+import { findOrCreateUserByEmail } from "@/db/repositories";
 
 type LoginBody = {
   email?: unknown;
@@ -24,22 +22,7 @@ export async function POST(request: Request) {
   }
 
   const authSecret = getAuthSecret();
-  const db = getDb();
-  const [createdUser] = await db
-    .insert(usuarios)
-    .values({ email })
-    .onConflictDoNothing({ target: usuarios.email })
-    .returning({ id: usuarios.id, email: usuarios.email });
-
-  const user =
-    createdUser ??
-    (
-      await db
-        .select({ id: usuarios.id, email: usuarios.email })
-        .from(usuarios)
-        .where(eq(usuarios.email, email))
-        .limit(1)
-    )[0];
+  const { user, created } = await findOrCreateUserByEmail(email);
 
   if (!user) {
     return Response.json({ error: "No se pudo iniciar sesion" }, { status: 500 });
@@ -54,7 +37,7 @@ export async function POST(request: Request) {
 
   return Response.json(
     { user },
-    { status: createdUser ? 201 : 200 },
+    { status: created ? 201 : 200 },
   );
 }
 

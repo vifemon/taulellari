@@ -1,4 +1,5 @@
 import { CaptureForm } from "./capture-form";
+import { Gallery } from "./gallery";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
           </p>
         </section>
         <CaptureForm />
+        <Gallery />
       </main>
     </div>
   );

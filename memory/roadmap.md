@@ -12,10 +12,25 @@ Estado: en desarrollo.
 - [x] **Autenticacion:** API de backend para registro rapido por email, cierre de sesion y consulta de usuario autenticado mediante cookie HTTP-only firmada.
 - [x] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
 - [x] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 3 fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
-- [ ] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas.
+- [x] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas con lectura protegida desde almacenamiento local.
+- [x] **Desarrollo local temporal:** modo hibrido con SQLite (`dev.db`) en Windows 11 para probar login, autocompletado Mapbox, capturas y galeria sin levantar PostgreSQL.
+
+## Fase 1.5: Depuracion UI/UX
+
+Estado: siguiente fase inmediata.
+
+- [ ] **Revision visual mobile-first:** ajustar jerarquia, espaciados, contraste, legibilidad y comportamiento en pantallas pequenas.
+- [ ] **Flujo de captura:** pulir estados de carga, errores, confirmaciones, seleccion de direccion y seleccion de imagenes.
+- [ ] **Galeria:** revisar composicion visual, proporciones de imagen, estados vacios y lectura de metadatos.
+- [ ] **Accesibilidad basica:** revisar foco, etiquetas, navegacion por teclado y mensajes de estado.
+
+## Fase 2: Contenerizacion Y Despliegue
+
+Estado: pendiente tras depuracion UI/UX.
+
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
-## Fase 2: Mapas Y Visualizacion Avanzada
+## Fase 3: Mapas Y Visualizacion Avanzada
 
 Estado: futuro.
 
@@ -23,7 +38,7 @@ Estado: futuro.
 - [ ] **Busqueda geografica:** filtrar azulejos cercanos a la ubicacion actual del usuario mediante consultas espaciales en la base de datos con PostGIS.
 - [ ] **Filtros y etiquetas:** anadir categorizacion por epocas, estilos arquitectonicos o barrios de Valencia, por ejemplo El Carmen, Ruzafa o Cabanyal.
 
-## Fase 3: Comunidad Y Mejoras
+## Fase 4: Comunidad Y Mejoras
 
 Estado: ideas.
 
@@ -32,4 +47,4 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es implementar la galeria visual: pantalla principal fluida para ver las fotos ya subidas y preparar la lectura protegida de imagenes desde almacenamiento local.
+El siguiente paso tecnico pendiente es detenerse en la Fase 1.5 de depuracion UI/UX antes de continuar con contenerizacion y despliegue.

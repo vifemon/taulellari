@@ -23,6 +23,10 @@
 # local photo storage
 /uploads/
 
+# local development database
+/dev.db
+/dev.db-*
+
 # misc
 .DS_Store
 *.pem
