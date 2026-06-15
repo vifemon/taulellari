@@ -37,12 +37,19 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 
-## Gestion De Usuarios: Fase 1
+## Cambio De Rumbo MVP
 
-- **Acceso:** registro e inicio de sesion simplificado solo mediante correo electronico.
-- **Contrasenas:** no se contemplan contrasenas complejas inicialmente.
+El MVP actual queda como base tecnica, pero la experiencia de usuario y la seguridad deben reestructurarse antes de produccion. La nueva prioridad es la **Fase 1.5: Reestructuracion Completa UI/UX y CRUD de Usuarios**.
+
+## Gestion De Usuarios: Fase 1.5
+
+- **Acceso:** autenticacion real con email y contrasena.
+- **Registro:** el usuario debe tener email, nombre, apellidos y contrasena.
+- **Contrasenas:** almacenamiento siempre encriptado mediante hash seguro; nunca se guardan contrasenas en texto plano.
 - **Sesion:** cookie HTTP-only firmada en servidor mediante `AUTH_SECRET`.
-- **Rol:** el usuario autenticado es el unico que puede subir publicaciones y geolocalizarlas.
+- **CRUD de usuarios:** crear, leer, actualizar y borrar usuarios desde flujos protegidos.
+- **Perfil:** cada usuario autenticado tendra una vista de perfil con sus publicaciones y opciones para editar o borrar sus fotos.
+- **Rol inicial:** el usuario autenticado puede subir, editar y borrar sus propias publicaciones.
 
 ## Modelo De Datos Base
 
@@ -50,6 +57,9 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 - `id`
 - `email` unico
+- `nombre`
+- `apellidos`
+- `password_hash`
 - `creado_en`
 
 ### Publicaciones
@@ -69,6 +79,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Estrategia de ubicacion:** se implementara un input de autocompletado utilizando la API de Mapbox.
 - **Configuracion:** el token de Mapbox se cargara desde `MAPBOX_ACCESS_TOKEN` y no debe versionarse en el repositorio.
 - **Precision:** el buscador debe permitir filtrar y autocompletar calles e incluir numeros de portal especificos para seleccionar domicilios exactos.
+- **Comportamiento UI:** el buscador debe sugerir direcciones desde la primera letra de forma fluida en una lista flotante debajo del input.
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 
 ## Decisiones De Producto Y Diseno
@@ -80,6 +91,12 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - El uso principal sera en la calle mientras se pasea por Valencia.
 - La subida de fotos desde el movil debe ser rapida y sencilla.
 - La obtencion de coordenadas debe sentirse nativa, directa y sin friccion, priorizando la seleccion precisa de direccion con numero de portal mediante Mapbox.
+- **Navegacion SPA con modales:** toda la experiencia principal ocurre en la raiz (`page.tsx`). Login, registro y formulario de subida mediante boton `+` se abren en modales que ocupan casi toda la pantalla en movil.
+- **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), color de fondo temporal, buscador centrado y scroll hacia la galeria.
+- **Galeria publica:** la galeria muestra publicamente solo fotos.
+- **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
+- **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
+- **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
 
 ## Restricciones Importantes
 

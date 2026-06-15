@@ -15,18 +15,21 @@ Estado: en desarrollo.
 - [x] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas con lectura protegida desde almacenamiento local.
 - [x] **Desarrollo local temporal:** modo hibrido con SQLite (`dev.db`) en Windows 11 para probar login, autocompletado Mapbox, capturas y galeria sin levantar PostgreSQL.
 
-## Fase 1.5: Depuracion UI/UX
+## Fase 1.5: Reestructuracion Completa UI/UX Y CRUD De Usuarios
 
 Estado: siguiente fase inmediata.
 
-- [ ] **Revision visual mobile-first:** ajustar jerarquia, espaciados, contraste, legibilidad y comportamiento en pantallas pequenas.
-- [ ] **Flujo de captura:** pulir estados de carga, errores, confirmaciones, seleccion de direccion y seleccion de imagenes.
-- [ ] **Galeria:** revisar composicion visual, proporciones de imagen, estados vacios y lectura de metadatos.
-- [ ] **Accesibilidad basica:** revisar foco, etiquetas, navegacion por teclado y mensajes de estado.
+- [ ] **CRUD completo de usuarios:** sustituir el login simplificado por autenticacion real con email, nombre, apellidos y contrasena encriptada; permitir crear, leer, actualizar y borrar usuarios.
+- [ ] **Navegacion SPA con modales:** mantener toda la experiencia principal en la raiz (`page.tsx`) y abrir login, registro y formulario de subida (`+`) en modales casi full-screen en movil.
+- [ ] **Seccion HERO:** crear una seccion inicial a pantalla completa (`100vh`) con color de fondo temporal, buscador centrado y scroll hacia la galeria.
+- [ ] **Galeria publica y datos privados:** mostrar publicamente solo fotos; mostrar descripcion, coordenadas y metadatos privados solo cuando el usuario este logeado.
+- [ ] **Perfil de usuario:** crear una vista de perfil con grid pequeno estilo Instagram para que cada usuario pueda editar o borrar sus fotos.
+- [ ] **Identidad visual:** aplicar paleta de colores inspirada en Manises y anadir boton de modo claro/oscuro en la Navbar.
+- [ ] **Correccion Mapbox:** modificar el buscador para sugerir direcciones desde la primera letra de forma fluida en una lista flotante bajo el input.
 
 ## Fase 2: Contenerizacion Y Despliegue
 
-Estado: pendiente tras depuracion UI/UX.
+Estado: pendiente tras la reestructuracion UI/UX y CRUD de usuarios.
 
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
@@ -47,4 +50,4 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es detenerse en la Fase 1.5 de depuracion UI/UX antes de continuar con contenerizacion y despliegue.
+El siguiente paso tecnico pendiente es detenerse en la Fase 1.5 de reestructuracion completa UI/UX y CRUD de usuarios antes de continuar con contenerizacion y despliegue.
