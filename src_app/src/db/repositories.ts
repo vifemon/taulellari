@@ -7,6 +7,27 @@ import * as sqliteSchema from "./schema.sqlite";
 export type UserRecord = {
   id: number;
   email: string;
+  nombre: string;
+  apellidos: string;
+};
+
+export type UserWithPasswordRecord = UserRecord & {
+  passwordHash: string;
+};
+
+export type UserCreateInput = {
+  email: string;
+  nombre: string;
+  apellidos: string;
+  passwordHash: string;
+};
+
+export type UserUpdateInput = {
+  id: number;
+  email: string;
+  nombre: string;
+  apellidos: string;
+  passwordHash?: string;
 };
 
 export type PublicationCreateInput = {
@@ -22,6 +43,7 @@ export type PublicationCreateInput = {
 
 export type PublicationListItem = {
   id: number;
+  usuarioId: number;
   titulo: string;
   direccionTexto: string;
   latitud: number;
@@ -40,7 +62,12 @@ export type PublicationPhotoPaths = Pick<
 export async function findUserById(id: number): Promise<UserRecord | null> {
   if (isDevelopmentDatabase()) {
     const user = getSqliteDb()
-      .select({ id: sqliteSchema.usuarios.id, email: sqliteSchema.usuarios.email })
+      .select({
+        id: sqliteSchema.usuarios.id,
+        email: sqliteSchema.usuarios.email,
+        nombre: sqliteSchema.usuarios.nombre,
+        apellidos: sqliteSchema.usuarios.apellidos,
+      })
       .from(sqliteSchema.usuarios)
       .where(eq(sqliteSchema.usuarios.id, id))
       .get();
@@ -49,7 +76,12 @@ export async function findUserById(id: number): Promise<UserRecord | null> {
   }
 
   const [user] = await getPgDb()
-    .select({ id: pgSchema.usuarios.id, email: pgSchema.usuarios.email })
+    .select({
+      id: pgSchema.usuarios.id,
+      email: pgSchema.usuarios.email,
+      nombre: pgSchema.usuarios.nombre,
+      apellidos: pgSchema.usuarios.apellidos,
+    })
     .from(pgSchema.usuarios)
     .where(eq(pgSchema.usuarios.id, id))
     .limit(1);
@@ -57,51 +89,118 @@ export async function findUserById(id: number): Promise<UserRecord | null> {
   return user ?? null;
 }
 
-export async function findOrCreateUserByEmail(email: string): Promise<{
-  user: UserRecord | null;
-  created: boolean;
-}> {
+export async function findUserByEmail(
+  email: string,
+): Promise<UserWithPasswordRecord | null> {
   if (isDevelopmentDatabase()) {
-    const result = getSqliteDb()
-      .insert(sqliteSchema.usuarios)
-      .values({ email })
-      .onConflictDoNothing({ target: sqliteSchema.usuarios.email })
-      .run();
     const user = getSqliteDb()
-      .select({ id: sqliteSchema.usuarios.id, email: sqliteSchema.usuarios.email })
+      .select({
+        id: sqliteSchema.usuarios.id,
+        email: sqliteSchema.usuarios.email,
+        nombre: sqliteSchema.usuarios.nombre,
+        apellidos: sqliteSchema.usuarios.apellidos,
+        passwordHash: sqliteSchema.usuarios.passwordHash,
+      })
       .from(sqliteSchema.usuarios)
       .where(eq(sqliteSchema.usuarios.email, email))
       .get();
 
-    return { user: user ?? null, created: result.changes > 0 };
-  }
-
-  const [createdUser] = await getPgDb()
-    .insert(pgSchema.usuarios)
-    .values({ email })
-    .onConflictDoNothing({ target: pgSchema.usuarios.email })
-    .returning({ id: pgSchema.usuarios.id, email: pgSchema.usuarios.email });
-
-  if (createdUser) {
-    return { user: createdUser, created: true };
+    return user ?? null;
   }
 
   const [user] = await getPgDb()
-    .select({ id: pgSchema.usuarios.id, email: pgSchema.usuarios.email })
+    .select({
+      id: pgSchema.usuarios.id,
+      email: pgSchema.usuarios.email,
+      nombre: pgSchema.usuarios.nombre,
+      apellidos: pgSchema.usuarios.apellidos,
+      passwordHash: pgSchema.usuarios.passwordHash,
+    })
     .from(pgSchema.usuarios)
     .where(eq(pgSchema.usuarios.email, email))
     .limit(1);
 
-  return { user: user ?? null, created: false };
+  return user ?? null;
 }
 
-export async function listPublicationsForUser(
-  usuarioId: number,
-): Promise<PublicationListItem[]> {
+export async function createUser(input: UserCreateInput): Promise<UserRecord> {
+  if (isDevelopmentDatabase()) {
+    const result = getSqliteDb().insert(sqliteSchema.usuarios).values(input).run();
+
+    return {
+      id: Number(result.lastInsertRowid),
+      email: input.email,
+      nombre: input.nombre,
+      apellidos: input.apellidos,
+    };
+  }
+
+  const [user] = await getPgDb()
+    .insert(pgSchema.usuarios)
+    .values(input)
+    .returning({
+      id: pgSchema.usuarios.id,
+      email: pgSchema.usuarios.email,
+      nombre: pgSchema.usuarios.nombre,
+      apellidos: pgSchema.usuarios.apellidos,
+    });
+
+  return user;
+}
+
+export async function updateUser(input: UserUpdateInput): Promise<UserRecord> {
+  const values = {
+    email: input.email,
+    nombre: input.nombre,
+    apellidos: input.apellidos,
+    ...(input.passwordHash ? { passwordHash: input.passwordHash } : {}),
+  };
+
+  if (isDevelopmentDatabase()) {
+    getSqliteDb()
+      .update(sqliteSchema.usuarios)
+      .set(values)
+      .where(eq(sqliteSchema.usuarios.id, input.id))
+      .run();
+
+    const user = await findUserById(input.id);
+
+    if (!user) {
+      throw new Error("User not found after update");
+    }
+
+    return user;
+  }
+
+  const [user] = await getPgDb()
+    .update(pgSchema.usuarios)
+    .set(values)
+    .where(eq(pgSchema.usuarios.id, input.id))
+    .returning({
+      id: pgSchema.usuarios.id,
+      email: pgSchema.usuarios.email,
+      nombre: pgSchema.usuarios.nombre,
+      apellidos: pgSchema.usuarios.apellidos,
+    });
+
+  return user;
+}
+
+export async function deleteUser(id: number) {
+  if (isDevelopmentDatabase()) {
+    getSqliteDb().delete(sqliteSchema.usuarios).where(eq(sqliteSchema.usuarios.id, id)).run();
+    return;
+  }
+
+  await getPgDb().delete(pgSchema.usuarios).where(eq(pgSchema.usuarios.id, id));
+}
+
+export async function listPublications(): Promise<PublicationListItem[]> {
   if (isDevelopmentDatabase()) {
     return getSqliteDb()
       .select({
         id: sqliteSchema.publicaciones.id,
+        usuarioId: sqliteSchema.publicaciones.usuarioId,
         titulo: sqliteSchema.publicaciones.titulo,
         direccionTexto: sqliteSchema.publicaciones.direccionTexto,
         latitud: sqliteSchema.publicaciones.latitud,
@@ -112,7 +211,6 @@ export async function listPublicationsForUser(
         creadoEn: sqliteSchema.publicaciones.creadoEn,
       })
       .from(sqliteSchema.publicaciones)
-      .where(eq(sqliteSchema.publicaciones.usuarioId, usuarioId))
       .orderBy(desc(sqliteSchema.publicaciones.creadoEn))
       .all();
   }
@@ -120,6 +218,7 @@ export async function listPublicationsForUser(
   return getPgDb()
     .select({
       id: pgSchema.publicaciones.id,
+      usuarioId: pgSchema.publicaciones.usuarioId,
       titulo: pgSchema.publicaciones.titulo,
       direccionTexto: pgSchema.publicaciones.direccionTexto,
       latitud: pgSchema.publicaciones.latitud,
@@ -130,7 +229,6 @@ export async function listPublicationsForUser(
       creadoEn: pgSchema.publicaciones.creadoEn,
     })
     .from(pgSchema.publicaciones)
-    .where(eq(pgSchema.publicaciones.usuarioId, usuarioId))
     .orderBy(desc(pgSchema.publicaciones.creadoEn));
 }
 
@@ -154,9 +252,15 @@ export async function createPublication(input: PublicationCreateInput) {
 
 export async function findPublicationPhotoPaths(input: {
   id: number;
-  usuarioId: number;
+  usuarioId?: number;
 }): Promise<PublicationPhotoPaths | null> {
   if (isDevelopmentDatabase()) {
+    const filters = input.usuarioId
+      ? and(
+          eq(sqliteSchema.publicaciones.id, input.id),
+          eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
+        )
+      : eq(sqliteSchema.publicaciones.id, input.id);
     const publication = getSqliteDb()
       .select({
         rutaLocalFoto1: sqliteSchema.publicaciones.rutaLocalFoto1,
@@ -164,17 +268,18 @@ export async function findPublicationPhotoPaths(input: {
         rutaLocalFoto3: sqliteSchema.publicaciones.rutaLocalFoto3,
       })
       .from(sqliteSchema.publicaciones)
-      .where(
-        and(
-          eq(sqliteSchema.publicaciones.id, input.id),
-          eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
-        ),
-      )
+      .where(filters)
       .get();
 
     return publication ?? null;
   }
 
+  const filters = input.usuarioId
+    ? and(
+        eq(pgSchema.publicaciones.id, input.id),
+        eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
+      )
+    : eq(pgSchema.publicaciones.id, input.id);
   const [publication] = await getPgDb()
     .select({
       rutaLocalFoto1: pgSchema.publicaciones.rutaLocalFoto1,
@@ -182,13 +287,100 @@ export async function findPublicationPhotoPaths(input: {
       rutaLocalFoto3: pgSchema.publicaciones.rutaLocalFoto3,
     })
     .from(pgSchema.publicaciones)
+    .where(filters)
+    .limit(1);
+
+  return publication ?? null;
+}
+
+export async function listPublicationPhotoPathsForUser(
+  usuarioId: number,
+): Promise<PublicationPhotoPaths[]> {
+  if (isDevelopmentDatabase()) {
+    return getSqliteDb()
+      .select({
+        rutaLocalFoto1: sqliteSchema.publicaciones.rutaLocalFoto1,
+        rutaLocalFoto2: sqliteSchema.publicaciones.rutaLocalFoto2,
+        rutaLocalFoto3: sqliteSchema.publicaciones.rutaLocalFoto3,
+      })
+      .from(sqliteSchema.publicaciones)
+      .where(eq(sqliteSchema.publicaciones.usuarioId, usuarioId))
+      .all();
+  }
+
+  return getPgDb()
+    .select({
+      rutaLocalFoto1: pgSchema.publicaciones.rutaLocalFoto1,
+      rutaLocalFoto2: pgSchema.publicaciones.rutaLocalFoto2,
+      rutaLocalFoto3: pgSchema.publicaciones.rutaLocalFoto3,
+    })
+    .from(pgSchema.publicaciones)
+    .where(eq(pgSchema.publicaciones.usuarioId, usuarioId));
+}
+
+export async function updatePublication(input: {
+  id: number;
+  usuarioId: number;
+  titulo: string;
+  direccionTexto: string;
+  latitud: number;
+  longitud: number;
+}) {
+  if (isDevelopmentDatabase()) {
+    getSqliteDb()
+      .update(sqliteSchema.publicaciones)
+      .set({
+        titulo: input.titulo,
+        direccionTexto: input.direccionTexto,
+        latitud: input.latitud,
+        longitud: input.longitud,
+      })
+      .where(
+        and(
+          eq(sqliteSchema.publicaciones.id, input.id),
+          eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
+        ),
+      )
+      .run();
+    return;
+  }
+
+  await getPgDb()
+    .update(pgSchema.publicaciones)
+    .set({
+      titulo: input.titulo,
+      direccionTexto: input.direccionTexto,
+      latitud: input.latitud,
+      longitud: input.longitud,
+    })
     .where(
       and(
         eq(pgSchema.publicaciones.id, input.id),
         eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
       ),
-    )
-    .limit(1);
+    );
+}
 
-  return publication ?? null;
+export async function deletePublication(input: { id: number; usuarioId: number }) {
+  if (isDevelopmentDatabase()) {
+    getSqliteDb()
+      .delete(sqliteSchema.publicaciones)
+      .where(
+        and(
+          eq(sqliteSchema.publicaciones.id, input.id),
+          eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
+        ),
+      )
+      .run();
+    return;
+  }
+
+  await getPgDb()
+    .delete(pgSchema.publicaciones)
+    .where(
+      and(
+        eq(pgSchema.publicaciones.id, input.id),
+        eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
+      ),
+    );
 }

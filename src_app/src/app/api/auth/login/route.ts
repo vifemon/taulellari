@@ -1,32 +1,45 @@
 import { cookies } from "next/headers";
 
 import { normalizeEmail } from "@/auth/email";
+import { validatePassword, verifyPassword } from "@/auth/password";
 import {
   createSessionToken,
   getAuthSecret,
   SESSION_COOKIE_NAME,
   sessionCookieOptions,
 } from "@/auth/session";
-import { findOrCreateUserByEmail } from "@/db/repositories";
+import { findUserByEmail } from "@/db/repositories";
 
 type LoginBody = {
   email?: unknown;
+  password?: unknown;
 };
 
 export async function POST(request: Request) {
   const body = await readJson(request);
   const email = normalizeEmail(body?.email);
+  const password = validatePassword(body?.password);
 
-  if (!email) {
-    return Response.json({ error: "Email invalido" }, { status: 400 });
+  if (!email || !password) {
+    return Response.json({ error: "Credenciales invalidas" }, { status: 400 });
   }
 
   const authSecret = getAuthSecret();
-  const { user, created } = await findOrCreateUserByEmail(email);
+  const userWithPassword = await findUserByEmail(email);
 
-  if (!user) {
-    return Response.json({ error: "No se pudo iniciar sesion" }, { status: 500 });
+  if (
+    !userWithPassword ||
+    !(await verifyPassword(password, userWithPassword.passwordHash))
+  ) {
+    return Response.json({ error: "Credenciales invalidas" }, { status: 401 });
   }
+
+  const user = {
+    id: userWithPassword.id,
+    email: userWithPassword.email,
+    nombre: userWithPassword.nombre,
+    apellidos: userWithPassword.apellidos,
+  };
 
   const cookieStore = await cookies();
   cookieStore.set(
@@ -37,7 +50,7 @@ export async function POST(request: Request) {
 
   return Response.json(
     { user },
-    { status: created ? 201 : 200 },
+    { status: 200 },
   );
 }
 

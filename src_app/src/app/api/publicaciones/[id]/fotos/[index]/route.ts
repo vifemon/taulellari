@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
 
-import { getCurrentUser } from "@/auth/current-user";
 import { findPublicationPhotoPaths } from "@/db/repositories";
 import {
   getPhotoContentType,
@@ -11,12 +10,6 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string; index: string }> },
 ) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
-  }
-
   const { id, index } = await context.params;
   const publicationId = Number(id);
   const photoIndex = Number(index);
@@ -27,7 +20,6 @@ export async function GET(
 
   const publication = await findPublicationPhotoPaths({
     id: publicationId,
-    usuarioId: user.id,
   });
 
   if (!publication) {

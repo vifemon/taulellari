@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@next/env": "^16.2.6",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.6",

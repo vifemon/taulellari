@@ -6,6 +6,8 @@ import { getAuthSecret, SESSION_COOKIE_NAME, verifySessionToken } from "./sessio
 export type AuthUser = {
   id: number;
   email: string;
+  nombre: string;
+  apellidos: string;
 };
 
 export async function getCurrentUser(): Promise<AuthUser | null> {

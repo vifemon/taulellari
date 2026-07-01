@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/auth/current-user";
 import {
   createPublication,
-  listPublicationsForUser,
+  listPublications,
 } from "@/db/repositories";
 import { getPublicationPhotoEntries } from "@/publicaciones/photos";
 import { removeSavedPhotos, savePublicationPhotos } from "@/publicaciones/storage";
@@ -12,21 +12,21 @@ import {
 
 export async function GET() {
   const user = await getCurrentUser();
-
-  if (!user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
-  }
-
-  const rows = await listPublicationsForUser(user.id);
+  const rows = await listPublications();
 
   return Response.json({
     publicaciones: rows.map((publication) => ({
       id: publication.id,
-      titulo: publication.titulo,
-      direccionTexto: publication.direccionTexto,
-      latitud: publication.latitud,
-      longitud: publication.longitud,
-      creadoEn: publication.creadoEn,
+      ...(user
+        ? {
+            titulo: publication.titulo,
+            direccionTexto: publication.direccionTexto,
+            latitud: publication.latitud,
+            longitud: publication.longitud,
+            creadoEn: publication.creadoEn,
+            isOwner: publication.usuarioId === user.id,
+          }
+        : {}),
       fotos: getPublicationPhotoEntries(publication).map((photo) => ({
         index: photo.index,
         url: `/api/publicaciones/${publication.id}/fotos/${photo.index}`,

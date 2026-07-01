@@ -1,0 +1,671 @@
+"use client";
+
+import Image from "next/image";
+import { FormEvent, useDeferredValue, useEffect, useState } from "react";
+
+import styles from "./page.module.css";
+
+type AuthUser = {
+  id: number;
+  email: string;
+  nombre: string;
+  apellidos: string;
+};
+
+type AddressSuggestion = {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+};
+
+type Publication = {
+  id: number;
+  titulo?: string;
+  direccionTexto?: string;
+  latitud?: number;
+  longitud?: number;
+  creadoEn?: string;
+  isOwner?: boolean;
+  fotos: { index: number; url: string }[];
+};
+
+type Modal = "login" | "register" | "upload" | "profile" | "edit" | null;
+
+export function AppShell() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [modal, setModal] = useState<Modal>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [publications, setPublications] = useState<Publication[]>([]);
+  const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    refreshSession();
+    refreshGallery();
+  }, []);
+
+  async function refreshSession() {
+    const response = await fetch("/api/auth/me");
+
+    if (!response.ok) {
+      setUser(null);
+      return;
+    }
+
+    const data: { user: AuthUser | null } = await response.json();
+    setUser(data.user);
+  }
+
+  async function refreshGallery() {
+    const response = await fetch("/api/publicaciones");
+
+    if (!response.ok) {
+      setPublications([]);
+      return;
+    }
+
+    const data: { publicaciones: Publication[] } = await response.json();
+    setPublications(data.publicaciones);
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    setModal(null);
+    await refreshGallery();
+  }
+
+  return (
+    <div className={`${styles.app} ${styles[theme]}`}>
+      <nav className={styles.navbar}>
+        <a className={styles.brand} href="#hero" aria-label="Ir al inicio">
+          Taulellari
+        </a>
+        <div className={styles.navActions}>
+          <button
+            className={styles.iconButton}
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            type="button"
+          >
+            {theme === "light" ? "Negro" : "Blanco"}
+          </button>
+          {user ? (
+            <button className={styles.navButton} onClick={() => setModal("profile")} type="button">
+              {user.nombre}
+            </button>
+          ) : (
+            <button className={styles.navButton} onClick={() => setModal("login")} type="button">
+              Entrar
+            </button>
+          )}
+          <button className={styles.plusButton} onClick={() => setModal(user ? "upload" : "login")} type="button">
+            +
+          </button>
+        </div>
+      </nav>
+
+      <header className={styles.heroScreen} id="hero">
+        <div className={styles.heroContent}>
+          <span className={styles.kicker}>Ceramica viva de Valencia</span>
+          <h1>Busca, fotografia y conserva azulejos de calle.</h1>
+          <HeroSearch />
+          <a className={styles.scrollLink} href="#galeria">
+            Ver galeria
+          </a>
+        </div>
+      </header>
+
+      <main className={styles.gallerySurface} id="galeria">
+        <section className={styles.galleryIntro}>
+          <span className={styles.kicker}>Galeria publica</span>
+          <h2>Fotos abiertas. Datos sensibles bajo sesion.</h2>
+          <p>
+            Cualquier visitante puede ver las imagenes. Las descripciones,
+            coordenadas y acciones de edicion aparecen solo al iniciar sesion.
+          </p>
+        </section>
+        <PublicationGallery
+          onEdit={(publication) => {
+            setSelectedPublication(publication);
+            setMessage("");
+            setModal("edit");
+          }}
+          onDelete={async (publication) => {
+            await fetch(`/api/publicaciones/${publication.id}`, { method: "DELETE" });
+            await refreshGallery();
+          }}
+          publications={publications}
+          user={user}
+        />
+      </main>
+
+      {modal ? (
+        <ModalShell onClose={() => setModal(null)}>
+          {modal === "login" ? (
+            <LoginModal
+              isSubmitting={isSubmitting}
+              onRegister={() => setModal("register")}
+              onSubmit={async (email, password) => {
+                setIsSubmitting(true);
+                setMessage("");
+                const response = await fetch("/api/auth/login", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email, password }),
+                });
+                const data: { user?: AuthUser; error?: string } = await response.json();
+                setIsSubmitting(false);
+
+                if (!response.ok || !data.user) {
+                  setMessage(data.error ?? "No se pudo iniciar sesion");
+                  return;
+                }
+
+                setUser(data.user);
+                setModal(null);
+                await refreshGallery();
+              }}
+            />
+          ) : null}
+          {modal === "register" ? (
+            <RegisterModal
+              isSubmitting={isSubmitting}
+              onLogin={() => setModal("login")}
+              onSubmit={async (payload) => {
+                setIsSubmitting(true);
+                setMessage("");
+                const response = await fetch("/api/auth/register", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+                const data: { user?: AuthUser; error?: string } = await response.json();
+                setIsSubmitting(false);
+
+                if (!response.ok || !data.user) {
+                  setMessage(data.error ?? "No se pudo registrar");
+                  return;
+                }
+
+                setUser(data.user);
+                setModal(null);
+                await refreshGallery();
+              }}
+            />
+          ) : null}
+          {modal === "upload" && user ? (
+            <UploadModal
+              isSubmitting={isSubmitting}
+              onSubmit={async (formData) => {
+                setIsSubmitting(true);
+                setMessage("");
+                const response = await fetch("/api/publicaciones", {
+                  method: "POST",
+                  body: formData,
+                });
+                const data: { error?: string } = await response.json();
+                setIsSubmitting(false);
+
+                if (!response.ok) {
+                  setMessage(data.error ?? "No se pudo guardar");
+                  return;
+                }
+
+                setModal(null);
+                await refreshGallery();
+              }}
+            />
+          ) : null}
+          {modal === "edit" && selectedPublication ? (
+            <EditPublicationModal
+              isSubmitting={isSubmitting}
+              onSubmit={async (payload) => {
+                setIsSubmitting(true);
+                setMessage("");
+                const response = await fetch(`/api/publicaciones/${selectedPublication.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+                const data: { error?: string } = await response.json();
+                setIsSubmitting(false);
+
+                if (!response.ok) {
+                  setMessage(data.error ?? "No se pudo editar");
+                  return;
+                }
+
+                setModal(null);
+                setSelectedPublication(null);
+                await refreshGallery();
+              }}
+              publication={selectedPublication}
+            />
+          ) : null}
+          {modal === "profile" && user ? (
+            <ProfileModal
+              isSubmitting={isSubmitting}
+              message={message}
+              onDeleteAccount={async () => {
+                await fetch("/api/users/me", { method: "DELETE" });
+                setUser(null);
+                setModal(null);
+                await refreshGallery();
+              }}
+              onLogout={logout}
+              onSubmit={async (payload) => {
+                setIsSubmitting(true);
+                const response = await fetch("/api/users/me", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+                const data: { user?: AuthUser; error?: string } = await response.json();
+                setIsSubmitting(false);
+
+                if (!response.ok || !data.user) {
+                  setMessage(data.error ?? "No se pudo actualizar el perfil");
+                  return;
+                }
+
+                setUser(data.user);
+                setMessage("Perfil actualizado");
+              }}
+              publications={publications.filter((publication) => publication.isOwner)}
+              user={user}
+            />
+          ) : null}
+          {message ? <p className={styles.modalStatus}>{message}</p> : null}
+        </ModalShell>
+      ) : null}
+    </div>
+  );
+}
+
+function HeroSearch() {
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    if (deferredQuery.trim().length < 1) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function search() {
+      const response = await fetch(`/api/addresses?q=${encodeURIComponent(deferredQuery)}`, {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        setSuggestions([]);
+        return;
+      }
+
+      const data: { suggestions: AddressSuggestion[] } = await response.json();
+      setSuggestions(data.suggestions);
+    }
+
+    search().catch((error) => {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setSuggestions([]);
+      }
+    });
+
+    return () => controller.abort();
+  }, [deferredQuery]);
+
+  return (
+    <div className={styles.heroSearch}>
+      <input
+        aria-label="Buscar direccion"
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setSuggestions([]);
+        }}
+        placeholder="Busca una calle, portal o barrio"
+        value={query}
+      />
+      {query && suggestions.length > 0 ? (
+        <div className={styles.floatingSuggestions}>
+          {suggestions.map((suggestion) => (
+            <button key={suggestion.id} onClick={() => setQuery(suggestion.label)} type="button">
+              {suggestion.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ModalShell({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+      <div className={styles.modalCard}>
+        <button className={styles.closeButton} onClick={onClose} type="button">
+          Cerrar
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function LoginModal({
+  isSubmitting,
+  onRegister,
+  onSubmit,
+}: {
+  isSubmitting: boolean;
+  onRegister: () => void;
+  onSubmit: (email: string, password: string) => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  return (
+    <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit(email, password))}>
+      <span className={styles.kicker}>Login</span>
+      <h2>Entra al archivo.</h2>
+      <input onChange={(event) => setEmail(event.target.value)} placeholder="Email" required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contraseña" required type="password" value={password} />
+      <button disabled={isSubmitting} type="submit">Entrar</button>
+      <button className={styles.textButton} onClick={onRegister} type="button">Crear cuenta</button>
+    </form>
+  );
+}
+
+function RegisterModal({
+  isSubmitting,
+  onLogin,
+  onSubmit,
+}: {
+  isSubmitting: boolean;
+  onLogin: () => void;
+  onSubmit: (payload: { email: string; nombre: string; apellidos: string; password: string }) => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [password, setPassword] = useState("");
+
+  return (
+    <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password }))}>
+      <span className={styles.kicker}>Registro</span>
+      <h2>Crea tu perfil.</h2>
+      <input onChange={(event) => setNombre(event.target.value)} placeholder="Nombre" required value={nombre} />
+      <input onChange={(event) => setApellidos(event.target.value)} placeholder="Apellidos" required value={apellidos} />
+      <input onChange={(event) => setEmail(event.target.value)} placeholder="Email" required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contraseña" required type="password" value={password} />
+      <button disabled={isSubmitting} type="submit">Registrarme</button>
+      <button className={styles.textButton} onClick={onLogin} type="button">Ya tengo cuenta</button>
+    </form>
+  );
+}
+
+function UploadModal({
+  isSubmitting,
+  onSubmit,
+}: {
+  isSubmitting: boolean;
+  onSubmit: (formData: FormData) => Promise<void>;
+}) {
+  const [title, setTitle] = useState("");
+  const [address, setAddress] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const deferredAddress = useDeferredValue(address);
+
+  useEffect(() => {
+    if (deferredAddress.trim().length < 1) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : { suggestions: [] }))
+      .then((data: { suggestions: AddressSuggestion[] }) => setSuggestions(data.suggestions))
+      .catch((error) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setSuggestions([]);
+        }
+      });
+
+    return () => controller.abort();
+  }, [deferredAddress]);
+
+  return (
+    <form className={styles.modalForm} onSubmit={(event) => {
+      event.preventDefault();
+      if (!selectedAddress) return;
+      const formData = new FormData();
+      formData.set("titulo", title);
+      formData.set("direccionTexto", selectedAddress.label);
+      formData.set("latitud", String(selectedAddress.latitude));
+      formData.set("longitud", String(selectedAddress.longitude));
+      files.forEach((file) => formData.append("fotos", file));
+      onSubmit(formData);
+    }}>
+      <span className={styles.kicker}>Nueva pieza</span>
+      <h2>Sube una fachada.</h2>
+      <input onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
+      <div className={styles.heroSearch}>
+        <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder="Direccion exacta" required value={address} />
+        {address && suggestions.length > 0 ? (
+          <div className={styles.floatingSuggestions}>
+            {suggestions.map((suggestion) => (
+              <button key={suggestion.id} onClick={() => { setSelectedAddress(suggestion); setAddress(suggestion.label); setSuggestions([]); }} type="button">
+                {suggestion.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <input accept="image/*" capture="environment" multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))} required type="file" />
+      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar</button>
+    </form>
+  );
+}
+
+function EditPublicationModal({
+  isSubmitting,
+  onSubmit,
+  publication,
+}: {
+  isSubmitting: boolean;
+  onSubmit: (payload: {
+    titulo: string;
+    direccionTexto: string;
+    latitud: number;
+    longitud: number;
+  }) => Promise<void>;
+  publication: Publication;
+}) {
+  const [title, setTitle] = useState(publication.titulo ?? "");
+  const [address, setAddress] = useState(publication.direccionTexto ?? "");
+  const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(
+    typeof publication.latitud === "number" && typeof publication.longitud === "number"
+      ? {
+          id: String(publication.id),
+          label: publication.direccionTexto ?? "",
+          latitude: publication.latitud,
+          longitude: publication.longitud,
+        }
+      : null,
+  );
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const deferredAddress = useDeferredValue(address);
+
+  useEffect(() => {
+    if (deferredAddress.trim().length < 1 || deferredAddress === selectedAddress?.label) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : { suggestions: [] }))
+      .then((data: { suggestions: AddressSuggestion[] }) => setSuggestions(data.suggestions))
+      .catch((error) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setSuggestions([]);
+        }
+      });
+
+    return () => controller.abort();
+  }, [deferredAddress, selectedAddress?.label]);
+
+  return (
+    <form
+      className={styles.modalForm}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!selectedAddress) return;
+        onSubmit({
+          titulo: title,
+          direccionTexto: selectedAddress.label,
+          latitud: selectedAddress.latitude,
+          longitud: selectedAddress.longitude,
+        });
+      }}
+    >
+      <span className={styles.kicker}>Editar pieza</span>
+      <h2>Actualiza los datos.</h2>
+      <input onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
+      <div className={styles.heroSearch}>
+        <input
+          onChange={(event) => {
+            setAddress(event.target.value);
+            setSelectedAddress(null);
+            setSuggestions([]);
+          }}
+          placeholder="Direccion exacta"
+          required
+          value={address}
+        />
+        {address && suggestions.length > 0 ? (
+          <div className={styles.floatingSuggestions}>
+            {suggestions.map((suggestion) => (
+              <button
+                key={suggestion.id}
+                onClick={() => {
+                  setSelectedAddress(suggestion);
+                  setAddress(suggestion.label);
+                  setSuggestions([]);
+                }}
+                type="button"
+              >
+                {suggestion.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar cambios</button>
+    </form>
+  );
+}
+
+function ProfileModal({
+  isSubmitting,
+  message,
+  onDeleteAccount,
+  onLogout,
+  onSubmit,
+  publications,
+  user,
+}: {
+  isSubmitting: boolean;
+  message: string;
+  onDeleteAccount: () => Promise<void>;
+  onLogout: () => Promise<void>;
+  onSubmit: (payload: { email: string; nombre: string; apellidos: string; password?: string }) => Promise<void>;
+  publications: Publication[];
+  user: AuthUser;
+}) {
+  const [email, setEmail] = useState(user.email);
+  const [nombre, setNombre] = useState(user.nombre);
+  const [apellidos, setApellidos] = useState(user.apellidos);
+  const [password, setPassword] = useState("");
+
+  return (
+    <div className={styles.profileLayout}>
+      <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password: password || undefined }))}>
+        <span className={styles.kicker}>Perfil</span>
+        <h2>{user.nombre} {user.apellidos}</h2>
+        <input onChange={(event) => setNombre(event.target.value)} value={nombre} />
+        <input onChange={(event) => setApellidos(event.target.value)} value={apellidos} />
+        <input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
+        <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Nueva contraseña opcional" type="password" value={password} />
+        <button disabled={isSubmitting} type="submit">Guardar perfil</button>
+        <button className={styles.textButton} onClick={onLogout} type="button">Cerrar sesion</button>
+        <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Borrar usuario</button>
+        {message ? <p className={styles.modalStatus}>{message}</p> : null}
+      </form>
+      <div className={styles.profileGrid}>
+        {publications.map((publication) => (
+          <div className={styles.profileThumb} key={publication.id}>
+            {publication.fotos[0] ? <Image alt={publication.titulo ?? "Foto"} fill src={publication.fotos[0].url} unoptimized /> : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PublicationGallery({
+  onDelete,
+  onEdit,
+  publications,
+  user,
+}: {
+  onDelete: (publication: Publication) => Promise<void>;
+  onEdit: (publication: Publication) => void;
+  publications: Publication[];
+  user: AuthUser | null;
+}) {
+  if (publications.length === 0) {
+    return <p className={styles.emptyState}>Todavia no hay fotos publicadas.</p>;
+  }
+
+  return (
+    <div className={styles.publicGallery}>
+      {publications.map((publication) => (
+        <article className={styles.publicCard} key={publication.id}>
+          <div className={styles.publicImage}>
+            {publication.fotos[0] ? <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={publication.fotos[0].url} unoptimized /> : null}
+          </div>
+          {user ? (
+            <div className={styles.privateMeta}>
+              <h3>{publication.titulo}</h3>
+              <p>{publication.direccionTexto}</p>
+              {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? <small>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</small> : null}
+              {publication.isOwner ? (
+                <div className={styles.cardActions}>
+                  <button onClick={() => onEdit(publication)} type="button">Editar</button>
+                  <button onClick={() => onDelete(publication)} type="button">Borrar</button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function submitCredentials(event: FormEvent<HTMLFormElement>, callback: () => Promise<void>) {
+  event.preventDefault();
+  callback();
+}
