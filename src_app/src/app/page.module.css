@@ -185,6 +185,7 @@
 }
 
 .heroSearch input,
+.gallerySearch input,
 .modalForm input {
   min-height: 56px;
   width: 100%;
@@ -198,6 +199,7 @@
 }
 
 .heroSearch input:focus,
+.gallerySearch input:focus,
 .modalForm input:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 18%, transparent);
@@ -250,8 +252,11 @@
 }
 
 .galleryIntro {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 14px;
+  text-align: center;
 }
 
 .galleryIntro h2 {
@@ -264,6 +269,24 @@
   color: var(--muted);
   font-size: 18px;
   line-height: 1.6;
+}
+
+.gallerySearch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  width: min(100%, 720px);
+  gap: 10px;
+}
+
+.gallerySearch input {
+  text-align: center;
+}
+
+.gallerySearch label {
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .publicGallery {

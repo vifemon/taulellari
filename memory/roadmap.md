@@ -4,7 +4,7 @@ Este documento actua como registro de estado y planificacion de tareas del proye
 
 ## Fase 1: Producto Minimo Viable
 
-Estado: en desarrollo.
+Estado: completada como base tecnica inicial.
 
 - [x] **Configuracion del entorno:** inicializacion de Next.js, TypeScript y configuracion de tests con Vitest.
 - [x] **Herramientas del agente:** puesta a punto de `tools/`, incluyendo control de base de datos con `db_tool.sh`, git y scripts operativos.
@@ -17,19 +17,29 @@ Estado: en desarrollo.
 
 ## Fase 1.5: Reestructuracion Completa UI/UX Y CRUD De Usuarios
 
-Estado: siguiente fase inmediata.
+Estado: completada y mergeada en `develop`.
 
-- [ ] **CRUD completo de usuarios:** sustituir el login simplificado por autenticacion real con email, nombre, apellidos y contrasena encriptada; permitir crear, leer, actualizar y borrar usuarios.
-- [ ] **Navegacion SPA con modales:** mantener toda la experiencia principal en la raiz (`page.tsx`) y abrir login, registro y formulario de subida (`+`) en modales casi full-screen en movil.
-- [ ] **Seccion HERO:** crear una seccion inicial a pantalla completa (`100vh`) con color de fondo temporal, buscador centrado y scroll hacia la galeria.
-- [ ] **Galeria publica y datos privados:** mostrar publicamente solo fotos; mostrar descripcion, coordenadas y metadatos privados solo cuando el usuario este logeado.
-- [ ] **Perfil de usuario:** crear una vista de perfil con grid pequeno estilo Instagram para que cada usuario pueda editar o borrar sus fotos.
-- [ ] **Identidad visual:** aplicar paleta de colores inspirada en Manises y anadir boton de modo claro/oscuro en la Navbar.
-- [ ] **Correccion Mapbox:** modificar el buscador para sugerir direcciones desde la primera letra de forma fluida en una lista flotante bajo el input.
+- [x] **CRUD completo de usuarios:** sustituido el login simplificado por autenticacion real con email, nombre, apellidos y contrasena hasheada con `bcryptjs`; permite registro, lectura de sesion, actualizacion y borrado de usuario.
+- [x] **Navegacion SPA con modales:** experiencia principal en la raiz mediante `AppShell`; login, registro, subida, edicion y perfil se abren en modales.
+- [x] **Seccion HERO:** seccion inicial a pantalla completa (`100vh`) con buscador y scroll hacia la galeria.
+- [x] **Galeria publica y datos privados:** fotos publicas; descripcion, coordenadas, propietario y acciones solo con sesion.
+- [x] **Perfil de usuario:** vista de perfil con grid pequeno estilo Instagram para publicaciones propias.
+- [x] **Identidad visual:** paleta inspirada en Manises y boton claro/oscuro en la Navbar.
+- [x] **Correccion Mapbox:** buscador con sugerencias desde la primera letra en lista flotante; `/api/addresses` es publico para el HERO.
+- [x] **Edicion y borrado de publicaciones propias:** endpoint `PATCH/DELETE /api/publicaciones/[id]` protegido por propietario.
+- [x] **Limpieza de archivos:** borrado de publicaciones y cuenta elimina fotos locales asociadas.
+- [x] **Migraciones:** anadidos campos `nombre`, `apellidos` y `password_hash` en PostgreSQL y SQLite local; runner SQLite aplica multiples migraciones.
+- [x] **Verificacion:** `npm run db:dev:init`, `npm run lint`, `npm run test` y `npm run build` pasan.
+
+## Fase 1.6: Refinamiento y Ajustes Concretos
+
+Estado: en curso.
+
+- [x] **Buscador de galeria:** mover el buscador desde el HERO a la parte superior de la galeria y cambiarlo de busqueda Mapbox a filtro de imagenes por titulo, descripcion o metadatos.
 
 ## Fase 2: Contenerizacion Y Despliegue
 
-Estado: pendiente tras la reestructuracion UI/UX y CRUD de usuarios.
+Estado: pendiente tras la Fase 1.6.
 
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
@@ -50,4 +60,12 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es detenerse en la Fase 1.5 de reestructuracion completa UI/UX y CRUD de usuarios antes de continuar con contenerizacion y despliegue.
+El siguiente paso tecnico pendiente es iniciar la **Fase 1.6: Refinamiento y ajustes concretos**, trabajando cada detalle especifico de forma iterativa y sin cerrarlo hasta confirmacion explicita.
+
+## Ultimo Estado Git
+
+- Rama actual tras el trabajo: `develop`.
+- `develop` mergeada con `feature/ui-ux-crud` mediante fast-forward.
+- Commit principal: `830022b feat: add user CRUD and app shell`.
+- Push realizado; `develop` esta sincronizada con `origin/develop`.
+- Rama actual para la Fase 1.6: `feature/fase-1.6-refinamiento-ajustes`.

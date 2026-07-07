@@ -22,11 +22,13 @@ type AddressSuggestion = {
 type Publication = {
   id: number;
   titulo?: string;
+  descripcion?: string;
   direccionTexto?: string;
   latitud?: number;
   longitud?: number;
   creadoEn?: string;
   isOwner?: boolean;
+  metadatos?: unknown;
   fotos: { index: number; url: string }[];
 };
 
@@ -38,8 +40,11 @@ export function AppShell() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
+  const [galleryQuery, setGalleryQuery] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const deferredGalleryQuery = useDeferredValue(galleryQuery);
+  const filteredPublications = filterPublications(publications, deferredGalleryQuery);
 
   useEffect(() => {
     refreshSession();
@@ -110,7 +115,6 @@ export function AppShell() {
         <div className={styles.heroContent}>
           <span className={styles.kicker}>Ceramica viva de Valencia</span>
           <h1>Busca, fotografia y conserva azulejos de calle.</h1>
-          <HeroSearch />
           <a className={styles.scrollLink} href="#galeria">
             Ver galeria
           </a>
@@ -126,7 +130,12 @@ export function AppShell() {
             coordenadas y acciones de edicion aparecen solo al iniciar sesion.
           </p>
         </section>
+        <GallerySearch
+          onChange={setGalleryQuery}
+          query={galleryQuery}
+        />
         <PublicationGallery
+          hasSearch={deferredGalleryQuery.trim().length > 0}
           onEdit={(publication) => {
             setSelectedPublication(publication);
             setMessage("");
@@ -136,7 +145,7 @@ export function AppShell() {
             await fetch(`/api/publicaciones/${publication.id}`, { method: "DELETE" });
             await refreshGallery();
           }}
-          publications={publications}
+          publications={filteredPublications}
           user={user}
         />
       </main>
@@ -284,63 +293,75 @@ export function AppShell() {
   );
 }
 
-function HeroSearch() {
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-  const deferredQuery = useDeferredValue(query);
-
-  useEffect(() => {
-    if (deferredQuery.trim().length < 1) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function search() {
-      const response = await fetch(`/api/addresses?q=${encodeURIComponent(deferredQuery)}`, {
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        setSuggestions([]);
-        return;
-      }
-
-      const data: { suggestions: AddressSuggestion[] } = await response.json();
-      setSuggestions(data.suggestions);
-    }
-
-    search().catch((error) => {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        setSuggestions([]);
-      }
-    });
-
-    return () => controller.abort();
-  }, [deferredQuery]);
-
+function GallerySearch({
+  onChange,
+  query,
+}: {
+  onChange: (query: string) => void;
+  query: string;
+}) {
   return (
-    <div className={styles.heroSearch}>
+    <section className={styles.gallerySearch} aria-label="Buscar en la galeria">
+      <label htmlFor="gallery-search">Buscar en la galeria</label>
       <input
-        aria-label="Buscar direccion"
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setSuggestions([]);
-        }}
-        placeholder="Busca una calle, portal o barrio"
+        id="gallery-search"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Busca por titulo, descripcion o metadatos"
+        type="search"
         value={query}
       />
-      {query && suggestions.length > 0 ? (
-        <div className={styles.floatingSuggestions}>
-          {suggestions.map((suggestion) => (
-            <button key={suggestion.id} onClick={() => setQuery(suggestion.label)} type="button">
-              {suggestion.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    </section>
   );
+}
+
+function filterPublications(publications: Publication[], query: string) {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return publications;
+  }
+
+  return publications.filter((publication) => getPublicationSearchText(publication).includes(normalizedQuery));
+}
+
+function getPublicationSearchText(publication: Publication) {
+  return normalizeSearchText(
+    [
+      publication.titulo,
+      publication.descripcion,
+      publication.direccionTexto,
+      publication.latitud,
+      publication.longitud,
+      publication.creadoEn,
+      stringifyMetadata(publication.metadatos),
+    ]
+      .filter((value) => value !== undefined && value !== null)
+      .join(" "),
+  );
+}
+
+function stringifyMetadata(metadata: unknown) {
+  if (!metadata) {
+    return "";
+  }
+
+  if (typeof metadata === "string" || typeof metadata === "number" || typeof metadata === "boolean") {
+    return String(metadata);
+  }
+
+  try {
+    return JSON.stringify(metadata);
+  } catch {
+    return "";
+  }
+}
+
+function normalizeSearchText(value: unknown) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 function ModalShell({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
@@ -625,18 +646,20 @@ function ProfileModal({
 }
 
 function PublicationGallery({
+  hasSearch,
   onDelete,
   onEdit,
   publications,
   user,
 }: {
+  hasSearch: boolean;
   onDelete: (publication: Publication) => Promise<void>;
   onEdit: (publication: Publication) => void;
   publications: Publication[];
   user: AuthUser | null;
 }) {
   if (publications.length === 0) {
-    return <p className={styles.emptyState}>Todavia no hay fotos publicadas.</p>;
+    return <p className={styles.emptyState}>{hasSearch ? "No hay imagenes que coincidan con la busqueda." : "Todavia no hay fotos publicadas."}</p>;
   }
 
   return (
