@@ -115,9 +115,15 @@ export function AppShell() {
         <div className={styles.heroContent}>
           <span className={styles.kicker}>Ceramica viva de Valencia</span>
           <h1>Busca, fotografia y conserva azulejos de calle.</h1>
-          <a className={styles.scrollLink} href="#galeria">
-            Ver galeria
-          </a>
+          <div className={styles.heroActions}>
+            <a className={styles.heroPrimaryAction} href="#galeria">
+              Ver galeria
+            </a>
+            <button className={styles.heroUploadAction} onClick={() => setModal(user ? "upload" : "login")} type="button">
+              <span>+</span>
+              Subir imagen
+            </button>
+          </div>
         </div>
       </header>
 

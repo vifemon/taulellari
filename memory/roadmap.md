@@ -36,6 +36,7 @@ Estado: completada y mergeada en `develop`.
 Estado: en curso.
 
 - [x] **Buscador de galeria:** mover el buscador desde el HERO a la parte superior de la galeria y cambiarlo de busqueda Mapbox a filtro de imagenes por titulo, descripcion o metadatos.
+- [x] **Imagen de fondo y acciones del HERO:** eliminar el decorativo `::after`, usar una imagen real de fondo en `heroScreen` y destacar las acciones principales de ver galeria y subir imagen.
 
 ## Fase 2: Contenerizacion Y Despliegue
 

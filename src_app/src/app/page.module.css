@@ -17,8 +17,16 @@
   --white: #fffaf0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 15% 8%, rgba(18, 63, 131, 0.24), transparent 28rem),
-    radial-gradient(circle at 88% 18%, rgba(207, 137, 68, 0.22), transparent 24rem),
+    radial-gradient(
+      circle at 15% 8%,
+      rgba(18, 63, 131, 0.24),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(207, 137, 68, 0.22),
+      transparent 24rem
+    ),
     var(--bg);
   color: var(--ink);
 }
@@ -117,6 +125,9 @@
   display: grid;
   min-height: 100vh;
   place-items: center;
+  background:
+    linear-gradient(180deg, rgba(6, 16, 35, 0.18), rgba(6, 16, 35, 0.56)),
+    url("/hero_bg.jpg") center / cover;
   padding: 96px 18px 36px;
 }
 
@@ -124,33 +135,17 @@
   position: relative;
   display: grid;
   width: min(100%, 1120px);
-  min-height: min(720px, calc(100vh - 132px));
   align-content: end;
+  justify-items: center;
   gap: 24px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: clamp(28px, 5vw, 56px);
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--tile) 90%, transparent), color-mix(in srgb, var(--tile) 45%, transparent)),
-    repeating-linear-gradient(45deg, rgba(18, 63, 131, 0.09) 0 16px, transparent 16px 32px);
+  background: color-mix(in srgb, var(--tile) 88%, transparent);
   box-shadow: 0 32px 90px rgba(6, 16, 35, 0.22);
   padding: clamp(28px, 7vw, 86px);
-}
-
-.heroContent::after {
-  content: "";
-  position: absolute;
-  top: clamp(56px, 10vw, 96px);
-  right: clamp(18px, 8vw, 104px);
-  width: min(44vw, 360px);
-  aspect-ratio: 1;
-  border: 14px solid color-mix(in srgb, var(--white) 62%, transparent);
-  border-radius: 30% 70% 54% 46% / 34% 32% 68% 66%;
-  background:
-    radial-gradient(circle at 34% 32%, var(--white) 0 7%, transparent 8%),
-    repeating-conic-gradient(from 18deg, var(--blue) 0deg 18deg, var(--white) 18deg 36deg);
-  box-shadow: 0 24px 60px rgba(18, 44, 88, 0.24);
-  transform: rotate(-7deg);
+  text-align: center;
+  backdrop-filter: blur(18px);
 }
 
 .kicker {
@@ -176,6 +171,68 @@
   line-height: 0.88;
   max-width: 780px;
   text-wrap: balance;
+}
+
+.heroActions {
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.heroPrimaryAction,
+.heroUploadAction {
+  min-height: 58px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.heroPrimaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 188px;
+  background: var(--blue-deep);
+  color: var(--white);
+  box-shadow: 0 18px 42px rgba(6, 16, 35, 0.24);
+  padding: 0 28px;
+  text-decoration: none;
+}
+
+.heroUploadAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--blue) 48%, var(--line));
+  background: color-mix(in srgb, var(--white) 82%, transparent);
+  color: #14233f;
+  cursor: pointer;
+  padding: 6px 22px 6px 7px;
+}
+
+.heroUploadAction span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ochre);
+  color: #14233f;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.heroPrimaryAction:hover,
+.heroPrimaryAction:focus-visible,
+.heroUploadAction:hover,
+.heroUploadAction:focus-visible {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 18%, transparent), 0 22px 50px rgba(6, 16, 35, 0.28);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .heroSearch {
@@ -236,13 +293,6 @@
 .floatingSuggestions button:focus-visible {
   background: rgba(18, 63, 131, 0.1);
   outline: none;
-}
-
-.scrollLink {
-  z-index: 2;
-  color: var(--blue);
-  font-weight: 900;
-  text-decoration: none;
 }
 
 .gallerySurface {
@@ -468,13 +518,16 @@
     font-size: 16px;
   }
 
-  .heroContent {
-    min-height: calc(100vh - 120px);
+  .heroScreen {
+    align-content: center;
+    min-height: 100svh;
+    padding: 92px 14px 24px;
   }
 
-  .heroContent::after {
-    opacity: 0.42;
-    width: min(64vw, 260px);
+  .heroContent {
+    align-content: start;
+    gap: 18px;
+    padding: 24px;
   }
 
   .publicGallery,
