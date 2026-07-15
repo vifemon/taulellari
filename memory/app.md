@@ -98,6 +98,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - La obtencion de coordenadas debe sentirse nativa, directa y sin friccion, priorizando la seleccion precisa de direccion con numero de portal mediante Mapbox.
 - **Navegacion SPA con modales:** toda la experiencia principal ocurre en la raiz (`page.tsx`). Login, registro y formulario de subida mediante boton `+` se abren en modales que ocupan casi toda la pantalla en movil.
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), color de fondo temporal, buscador centrado y scroll hacia la galeria.
+- **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
