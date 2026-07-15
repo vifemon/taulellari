@@ -34,6 +34,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Enfoque CSS:** mobile-first.
 - **Diseño:** interfaz visual potente, con protagonismo absoluto de las imagenes.
 - **ORM:** Drizzle ORM para interactuar con PostgreSQL.
+- **Iconos:** `lucide-react` como libreria de iconos React tree-shakeable.
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 
@@ -102,11 +103,10 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
 - **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
+- **Iconografia:** los iconos nuevos deben importarse desde `lucide-react`; el selector de imagenes usa el componente `Upload`.
 
-## Proximo Refinamiento Planificado
+## Proximos Refinamientos Posibles
 
-- Instalar `lucide-react`.
-- Sustituir SVGs inline por componentes Lucide empezando por el icono de subida.
 - Definir uso consistente de iconos para acciones como subir, buscar, editar, borrar, usuario y tema.
 
 ## Estado De Verificacion
