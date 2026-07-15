@@ -20,6 +20,7 @@ export async function GET() {
       ...(user
         ? {
             titulo: publication.titulo,
+            descripcion: publication.descripcion,
             direccionTexto: publication.direccionTexto,
             latitud: publication.latitud,
             longitud: publication.longitud,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const fields = validatePublicationFields({
     titulo: formData.get("titulo"),
+    descripcion: formData.get("descripcion"),
     direccionTexto: formData.get("direccionTexto"),
     latitud: formData.get("latitud"),
     longitud: formData.get("longitud"),
@@ -68,6 +70,7 @@ export async function POST(request: Request) {
   try {
     const publication = await createPublication({
       titulo: fields.data.titulo,
+      descripcion: fields.data.descripcion,
       rutaLocalFoto1: savedPaths[0],
       rutaLocalFoto2: savedPaths[1],
       rutaLocalFoto3: savedPaths[2],

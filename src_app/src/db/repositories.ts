@@ -32,6 +32,7 @@ export type UserUpdateInput = {
 
 export type PublicationCreateInput = {
   titulo: string;
+  descripcion?: string | null;
   rutaLocalFoto1: string;
   rutaLocalFoto2?: string;
   rutaLocalFoto3?: string;
@@ -45,6 +46,7 @@ export type PublicationListItem = {
   id: number;
   usuarioId: number;
   titulo: string;
+  descripcion: string | null;
   direccionTexto: string;
   latitud: number;
   longitud: number;
@@ -202,6 +204,7 @@ export async function listPublications(): Promise<PublicationListItem[]> {
         id: sqliteSchema.publicaciones.id,
         usuarioId: sqliteSchema.publicaciones.usuarioId,
         titulo: sqliteSchema.publicaciones.titulo,
+        descripcion: sqliteSchema.publicaciones.descripcion,
         direccionTexto: sqliteSchema.publicaciones.direccionTexto,
         latitud: sqliteSchema.publicaciones.latitud,
         longitud: sqliteSchema.publicaciones.longitud,
@@ -220,6 +223,7 @@ export async function listPublications(): Promise<PublicationListItem[]> {
       id: pgSchema.publicaciones.id,
       usuarioId: pgSchema.publicaciones.usuarioId,
       titulo: pgSchema.publicaciones.titulo,
+      descripcion: pgSchema.publicaciones.descripcion,
       direccionTexto: pgSchema.publicaciones.direccionTexto,
       latitud: pgSchema.publicaciones.latitud,
       longitud: pgSchema.publicaciones.longitud,
@@ -322,6 +326,7 @@ export async function updatePublication(input: {
   id: number;
   usuarioId: number;
   titulo: string;
+  descripcion: string | null;
   direccionTexto: string;
   latitud: number;
   longitud: number;
@@ -331,6 +336,7 @@ export async function updatePublication(input: {
       .update(sqliteSchema.publicaciones)
       .set({
         titulo: input.titulo,
+        descripcion: input.descripcion,
         direccionTexto: input.direccionTexto,
         latitud: input.latitud,
         longitud: input.longitud,
@@ -349,6 +355,7 @@ export async function updatePublication(input: {
     .update(pgSchema.publicaciones)
     .set({
       titulo: input.titulo,
+      descripcion: input.descripcion,
       direccionTexto: input.direccionTexto,
       latitud: input.latitud,
       longitud: input.longitud,

@@ -13,6 +13,7 @@ export const usuarios = sqliteTable("usuarios", {
 export const publicaciones = sqliteTable("publicaciones", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   titulo: text("titulo").notNull(),
+  descripcion: text("descripcion"),
   rutaLocalFoto1: text("ruta_local_foto_1").notNull(),
   rutaLocalFoto2: text("ruta_local_foto_2"),
   rutaLocalFoto3: text("ruta_local_foto_3"),

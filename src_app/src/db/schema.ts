@@ -20,6 +20,7 @@ export const usuarios = pgTable("usuarios", {
 export const publicaciones = pgTable("publicaciones", {
   id: serial("id").primaryKey(),
   titulo: text("titulo").notNull(),
+  descripcion: text("descripcion"),
   rutaLocalFoto1: text("ruta_local_foto_1").notNull(),
   rutaLocalFoto2: text("ruta_local_foto_2"),
   rutaLocalFoto3: text("ruta_local_foto_3"),

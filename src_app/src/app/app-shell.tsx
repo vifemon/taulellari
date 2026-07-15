@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useDeferredValue, useEffect, useState } from "react";
+import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
 
@@ -443,14 +443,20 @@ function UploadModal({
   onSubmit: (formData: FormData) => Promise<void>;
 }) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const fileInputId = useId();
+  const {
+    containerRef: addressSearchRef,
+    maxHeight: suggestionsMaxHeight,
+  } = useSuggestionsMaxHeight(address.length > 0 && suggestions.length > 0);
   const deferredAddress = useDeferredValue(address);
 
   useEffect(() => {
-    if (deferredAddress.trim().length < 1) {
+    if (selectedAddress || deferredAddress.trim().length < 1) {
       return;
     }
 
@@ -460,7 +466,11 @@ function UploadModal({
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : { suggestions: [] }))
-      .then((data: { suggestions: AddressSuggestion[] }) => setSuggestions(data.suggestions))
+      .then((data: { suggestions: AddressSuggestion[] }) => {
+        if (!controller.signal.aborted) {
+          setSuggestions(data.suggestions);
+        }
+      })
       .catch((error) => {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setSuggestions([]);
@@ -468,7 +478,7 @@ function UploadModal({
       });
 
     return () => controller.abort();
-  }, [deferredAddress]);
+  }, [deferredAddress, selectedAddress]);
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => {
@@ -476,6 +486,7 @@ function UploadModal({
       if (!selectedAddress) return;
       const formData = new FormData();
       formData.set("titulo", title);
+      formData.set("descripcion", description);
       formData.set("direccionTexto", selectedAddress.label);
       formData.set("latitud", String(selectedAddress.latitude));
       formData.set("longitud", String(selectedAddress.longitude));
@@ -484,11 +495,12 @@ function UploadModal({
     }}>
       <span className={styles.kicker}>Nueva pieza</span>
       <h2>Sube una fachada.</h2>
-      <input onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
-      <div className={styles.heroSearch}>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripcion (opcional)" rows={1} value={description} />
+      <div className={styles.heroSearch} ref={addressSearchRef}>
         <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder="Direccion exacta" required value={address} />
         {address && suggestions.length > 0 ? (
-          <div className={styles.floatingSuggestions}>
+          <div className={styles.floatingSuggestions} style={{ maxHeight: suggestionsMaxHeight }}>
             {suggestions.map((suggestion) => (
               <button key={suggestion.id} onClick={() => { setSelectedAddress(suggestion); setAddress(suggestion.label); setSuggestions([]); }} type="button">
                 {suggestion.label}
@@ -497,8 +509,19 @@ function UploadModal({
           </div>
         ) : null}
       </div>
-      <input accept="image/*" capture="environment" multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))} required type="file" />
-      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar</button>
+      <label className={styles.fileUpload} htmlFor={fileInputId}>
+        <span>Subir fotos</span>
+        <span className={styles.fileUploadIcon} aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v12" />
+            <path d="m17 8-5-5-5 5" />
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          </svg>
+        </span>
+        {files.length > 0 ? <small>{`${files.length} archivo${files.length === 1 ? "" : "s"} seleccionado${files.length === 1 ? "" : "s"}`}</small> : null}
+        <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))} type="file" />
+      </label>
+      <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">Guardar</button>
     </form>
   );
 }
@@ -511,6 +534,7 @@ function EditPublicationModal({
   isSubmitting: boolean;
   onSubmit: (payload: {
     titulo: string;
+    descripcion: string | null;
     direccionTexto: string;
     latitud: number;
     longitud: number;
@@ -518,6 +542,7 @@ function EditPublicationModal({
   publication: Publication;
 }) {
   const [title, setTitle] = useState(publication.titulo ?? "");
+  const [description, setDescription] = useState(publication.descripcion ?? "");
   const [address, setAddress] = useState(publication.direccionTexto ?? "");
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(
     typeof publication.latitud === "number" && typeof publication.longitud === "number"
@@ -530,10 +555,14 @@ function EditPublicationModal({
       : null,
   );
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const {
+    containerRef: addressSearchRef,
+    maxHeight: suggestionsMaxHeight,
+  } = useSuggestionsMaxHeight(address.length > 0 && suggestions.length > 0);
   const deferredAddress = useDeferredValue(address);
 
   useEffect(() => {
-    if (deferredAddress.trim().length < 1 || deferredAddress === selectedAddress?.label) {
+    if (selectedAddress || deferredAddress.trim().length < 1) {
       return;
     }
 
@@ -543,7 +572,11 @@ function EditPublicationModal({
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : { suggestions: [] }))
-      .then((data: { suggestions: AddressSuggestion[] }) => setSuggestions(data.suggestions))
+      .then((data: { suggestions: AddressSuggestion[] }) => {
+        if (!controller.signal.aborted) {
+          setSuggestions(data.suggestions);
+        }
+      })
       .catch((error) => {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setSuggestions([]);
@@ -551,7 +584,7 @@ function EditPublicationModal({
       });
 
     return () => controller.abort();
-  }, [deferredAddress, selectedAddress?.label]);
+  }, [deferredAddress, selectedAddress]);
 
   return (
     <form
@@ -561,6 +594,7 @@ function EditPublicationModal({
         if (!selectedAddress) return;
         onSubmit({
           titulo: title,
+          descripcion: description || null,
           direccionTexto: selectedAddress.label,
           latitud: selectedAddress.latitude,
           longitud: selectedAddress.longitude,
@@ -569,8 +603,9 @@ function EditPublicationModal({
     >
       <span className={styles.kicker}>Editar pieza</span>
       <h2>Actualiza los datos.</h2>
-      <input onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
-      <div className={styles.heroSearch}>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripcion (opcional)" rows={1} value={description} />
+      <div className={styles.heroSearch} ref={addressSearchRef}>
         <input
           onChange={(event) => {
             setAddress(event.target.value);
@@ -582,7 +617,7 @@ function EditPublicationModal({
           value={address}
         />
         {address && suggestions.length > 0 ? (
-          <div className={styles.floatingSuggestions}>
+          <div className={styles.floatingSuggestions} style={{ maxHeight: suggestionsMaxHeight }}>
             {suggestions.map((suggestion) => (
               <button
                 key={suggestion.id}
@@ -678,6 +713,7 @@ function PublicationGallery({
           {user ? (
             <div className={styles.privateMeta}>
               <h3>{publication.titulo}</h3>
+              {publication.descripcion ? <p>{publication.descripcion}</p> : null}
               <p>{publication.direccionTexto}</p>
               {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? <small>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</small> : null}
               {publication.isOwner ? (
@@ -697,4 +733,38 @@ function PublicationGallery({
 function submitCredentials(event: FormEvent<HTMLFormElement>, callback: () => Promise<void>) {
   event.preventDefault();
   callback();
+}
+
+function useSuggestionsMaxHeight(active: boolean) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState<number>();
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+
+    function updateMaxHeight() {
+      setMaxHeight(getSuggestionsMaxHeight(containerRef.current));
+    }
+
+    updateMaxHeight();
+    window.addEventListener("resize", updateMaxHeight);
+
+    return () => window.removeEventListener("resize", updateMaxHeight);
+  }, [active]);
+
+  return { containerRef, maxHeight };
+}
+
+function getSuggestionsMaxHeight(container: HTMLDivElement | null) {
+  if (!container || typeof window === "undefined") {
+    return undefined;
+  }
+
+  const viewportPadding = 24;
+  const dropdownGap = 8;
+  const availableHeight = window.innerHeight - container.getBoundingClientRect().bottom - viewportPadding - dropdownGap;
+
+  return Math.max(120, availableHeight);
 }

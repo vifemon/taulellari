@@ -8,6 +8,7 @@ import styles from "./page.module.css";
 type GalleryPublication = {
   id: number;
   titulo: string;
+  descripcion: string | null;
   direccionTexto: string;
   latitud: number;
   longitud: number;
@@ -121,6 +122,7 @@ export function Gallery() {
               <div className={styles.tileBody}>
                 <span>{formatDate(publication.creadoEn)}</span>
                 <h3>{publication.titulo}</h3>
+                {publication.descripcion ? <p>{publication.descripcion}</p> : null}
                 <p>{publication.direccionTexto}</p>
                 <small>
                   {publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}

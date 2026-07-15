@@ -12,6 +12,7 @@ const SUPPORTED_IMAGE_TYPES = new Set([
 
 export type PublicationFields = {
   titulo: string;
+  descripcion: string | null;
   direccionTexto: string;
   latitud: number;
   longitud: number;
@@ -23,6 +24,7 @@ export type PublicationValidationResult =
 
 export function validatePublicationFields(input: {
   titulo: unknown;
+  descripcion?: unknown;
   direccionTexto: unknown;
   latitud: unknown;
   longitud: unknown;
@@ -31,6 +33,12 @@ export function validatePublicationFields(input: {
 
   if (!titulo) {
     return { ok: false, error: "El titulo es obligatorio" };
+  }
+
+  const descripcion = normalizeOptionalText(input.descripcion, 120);
+
+  if (descripcion === false) {
+    return { ok: false, error: "La descripcion es demasiado larga" };
   }
 
   const direccionTexto = normalizeRequiredText(input.direccionTexto, 300);
@@ -50,6 +58,7 @@ export function validatePublicationFields(input: {
     ok: true,
     data: {
       titulo,
+      descripcion,
       direccionTexto,
       latitud,
       longitud,
@@ -77,6 +86,28 @@ export function validatePhotoFiles(files: File[]) {
   }
 
   return null;
+}
+
+function normalizeOptionalText(value: unknown, maxLength: number) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const text = value.trim();
+
+  if (!text) {
+    return null;
+  }
+
+  if (text.length > maxLength) {
+    return false;
+  }
+
+  return text;
 }
 
 function normalizeRequiredText(value: unknown, maxLength: number) {

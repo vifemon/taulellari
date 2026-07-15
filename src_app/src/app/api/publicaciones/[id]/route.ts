@@ -28,6 +28,7 @@ export async function PATCH(
   const values = typeof body === "object" && body ? body : {};
   const fields = validatePublicationFields({
     titulo: "titulo" in values ? values.titulo : undefined,
+    descripcion: "descripcion" in values ? values.descripcion : undefined,
     direccionTexto: "direccionTexto" in values ? values.direccionTexto : undefined,
     latitud: "latitud" in values ? values.latitud : undefined,
     longitud: "longitud" in values ? values.longitud : undefined,

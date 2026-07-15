@@ -37,9 +37,9 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 
-## Cambio De Rumbo MVP
+## Estado Actual
 
-El MVP actual queda como base tecnica, pero la experiencia de usuario y la seguridad deben reestructurarse antes de produccion. La nueva prioridad es la **Fase 1.5: Reestructuracion Completa UI/UX y CRUD de Usuarios**.
+La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fase-1.6-refinamiento-ajustes`. Ya se refino el hero y el formulario de subida de publicaciones.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -50,6 +50,7 @@ El MVP actual queda como base tecnica, pero la experiencia de usuario y la segur
 - **CRUD de usuarios:** crear, leer, actualizar y borrar usuarios desde flujos protegidos.
 - **Perfil:** cada usuario autenticado tendra una vista de perfil con sus publicaciones y opciones para editar o borrar sus fotos.
 - **Rol inicial:** el usuario autenticado puede subir, editar y borrar sus propias publicaciones.
+- **Borrado de cuenta:** al eliminar un usuario, sus publicaciones se eliminan por cascade y la app limpia las fotos locales asociadas.
 
 ## Modelo De Datos Base
 
@@ -66,6 +67,7 @@ El MVP actual queda como base tecnica, pero la experiencia de usuario y la segur
 
 - `id`
 - `titulo`
+- `descripcion`, opcional, maximo 120 caracteres
 - `ruta_local_foto_1`
 - `ruta_local_foto_2`, opcional
 - `ruta_local_foto_3`, opcional, maximo 3 fotos por publicacion
@@ -76,11 +78,13 @@ El MVP actual queda como base tecnica, pero la experiencia de usuario y la segur
 
 ## Geolocalizacion
 
-- **Estrategia de ubicacion:** se implementara un input de autocompletado utilizando la API de Mapbox.
+- **Estrategia de ubicacion:** se implemento un input de autocompletado utilizando la API de Mapbox.
 - **Configuracion:** el token de Mapbox se cargara desde `MAPBOX_ACCESS_TOKEN` y no debe versionarse en el repositorio.
 - **Precision:** el buscador debe permitir filtrar y autocompletar calles e incluir numeros de portal especificos para seleccionar domicilios exactos.
 - **Comportamiento UI:** el buscador debe sugerir direcciones desde la primera letra de forma fluida en una lista flotante debajo del input.
+- **Acceso al buscador:** `/api/addresses` es publico para que el HERO pueda mostrar sugerencias a visitantes, manteniendo el token de Mapbox solo en servidor.
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
+- **Formulario de subida:** el selector de direccion evita reabrir sugerencias tras una seleccion valida y su desplegable usa la altura visible disponible antes de activar scroll interno.
 
 ## Decisiones De Producto Y Diseno
 
@@ -97,6 +101,21 @@ El MVP actual queda como base tecnica, pero la experiencia de usuario y la segur
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
+- **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
+
+## Proximo Refinamiento Planificado
+
+- Instalar `lucide-react`.
+- Sustituir SVGs inline por componentes Lucide empezando por el icono de subida.
+- Definir uso consistente de iconos para acciones como subir, buscar, editar, borrar, usuario y tema.
+
+## Estado De Verificacion
+
+- `npm run db:dev:init` correcto.
+- `npm run lint` correcto.
+- `npm run test` correcto con 19 tests.
+- `npm run build` correcto.
+- Rama actual de trabajo: `feature/fase-1.6-refinamiento-ajustes`.
 
 ## Restricciones Importantes
 

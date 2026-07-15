@@ -22,9 +22,10 @@ describe("publication validation", () => {
       }),
     ).toEqual({
       ok: true,
-      data: {
-        titulo: "Portal azul",
-        direccionTexto: "Carrer de la Pau 1, Valencia",
+        data: {
+          titulo: "Portal azul",
+          descripcion: null,
+          direccionTexto: "Carrer de la Pau 1, Valencia",
         latitud: 39.4743,
         longitud: -0.3768,
       },
@@ -46,6 +47,18 @@ describe("publication validation", () => {
         titulo: "Portal",
         direccionTexto: "Carrer de la Pau 1, Valencia",
         latitud: "not-a-number",
+        longitud: "-0.3768",
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects descriptions longer than the title limit", () => {
+    expect(
+      validatePublicationFields({
+        titulo: "Portal",
+        descripcion: "a".repeat(121),
+        direccionTexto: "Carrer de la Pau 1, Valencia",
+        latitud: "39.4743",
         longitud: "-0.3768",
       }).ok,
     ).toBe(false);
