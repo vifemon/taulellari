@@ -939,7 +939,8 @@ function PublicationGallery({
             type="button"
           >
             <div className={styles.publicImage}>
-              <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={photo.url} unoptimized />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt={publication.titulo ?? "Azulejo"} decoding="async" loading="lazy" src={photo.url} />
             </div>
             {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
           </button>

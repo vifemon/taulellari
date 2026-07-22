@@ -108,6 +108,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
+- **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural.
 - **Detalle de fotos multiples:** el modal conserva miniaturas y añade flechas no circulares para navegar por las fotos del mismo grupo, comenzando por la imagen seleccionada.
 - **Borrado de fotos:** se elimina solo la foto actual con confirmacion; si era la ultima, tambien se elimina la publicacion y sus metadatos.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
