@@ -33,7 +33,7 @@ type Publication = {
   fotos: { index: number; url: string }[];
 };
 
-type Modal = "login" | "register" | "upload" | "profile" | "edit" | null;
+type Modal = "login" | "register" | "upload" | "profile" | "detail" | "edit" | null;
 
 export function AppShell() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -64,22 +64,67 @@ export function AppShell() {
     setUser(data.user);
   }
 
-  async function refreshGallery() {
+  async function refreshGallery(): Promise<Publication[]> {
     const response = await fetch("/api/publicaciones");
 
     if (!response.ok) {
       setPublications([]);
-      return;
+      return [];
     }
 
     const data: { publicaciones: Publication[] } = await response.json();
     setPublications(data.publicaciones);
+    return data.publicaciones;
+  }
+
+  function closeModal() {
+    setModal(null);
+    setSelectedPublication(null);
+    setMessage("");
+  }
+
+  function openPublication(publication: Publication) {
+    setSelectedPublication(publication);
+    setMessage("");
+    setModal(user ? "detail" : "login");
+  }
+
+  async function completeAuthentication(nextUser: AuthUser) {
+    setUser(nextUser);
+    const refreshedPublications = await refreshGallery();
+    const pendingPublicationId = selectedPublication?.id;
+
+    if (pendingPublicationId) {
+      const publication = refreshedPublications.find(({ id }) => id === pendingPublicationId);
+      setSelectedPublication(publication ?? null);
+      setModal(publication ? "detail" : null);
+      return;
+    }
+
+    setModal(null);
+  }
+
+  async function deletePublication(publication: Publication) {
+    setIsSubmitting(true);
+    setMessage("");
+
+    const response = await fetch(`/api/publicaciones/${publication.id}`, { method: "DELETE" });
+    const data: { error?: string } = await response.json();
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      setMessage(data.error ?? "No se pudo borrar");
+      return;
+    }
+
+    closeModal();
+    await refreshGallery();
   }
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
-    setModal(null);
+    closeModal();
     await refreshGallery();
   }
 
@@ -143,22 +188,13 @@ export function AppShell() {
         />
         <PublicationGallery
           hasSearch={deferredGalleryQuery.trim().length > 0}
-          onEdit={(publication) => {
-            setSelectedPublication(publication);
-            setMessage("");
-            setModal("edit");
-          }}
-          onDelete={async (publication) => {
-            await fetch(`/api/publicaciones/${publication.id}`, { method: "DELETE" });
-            await refreshGallery();
-          }}
+          onOpen={openPublication}
           publications={filteredPublications}
-          user={user}
         />
       </main>
 
       {modal ? (
-        <ModalShell onClose={() => setModal(null)}>
+        <ModalShell className={modal === "detail" ? styles.detailModal : undefined} onClose={closeModal}>
           {modal === "login" ? (
             <LoginModal
               isSubmitting={isSubmitting}
@@ -179,9 +215,7 @@ export function AppShell() {
                   return;
                 }
 
-                setUser(data.user);
-                setModal(null);
-                await refreshGallery();
+                await completeAuthentication(data.user);
               }}
             />
           ) : null}
@@ -205,9 +239,7 @@ export function AppShell() {
                   return;
                 }
 
-                setUser(data.user);
-                setModal(null);
-                await refreshGallery();
+                await completeAuthentication(data.user);
               }}
             />
           ) : null}
@@ -234,6 +266,14 @@ export function AppShell() {
               }}
             />
           ) : null}
+          {modal === "detail" && selectedPublication ? (
+            <PublicationDetailModal
+              isSubmitting={isSubmitting}
+              onDelete={deletePublication}
+              onEdit={() => setModal("edit")}
+              publication={selectedPublication}
+            />
+          ) : null}
           {modal === "edit" && selectedPublication ? (
             <EditPublicationModal
               isSubmitting={isSubmitting}
@@ -253,8 +293,7 @@ export function AppShell() {
                   return;
                 }
 
-                setModal(null);
-                setSelectedPublication(null);
+                closeModal();
                 await refreshGallery();
               }}
               publication={selectedPublication}
@@ -267,7 +306,7 @@ export function AppShell() {
               onDeleteAccount={async () => {
                 await fetch("/api/users/me", { method: "DELETE" });
                 setUser(null);
-                setModal(null);
+                closeModal();
                 await refreshGallery();
               }}
               onLogout={logout}
@@ -371,10 +410,18 @@ function normalizeSearchText(value: unknown) {
     .trim();
 }
 
-function ModalShell({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+function ModalShell({
+  children,
+  className,
+  onClose,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClose: () => void;
+}) {
   return (
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
-      <div className={styles.modalCard}>
+      <div className={`${styles.modalCard} ${className ?? ""}`}>
         <button className={styles.closeButton} onClick={onClose} type="button">
           Cerrar
         </button>
@@ -683,18 +730,91 @@ function ProfileModal({
   );
 }
 
-function PublicationGallery({
-  hasSearch,
+function PublicationDetailModal({
+  isSubmitting,
   onDelete,
   onEdit,
+  publication,
+}: {
+  isSubmitting: boolean;
+  onDelete: (publication: Publication) => Promise<void>;
+  onEdit: () => void;
+  publication: Publication;
+}) {
+  const [activePhotoIndex, setActivePhotoIndex] = useState(publication.fotos[0]?.index ?? 1);
+  const activePhoto = publication.fotos.find((photo) => photo.index === activePhotoIndex) ?? publication.fotos[0];
+
+  return (
+    <div className={styles.publicationDetail}>
+      <div className={styles.publicationDetailVisual}>
+        <div className={styles.publicationDetailImage}>
+          {activePhoto ? (
+            <Image
+              alt={publication.titulo ?? "Imagen de la publicacion"}
+              fill
+              sizes="(max-width: 860px) 90vw, 60vw"
+              src={activePhoto.url}
+              unoptimized
+            />
+          ) : null}
+        </div>
+        {publication.fotos.length > 1 ? (
+          <div className={styles.publicationPhotoThumbs} aria-label="Fotos de la publicacion">
+            {publication.fotos.map((photo, index) => (
+              <button
+                aria-label={`Ver foto ${index + 1}`}
+                className={`${styles.publicationPhotoThumb} ${photo.index === activePhoto?.index ? styles.activePhotoThumb : ""}`}
+                key={photo.index}
+                onClick={() => setActivePhotoIndex(photo.index)}
+                type="button"
+              >
+                <Image alt="" fill sizes="80px" src={photo.url} unoptimized />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <div className={styles.publicationDetailInfo}>
+        <span className={styles.kicker}>Ficha de la pieza</span>
+        <h2>{publication.titulo ?? "Pieza sin titulo"}</h2>
+        {publication.descripcion ? <p className={styles.publicationDetailDescription}>{publication.descripcion}</p> : null}
+        <dl className={styles.publicationDetailMeta}>
+          <div>
+            <dt>Direccion</dt>
+            <dd>{publication.direccionTexto ?? "No disponible"}</dd>
+          </div>
+          {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? (
+            <div>
+              <dt>Coordenadas</dt>
+              <dd>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</dd>
+            </div>
+          ) : null}
+          {publication.creadoEn ? (
+            <div>
+              <dt>Archivada</dt>
+              <dd>{formatPublicationDate(publication.creadoEn)}</dd>
+            </div>
+          ) : null}
+        </dl>
+        {publication.isOwner ? (
+          <div className={styles.publicationDetailActions}>
+            <button disabled={isSubmitting} onClick={onEdit} type="button">Editar</button>
+            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDelete(publication)} type="button">Borrar</button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PublicationGallery({
+  hasSearch,
+  onOpen,
   publications,
-  user,
 }: {
   hasSearch: boolean;
-  onDelete: (publication: Publication) => Promise<void>;
-  onEdit: (publication: Publication) => void;
+  onOpen: (publication: Publication) => void;
   publications: Publication[];
-  user: AuthUser | null;
 }) {
   if (publications.length === 0) {
     return <p className={styles.emptyState}>{hasSearch ? "No hay imagenes que coincidan con la busqueda." : "Todavia no hay fotos publicadas."}</p>;
@@ -704,22 +824,18 @@ function PublicationGallery({
     <div className={styles.publicGallery}>
       {publications.map((publication) => (
         <article className={styles.publicCard} key={publication.id}>
-          <div className={styles.publicImage}>
-            {publication.fotos[0] ? <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={publication.fotos[0].url} unoptimized /> : null}
-          </div>
-          {user ? (
-            <div className={styles.privateMeta}>
-              <h3>{publication.titulo}</h3>
-              {publication.descripcion ? <p>{publication.descripcion}</p> : null}
-              <p>{publication.direccionTexto}</p>
-              {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? <small>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</small> : null}
-              {publication.isOwner ? (
-                <div className={styles.cardActions}>
-                  <button onClick={() => onEdit(publication)} type="button">Editar</button>
-                  <button onClick={() => onDelete(publication)} type="button">Borrar</button>
-                </div>
-              ) : null}
-            </div>
+          {publication.fotos[0] ? (
+            <button
+              aria-label={`Ver detalles de ${publication.titulo ?? "la imagen"}`}
+              className={`${styles.publicImageButton} ${publication.titulo ? styles.hasImageOverlay : ""}`}
+              onClick={() => onOpen(publication)}
+              type="button"
+            >
+              <div className={styles.publicImage}>
+                <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={publication.fotos[0].url} unoptimized />
+              </div>
+              {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
+            </button>
           ) : null}
         </article>
       ))}
@@ -730,6 +846,14 @@ function PublicationGallery({
 function submitCredentials(event: FormEvent<HTMLFormElement>, callback: () => Promise<void>) {
   event.preventDefault();
   callback();
+}
+
+function formatPublicationDate(value: string) {
+  return new Intl.DateTimeFormat("es", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 function useSuggestionsMaxHeight(active: boolean) {

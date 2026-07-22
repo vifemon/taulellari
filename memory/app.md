@@ -100,6 +100,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), color de fondo temporal, buscador centrado y scroll hacia la galeria.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
+- **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.

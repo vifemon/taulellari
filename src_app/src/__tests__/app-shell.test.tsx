@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "../app/app-shell";
@@ -55,20 +55,59 @@ describe("AppShell gallery search", () => {
 
     expect(await screen.findByText("No hay imagenes que coincidan con la busqueda.")).toBeDefined();
   });
+
+  it("opens publication details with owner actions after clicking an image", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Ficha de la pieza")).toBeDefined();
+    expect(within(dialog).getByText("Carrer Major 12, Manises")).toBeDefined();
+    expect(within(dialog).getByRole("button", { name: "Editar" })).toBeDefined();
+    expect(within(dialog).getByRole("button", { name: "Borrar" })).toBeDefined();
+  });
+
+  it("does not show owner actions for another user's publication", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Rosa verde" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Avinguda del Port 4, Valencia")).toBeDefined();
+    expect(within(dialog).queryByRole("button", { name: "Editar" })).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: "Borrar" })).toBeNull();
+  });
+
+  it("opens the login modal when an anonymous visitor clicks an image", async () => {
+    mockAppShellFetch(false);
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+
+    expect(await screen.findByRole("heading", { name: "Entra al archivo." })).toBeDefined();
+  });
 });
 
-function mockAppShellFetch() {
+function mockAppShellFetch(authenticated = true) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
 
     if (url === "/api/auth/me") {
       return Response.json({
-        user: {
-          id: 1,
-          email: "ana@example.com",
-          nombre: "Ana",
-          apellidos: "Soler",
-        },
+        user: authenticated
+          ? {
+              id: 1,
+              email: "ana@example.com",
+              nombre: "Ana",
+              apellidos: "Soler",
+            }
+          : null,
       });
     }
 

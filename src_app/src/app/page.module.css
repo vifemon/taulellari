@@ -99,7 +99,6 @@
 .plusButton,
 .textButton,
 .dangerButton,
-.cardActions button,
 .floatingSuggestions button,
 .modalForm button {
   cursor: pointer;
@@ -377,8 +376,69 @@
   background: rgba(18, 63, 131, 0.1);
 }
 
+.publicImageButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: inherit;
+}
+
+.publicImageButton.hasImageOverlay::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: rgba(6, 16, 35, 0);
+  content: "";
+  pointer-events: none;
+  transition: background 180ms ease;
+}
+
+.publicImageOverlay {
+  position: absolute;
+  z-index: 2;
+  right: 22px;
+  bottom: 20px;
+  left: 22px;
+  color: var(--white);
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.4);
+  transform: translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.publicImageButton.hasImageOverlay:hover::after,
+.publicImageButton.hasImageOverlay:focus-visible::after {
+  background: rgba(6, 16, 35, 0.5);
+}
+
+.publicImageButton.hasImageOverlay:hover .publicImageOverlay,
+.publicImageButton.hasImageOverlay:focus-visible .publicImageOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.publicImageButton:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+}
+
 .publicImage {
   min-height: 340px;
+  transition: transform 180ms ease;
+}
+
+.publicImageButton:hover .publicImage {
+  transform: scale(1.02);
 }
 
 .publicImage img,
@@ -386,45 +446,10 @@
   object-fit: cover;
 }
 
-.privateMeta {
-  display: grid;
-  gap: 8px;
-  padding: 18px;
-}
-
-.privateMeta h3 {
-  color: var(--ink);
-  font-size: 24px;
-  letter-spacing: -0.05em;
-}
-
-.privateMeta p,
-.privateMeta small,
 .emptyState,
 .modalStatus {
   color: var(--muted);
   line-height: 1.45;
-}
-
-.privateMeta small {
-  font-family: var(--font-geist-mono);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.cardActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.cardActions button {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ink);
-  font-weight: 800;
-  padding: 8px 12px;
 }
 
 .modalBackdrop {
@@ -448,6 +473,10 @@
   background: var(--bg);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.36);
   padding: clamp(22px, 4vw, 36px);
+}
+
+.detailModal {
+  width: min(100%, 1100px);
 }
 
 .closeButton {
@@ -574,6 +603,131 @@
   border-radius: 12px;
 }
 
+.publicationDetail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.publicationDetailVisual {
+  display: grid;
+  gap: 12px;
+}
+
+.publicationDetailImage {
+  position: relative;
+  min-height: min(68vh, 620px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--blue) 9%, var(--tile));
+}
+
+.publicationDetailImage img {
+  object-fit: contain;
+}
+
+.publicationPhotoThumbs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.publicationPhotoThumb {
+  position: relative;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--tile);
+  cursor: pointer;
+  padding: 0;
+}
+
+.publicationPhotoThumb img {
+  object-fit: cover;
+}
+
+.publicationPhotoThumb:focus-visible,
+.activePhotoThumb {
+  border-color: var(--blue);
+  outline: none;
+}
+
+.publicationDetailInfo {
+  display: grid;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.publicationDetailInfo h2 {
+  font-size: clamp(32px, 5vw, 58px);
+  line-height: 0.96;
+}
+
+.publicationDetailDescription {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.publicationDetailMeta {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.publicationDetailMeta div {
+  display: grid;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.publicationDetailMeta dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.publicationDetailMeta dd {
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.publicationDetailActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.publicationDetailActions button {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--tile);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  padding: 0 18px;
+}
+
+.publicationDetailActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.publicationDetailActions .dangerButton {
+  color: #b83232;
+}
+
 @media (max-width: 860px) {
   .navbar {
     top: 10px;
@@ -602,11 +756,20 @@
   }
 
   .publicGallery,
-  .profileLayout {
+  .profileLayout,
+  .publicationDetail {
     grid-template-columns: 1fr;
   }
 
   .publicImage {
     min-height: 280px;
+  }
+
+  .publicationDetailImage {
+    min-height: min(60svh, 520px);
+  }
+
+  .publicationDetailInfo {
+    padding-top: 0;
   }
 }
