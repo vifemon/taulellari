@@ -29,6 +29,13 @@
       "when": 1784131200000,
       "tag": "0003_publication_description",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784719487320,
+      "tag": "0004_unique_champions",
+      "breakpoints": true
     }
   ]
 }

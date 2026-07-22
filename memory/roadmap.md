@@ -11,7 +11,7 @@ Estado: completada como base tecnica inicial.
 - [x] **Base de datos y modelado:** instalacion de Drizzle ORM, schema de `usuarios` y `publicaciones`, y migracion inicial para crear las tablas.
 - [x] **Autenticacion:** API de backend para registro rapido por email, cierre de sesion y consulta de usuario autenticado mediante cookie HTTP-only firmada.
 - [x] **Modulo de captura y almacenamiento:** API de Next.js para procesar archivos multipart de imagenes y guardarlos en la carpeta local del servidor.
-- [x] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir hasta 3 fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
+- [x] **Formulario movil de subida:** formulario frontend responsivo y mobile-first para subir cualquier numero de fotos, titulo e input de direccion con autocompletado de Mapbox para capturar coordenadas exactas con numero de portal.
 - [x] **Galeria visual:** pantalla principal fluida para ver las fotos ya subidas con lectura protegida desde almacenamiento local.
 - [x] **Desarrollo local temporal:** modo hibrido con SQLite (`dev.db`) en Windows 11 para probar login, autocompletado Mapbox, capturas y galeria sin levantar PostgreSQL.
 
@@ -37,6 +37,8 @@ Estado: en curso.
 
 - [x] **Buscador de galeria:** mover el buscador desde el HERO a la parte superior de la galeria y cambiarlo de busqueda Mapbox a filtro de imagenes por titulo, descripcion o metadatos.
 - [x] **Imagen de fondo y acciones del HERO:** eliminar el decorativo `::after`, usar una imagen real de fondo en `heroScreen` y destacar las acciones principales de ver galeria y subir imagen.
+- [x] **Fotos multiples:** guardar cualquier numero de imagenes por publicacion, mostrar cada foto en la galeria y navegar por el grupo con miniaturas y flechas no circulares.
+- [x] **Borrado individual:** confirmar el borrado de la foto actual y eliminar el grupo cuando se borra su ultima imagen.
 
 ## Fase 2: Contenerizacion Y Despliegue
 

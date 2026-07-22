@@ -51,9 +51,7 @@ export async function DELETE() {
   }
 
   const publications = await listPublicationPhotoPathsForUser(currentUser.id);
-  const photoPaths = publications.flatMap((publication) =>
-    getPublicationPhotoEntries(publication).map((photo) => photo.path),
-  );
+  const photoPaths = getPublicationPhotoEntries(publications).map((photo) => photo.path);
 
   await deleteUser(currentUser.id);
   await removeSavedPhotos(photoPaths);

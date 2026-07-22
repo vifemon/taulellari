@@ -1,4 +1,3 @@
-export const MAX_PHOTOS_PER_PUBLICATION = 3;
 export const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
 
 const SUPPORTED_IMAGE_TYPES = new Set([
@@ -69,10 +68,6 @@ export function validatePublicationFields(input: {
 export function validatePhotoFiles(files: File[]) {
   if (files.length < 1) {
     return "Sube al menos una foto";
-  }
-
-  if (files.length > MAX_PHOTOS_PER_PUBLICATION) {
-    return `Solo puedes subir hasta ${MAX_PHOTOS_PER_PUBLICATION} fotos`;
   }
 
   for (const file of files) {

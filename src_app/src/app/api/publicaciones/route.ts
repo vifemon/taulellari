@@ -28,7 +28,8 @@ export async function GET() {
             isOwner: publication.usuarioId === user.id,
           }
         : {}),
-      fotos: getPublicationPhotoEntries(publication).map((photo) => ({
+      fotos: getPublicationPhotoEntries(publication.fotos).map((photo) => ({
+        id: photo.id,
         index: photo.index,
         url: `/api/publicaciones/${publication.id}/fotos/${photo.index}`,
       })),
@@ -71,9 +72,7 @@ export async function POST(request: Request) {
     const publication = await createPublication({
       titulo: fields.data.titulo,
       descripcion: fields.data.descripcion,
-      rutaLocalFoto1: savedPaths[0],
-      rutaLocalFoto2: savedPaths[1],
-      rutaLocalFoto3: savedPaths[2],
+      fotos: savedPaths,
       direccionTexto: fields.data.direccionTexto,
       latitud: fields.data.latitud,
       longitud: fields.data.longitud,

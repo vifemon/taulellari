@@ -1,3 +1,7 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { parseMapboxSuggestions } from "../mapbox/geocoding";
@@ -5,8 +9,8 @@ import {
   getPhotoContentType,
   getPublicationPhotoEntries,
 } from "../publicaciones/photos";
+import { removeSavedPhotos, savePublicationPhotos } from "../publicaciones/storage";
 import {
-  MAX_PHOTOS_PER_PUBLICATION,
   validatePhotoFiles,
   validatePublicationFields,
 } from "../publicaciones/validation";
@@ -22,10 +26,10 @@ describe("publication validation", () => {
       }),
     ).toEqual({
       ok: true,
-        data: {
-          titulo: "Portal azul",
-          descripcion: null,
-          direccionTexto: "Carrer de la Pau 1, Valencia",
+      data: {
+        titulo: "Portal azul",
+        descripcion: null,
+        direccionTexto: "Carrer de la Pau 1, Valencia",
         latitud: 39.4743,
         longitud: -0.3768,
       },
@@ -64,18 +68,38 @@ describe("publication validation", () => {
     ).toBe(false);
   });
 
-  it("accepts up to three compatible images", () => {
-    const files = Array.from({ length: MAX_PHOTOS_PER_PUBLICATION }, (_, index) =>
+  it("accepts any number of compatible images", () => {
+    const files = Array.from({ length: 8 }, (_, index) =>
       new File(["image"], `photo-${index}.jpg`, { type: "image/jpeg" }),
     );
 
     expect(validatePhotoFiles(files)).toBeNull();
-    expect(
-      validatePhotoFiles([
-        ...files,
-        new File(["image"], "extra.jpg", { type: "image/jpeg" }),
-      ]),
-    ).toBe("Solo puedes subir hasta 3 fotos");
+  });
+
+  it("saves every selected image", async () => {
+    const storageDir = await mkdtemp(path.join(os.tmpdir(), "taulellari-photos-"));
+    const previousStorageDir = process.env.PHOTO_STORAGE_DIR;
+    process.env.PHOTO_STORAGE_DIR = storageDir;
+    const files = Array.from({ length: 5 }, (_, index) =>
+      new File([`image-${index}`], `photo-${index}.jpg`, { type: "image/jpeg" }),
+    );
+
+    try {
+      const savedPaths = await savePublicationPhotos(files);
+
+      expect(savedPaths).toHaveLength(files.length);
+      await expect(Promise.all(savedPaths.map((filePath) => readFile(filePath, "utf8")))).resolves.toEqual(
+        files.map((_, index) => `image-${index}`),
+      );
+      await removeSavedPhotos(savedPaths);
+    } finally {
+      if (previousStorageDir === undefined) {
+        delete process.env.PHOTO_STORAGE_DIR;
+      } else {
+        process.env.PHOTO_STORAGE_DIR = previousStorageDir;
+      }
+      await rm(storageDir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -109,14 +133,13 @@ describe("Mapbox parsing", () => {
 describe("publication photos", () => {
   it("returns only existing photo entries", () => {
     expect(
-      getPublicationPhotoEntries({
-        rutaLocalFoto1: "/data/1.jpg",
-        rutaLocalFoto2: null,
-        rutaLocalFoto3: "/data/3.webp",
-      }),
+      getPublicationPhotoEntries([
+        { id: 11, publicacionId: 4, rutaLocal: "/data/1.jpg", orden: 1 },
+        { id: 12, publicacionId: 4, rutaLocal: "/data/3.webp", orden: 3 },
+      ]),
     ).toEqual([
-      { index: 1, path: "/data/1.jpg" },
-      { index: 3, path: "/data/3.webp" },
+      { id: 11, index: 1, path: "/data/1.jpg" },
+      { id: 12, index: 3, path: "/data/3.webp" },
     ]);
   });
 

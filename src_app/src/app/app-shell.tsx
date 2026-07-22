@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -30,10 +30,10 @@ type Publication = {
   creadoEn?: string;
   isOwner?: boolean;
   metadatos?: unknown;
-  fotos: { index: number; url: string }[];
+  fotos: { id: number; index: number; url: string }[];
 };
 
-type Modal = "login" | "register" | "upload" | "profile" | "detail" | "edit" | null;
+type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
 
 export function AppShell() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -41,6 +41,7 @@ export function AppShell() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [galleryQuery, setGalleryQuery] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,11 +81,13 @@ export function AppShell() {
   function closeModal() {
     setModal(null);
     setSelectedPublication(null);
+    setSelectedPhotoIndex(null);
     setMessage("");
   }
 
-  function openPublication(publication: Publication) {
+  function openPublication(publication: Publication, photoIndex: number) {
     setSelectedPublication(publication);
+    setSelectedPhotoIndex(photoIndex);
     setMessage("");
     setModal(user ? "detail" : "login");
   }
@@ -104,21 +107,38 @@ export function AppShell() {
     setModal(null);
   }
 
-  async function deletePublication(publication: Publication) {
+  async function deletePhoto(publication: Publication, photoIndex: number) {
     setIsSubmitting(true);
     setMessage("");
 
-    const response = await fetch(`/api/publicaciones/${publication.id}`, { method: "DELETE" });
+    const response = await fetch(`/api/publicaciones/${publication.id}/fotos/${photoIndex}`, {
+      method: "DELETE",
+    });
     const data: { error?: string } = await response.json();
     setIsSubmitting(false);
 
     if (!response.ok) {
-      setMessage(data.error ?? "No se pudo borrar");
+      setMessage(data.error ?? "No se pudo borrar la imagen");
+      setModal("detail");
       return;
     }
 
-    closeModal();
-    await refreshGallery();
+    const currentPhotoPosition = publication.fotos.findIndex((photo) => photo.index === photoIndex);
+    const refreshedPublications = await refreshGallery();
+    const refreshedPublication = refreshedPublications.find(({ id }) => id === publication.id);
+
+    if (!refreshedPublication || refreshedPublication.fotos.length === 0) {
+      closeModal();
+      return;
+    }
+
+    const nextPhotoPosition = Math.max(
+      0,
+      Math.min(currentPhotoPosition, refreshedPublication.fotos.length - 1),
+    );
+    setSelectedPublication(refreshedPublication);
+    setSelectedPhotoIndex(refreshedPublication.fotos[nextPhotoPosition].index);
+    setModal("detail");
   }
 
   async function logout() {
@@ -194,7 +214,10 @@ export function AppShell() {
       </main>
 
       {modal ? (
-        <ModalShell className={modal === "detail" ? styles.detailModal : undefined} onClose={closeModal}>
+        <ModalShell
+          className={modal === "detail" ? styles.detailModal : undefined}
+          onClose={modal === "photo-confirm" ? () => setModal("detail") : closeModal}
+        >
           {modal === "login" ? (
             <LoginModal
               isSubmitting={isSubmitting}
@@ -268,10 +291,23 @@ export function AppShell() {
           ) : null}
           {modal === "detail" && selectedPublication ? (
             <PublicationDetailModal
+              key={`${selectedPublication.id}-${selectedPhotoIndex ?? 1}`}
+              initialPhotoIndex={selectedPhotoIndex ?? selectedPublication.fotos[0]?.index ?? 1}
               isSubmitting={isSubmitting}
-              onDelete={deletePublication}
+              onDeleteRequest={(photoIndex) => {
+                setSelectedPhotoIndex(photoIndex);
+                setModal("photo-confirm");
+              }}
               onEdit={() => setModal("edit")}
               publication={selectedPublication}
+            />
+          ) : null}
+          {modal === "photo-confirm" && selectedPublication && selectedPhotoIndex !== null ? (
+            <DeletePhotoConfirmation
+              isLastPhoto={selectedPublication.fotos.length === 1}
+              isSubmitting={isSubmitting}
+              onCancel={() => setModal("detail")}
+              onConfirm={() => deletePhoto(selectedPublication, selectedPhotoIndex)}
             />
           ) : null}
           {modal === "edit" && selectedPublication ? (
@@ -563,7 +599,7 @@ function UploadModal({
           <Upload size={24} strokeWidth={2} />
         </span>
         {files.length > 0 ? <small>{`${files.length} archivo${files.length === 1 ? "" : "s"} seleccionado${files.length === 1 ? "" : "s"}`}</small> : null}
-        <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))} type="file" />
+        <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []))} type="file" />
       </label>
       <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">Guardar</button>
     </form>
@@ -731,18 +767,34 @@ function ProfileModal({
 }
 
 function PublicationDetailModal({
+  initialPhotoIndex,
   isSubmitting,
-  onDelete,
+  onDeleteRequest,
   onEdit,
   publication,
 }: {
+  initialPhotoIndex: number;
   isSubmitting: boolean;
-  onDelete: (publication: Publication) => Promise<void>;
+  onDeleteRequest: (photoIndex: number) => void;
   onEdit: () => void;
   publication: Publication;
 }) {
-  const [activePhotoIndex, setActivePhotoIndex] = useState(publication.fotos[0]?.index ?? 1);
-  const activePhoto = publication.fotos.find((photo) => photo.index === activePhotoIndex) ?? publication.fotos[0];
+  const [activePhotoIndex, setActivePhotoIndex] = useState(initialPhotoIndex);
+  const activePhotoPosition = Math.max(
+    0,
+    publication.fotos.findIndex((photo) => photo.index === activePhotoIndex),
+  );
+  const activePhoto = publication.fotos[activePhotoPosition];
+
+  function movePhoto(direction: -1 | 1) {
+    const nextPosition = activePhotoPosition + direction;
+
+    if (nextPosition < 0 || nextPosition >= publication.fotos.length) {
+      return;
+    }
+
+    setActivePhotoIndex(publication.fotos[nextPosition].index);
+  }
 
   return (
     <div className={styles.publicationDetail}>
@@ -757,6 +809,31 @@ function PublicationDetailModal({
               unoptimized
             />
           ) : null}
+          {publication.fotos.length > 1 ? (
+            <>
+              <button
+                aria-label="Foto anterior"
+                className={`${styles.publicationPhotoArrow} ${styles.previousPhotoArrow}`}
+                disabled={activePhotoPosition === 0}
+                onClick={() => movePhoto(-1)}
+                type="button"
+              >
+                <ChevronLeft aria-hidden="true" size={28} strokeWidth={2.5} />
+              </button>
+              <button
+                aria-label="Foto siguiente"
+                className={`${styles.publicationPhotoArrow} ${styles.nextPhotoArrow}`}
+                disabled={activePhotoPosition === publication.fotos.length - 1}
+                onClick={() => movePhoto(1)}
+                type="button"
+              >
+                <ChevronRight aria-hidden="true" size={28} strokeWidth={2.5} />
+              </button>
+              <span className={styles.publicationPhotoCounter}>
+                {activePhotoPosition + 1} de {publication.fotos.length}
+              </span>
+            </>
+          ) : null}
         </div>
         {publication.fotos.length > 1 ? (
           <div className={styles.publicationPhotoThumbs} aria-label="Fotos de la publicacion">
@@ -764,7 +841,7 @@ function PublicationDetailModal({
               <button
                 aria-label={`Ver foto ${index + 1}`}
                 className={`${styles.publicationPhotoThumb} ${photo.index === activePhoto?.index ? styles.activePhotoThumb : ""}`}
-                key={photo.index}
+                key={photo.id}
                 onClick={() => setActivePhotoIndex(photo.index)}
                 type="button"
               >
@@ -796,12 +873,39 @@ function PublicationDetailModal({
             </div>
           ) : null}
         </dl>
-        {publication.isOwner ? (
+        {publication.isOwner && activePhoto ? (
           <div className={styles.publicationDetailActions}>
             <button disabled={isSubmitting} onClick={onEdit} type="button">Editar</button>
-            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDelete(publication)} type="button">Borrar</button>
+            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDeleteRequest(activePhoto.index)} type="button">Borrar</button>
           </div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function DeletePhotoConfirmation({
+  isLastPhoto,
+  isSubmitting,
+  onCancel,
+  onConfirm,
+}: {
+  isLastPhoto: boolean;
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  return (
+    <div className={styles.confirmationModal}>
+      <span className={styles.kicker}>Eliminar imagen</span>
+      <h2>
+        {isLastPhoto
+          ? "¿Desea eliminar esta imagen? Es la última del grupo, por lo que también se eliminará la publicación."
+          : "¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."}
+      </h2>
+      <div className={styles.confirmationActions}>
+        <button disabled={isSubmitting} onClick={onCancel} type="button">Cancelar</button>
+        <button className={styles.dangerButton} disabled={isSubmitting} onClick={onConfirm} type="button">Eliminar</button>
       </div>
     </div>
   );
@@ -813,30 +917,32 @@ function PublicationGallery({
   publications,
 }: {
   hasSearch: boolean;
-  onOpen: (publication: Publication) => void;
+  onOpen: (publication: Publication, photoIndex: number) => void;
   publications: Publication[];
 }) {
-  if (publications.length === 0) {
+  const galleryPhotos = publications.flatMap((publication) =>
+    publication.fotos.map((photo) => ({ photo, publication })),
+  );
+
+  if (galleryPhotos.length === 0) {
     return <p className={styles.emptyState}>{hasSearch ? "No hay imagenes que coincidan con la busqueda." : "Todavia no hay fotos publicadas."}</p>;
   }
 
   return (
     <div className={styles.publicGallery}>
-      {publications.map((publication) => (
-        <article className={styles.publicCard} key={publication.id}>
-          {publication.fotos[0] ? (
-            <button
-              aria-label={`Ver detalles de ${publication.titulo ?? "la imagen"}`}
-              className={`${styles.publicImageButton} ${publication.titulo ? styles.hasImageOverlay : ""}`}
-              onClick={() => onOpen(publication)}
-              type="button"
-            >
-              <div className={styles.publicImage}>
-                <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={publication.fotos[0].url} unoptimized />
-              </div>
-              {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
-            </button>
-          ) : null}
+      {galleryPhotos.map(({ photo, publication }) => (
+        <article className={styles.publicCard} key={`${publication.id}-${photo.id}`}>
+          <button
+            aria-label={`Ver detalles de ${publication.titulo ?? "la imagen"}`}
+            className={`${styles.publicImageButton} ${publication.titulo ? styles.hasImageOverlay : ""}`}
+            onClick={() => onOpen(publication, photo.index)}
+            type="button"
+          >
+            <div className={styles.publicImage}>
+              <Image alt={publication.titulo ?? "Azulejo"} fill sizes="(max-width: 800px) 100vw, 33vw" src={photo.url} unoptimized />
+            </div>
+            {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
+          </button>
         </article>
       ))}
     </div>

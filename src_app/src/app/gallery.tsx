@@ -106,7 +106,7 @@ export function Gallery() {
           {publications.map((publication, publicationIndex) => (
             <article className={styles.tile} key={publication.id}>
               <div className={styles.tileImageStack}>
-                {publication.fotos.slice(0, 3).map((photo, index) => (
+                {publication.fotos.map((photo, index) => (
                   <div className={styles.tileImage} key={photo.index}>
                     <Image
                       alt={`${publication.titulo}, foto ${index + 1}`}

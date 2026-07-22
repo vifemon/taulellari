@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 
 import { getPgDb, getSqliteDb, isDevelopmentDatabase } from "./client";
 import * as pgSchema from "./schema";
@@ -33,9 +33,7 @@ export type UserUpdateInput = {
 export type PublicationCreateInput = {
   titulo: string;
   descripcion?: string | null;
-  rutaLocalFoto1: string;
-  rutaLocalFoto2?: string;
-  rutaLocalFoto3?: string;
+  fotos: string[];
   direccionTexto: string;
   latitud: number;
   longitud: number;
@@ -50,16 +48,18 @@ export type PublicationListItem = {
   direccionTexto: string;
   latitud: number;
   longitud: number;
-  rutaLocalFoto1: string;
-  rutaLocalFoto2: string | null;
-  rutaLocalFoto3: string | null;
   creadoEn: Date | string;
+  fotos: PublicationPhotoRecord[];
 };
 
-export type PublicationPhotoPaths = Pick<
-  PublicationListItem,
-  "rutaLocalFoto1" | "rutaLocalFoto2" | "rutaLocalFoto3"
->;
+export type PublicationPhotoRecord = {
+  id: number;
+  publicacionId: number;
+  rutaLocal: string;
+  orden: number;
+};
+
+type PublicationDatabaseRow = Omit<PublicationListItem, "fotos">;
 
 export async function findUserById(id: number): Promise<UserRecord | null> {
   if (isDevelopmentDatabase()) {
@@ -199,7 +199,7 @@ export async function deleteUser(id: number) {
 
 export async function listPublications(): Promise<PublicationListItem[]> {
   if (isDevelopmentDatabase()) {
-    return getSqliteDb()
+    const publications = getSqliteDb()
       .select({
         id: sqliteSchema.publicaciones.id,
         usuarioId: sqliteSchema.publicaciones.usuarioId,
@@ -208,56 +208,111 @@ export async function listPublications(): Promise<PublicationListItem[]> {
         direccionTexto: sqliteSchema.publicaciones.direccionTexto,
         latitud: sqliteSchema.publicaciones.latitud,
         longitud: sqliteSchema.publicaciones.longitud,
-        rutaLocalFoto1: sqliteSchema.publicaciones.rutaLocalFoto1,
-        rutaLocalFoto2: sqliteSchema.publicaciones.rutaLocalFoto2,
-        rutaLocalFoto3: sqliteSchema.publicaciones.rutaLocalFoto3,
         creadoEn: sqliteSchema.publicaciones.creadoEn,
       })
       .from(sqliteSchema.publicaciones)
       .orderBy(desc(sqliteSchema.publicaciones.creadoEn))
       .all();
+
+    const photos = getSqliteDb()
+      .select({
+        id: sqliteSchema.fotosPublicacion.id,
+        publicacionId: sqliteSchema.fotosPublicacion.publicacionId,
+        rutaLocal: sqliteSchema.fotosPublicacion.rutaLocal,
+        orden: sqliteSchema.fotosPublicacion.orden,
+      })
+      .from(sqliteSchema.fotosPublicacion)
+      .orderBy(asc(sqliteSchema.fotosPublicacion.publicacionId), asc(sqliteSchema.fotosPublicacion.orden))
+      .all();
+
+    return attachPublicationPhotos(publications, photos);
   }
 
-  return getPgDb()
-    .select({
-      id: pgSchema.publicaciones.id,
-      usuarioId: pgSchema.publicaciones.usuarioId,
-      titulo: pgSchema.publicaciones.titulo,
-      descripcion: pgSchema.publicaciones.descripcion,
-      direccionTexto: pgSchema.publicaciones.direccionTexto,
-      latitud: pgSchema.publicaciones.latitud,
-      longitud: pgSchema.publicaciones.longitud,
-      rutaLocalFoto1: pgSchema.publicaciones.rutaLocalFoto1,
-      rutaLocalFoto2: pgSchema.publicaciones.rutaLocalFoto2,
-      rutaLocalFoto3: pgSchema.publicaciones.rutaLocalFoto3,
-      creadoEn: pgSchema.publicaciones.creadoEn,
-    })
-    .from(pgSchema.publicaciones)
-    .orderBy(desc(pgSchema.publicaciones.creadoEn));
+  const [publications, photos] = await Promise.all([
+    getPgDb()
+      .select({
+        id: pgSchema.publicaciones.id,
+        usuarioId: pgSchema.publicaciones.usuarioId,
+        titulo: pgSchema.publicaciones.titulo,
+        descripcion: pgSchema.publicaciones.descripcion,
+        direccionTexto: pgSchema.publicaciones.direccionTexto,
+        latitud: pgSchema.publicaciones.latitud,
+        longitud: pgSchema.publicaciones.longitud,
+        creadoEn: pgSchema.publicaciones.creadoEn,
+      })
+      .from(pgSchema.publicaciones)
+      .orderBy(desc(pgSchema.publicaciones.creadoEn)),
+    getPgDb()
+      .select({
+        id: pgSchema.fotosPublicacion.id,
+        publicacionId: pgSchema.fotosPublicacion.publicacionId,
+        rutaLocal: pgSchema.fotosPublicacion.rutaLocal,
+        orden: pgSchema.fotosPublicacion.orden,
+      })
+      .from(pgSchema.fotosPublicacion)
+      .orderBy(asc(pgSchema.fotosPublicacion.publicacionId), asc(pgSchema.fotosPublicacion.orden)),
+  ]);
+
+  return attachPublicationPhotos(publications, photos);
 }
 
 export async function createPublication(input: PublicationCreateInput) {
   if (isDevelopmentDatabase()) {
-    const result = getSqliteDb()
-      .insert(sqliteSchema.publicaciones)
-      .values(input)
-      .run();
+    return getSqliteDb().transaction((db) => {
+      const result = db
+        .insert(sqliteSchema.publicaciones)
+        .values({
+          titulo: input.titulo,
+          descripcion: input.descripcion,
+          direccionTexto: input.direccionTexto,
+          latitud: input.latitud,
+          longitud: input.longitud,
+          usuarioId: input.usuarioId,
+        })
+        .run();
+      const publicationId = Number(result.lastInsertRowid);
 
-    return { id: Number(result.lastInsertRowid) };
+      db.insert(sqliteSchema.fotosPublicacion)
+        .values(input.fotos.map((rutaLocal, index) => ({
+          publicacionId: publicationId,
+          rutaLocal,
+          orden: index + 1,
+        })))
+        .run();
+
+      return { id: publicationId };
+    });
   }
 
-  const [publication] = await getPgDb()
-    .insert(pgSchema.publicaciones)
-    .values(input)
-    .returning({ id: pgSchema.publicaciones.id });
+  return getPgDb().transaction(async (tx) => {
+    const [publication] = await tx
+      .insert(pgSchema.publicaciones)
+      .values({
+        titulo: input.titulo,
+        descripcion: input.descripcion,
+        direccionTexto: input.direccionTexto,
+        latitud: input.latitud,
+        longitud: input.longitud,
+        usuarioId: input.usuarioId,
+      })
+      .returning({ id: pgSchema.publicaciones.id });
 
-  return publication;
+    await tx.insert(pgSchema.fotosPublicacion).values(
+      input.fotos.map((rutaLocal, index) => ({
+        publicacionId: publication.id,
+        rutaLocal,
+        orden: index + 1,
+      })),
+    );
+
+    return publication;
+  });
 }
 
 export async function findPublicationPhotoPaths(input: {
   id: number;
   usuarioId?: number;
-}): Promise<PublicationPhotoPaths | null> {
+}): Promise<PublicationPhotoRecord[] | null> {
   if (isDevelopmentDatabase()) {
     const filters = input.usuarioId
       ? and(
@@ -266,16 +321,26 @@ export async function findPublicationPhotoPaths(input: {
         )
       : eq(sqliteSchema.publicaciones.id, input.id);
     const publication = getSqliteDb()
-      .select({
-        rutaLocalFoto1: sqliteSchema.publicaciones.rutaLocalFoto1,
-        rutaLocalFoto2: sqliteSchema.publicaciones.rutaLocalFoto2,
-        rutaLocalFoto3: sqliteSchema.publicaciones.rutaLocalFoto3,
-      })
+      .select({ id: sqliteSchema.publicaciones.id })
       .from(sqliteSchema.publicaciones)
       .where(filters)
       .get();
 
-    return publication ?? null;
+    if (!publication) {
+      return null;
+    }
+
+    return getSqliteDb()
+      .select({
+        id: sqliteSchema.fotosPublicacion.id,
+        publicacionId: sqliteSchema.fotosPublicacion.publicacionId,
+        rutaLocal: sqliteSchema.fotosPublicacion.rutaLocal,
+        orden: sqliteSchema.fotosPublicacion.orden,
+      })
+      .from(sqliteSchema.fotosPublicacion)
+      .where(eq(sqliteSchema.fotosPublicacion.publicacionId, input.id))
+      .orderBy(asc(sqliteSchema.fotosPublicacion.orden))
+      .all();
   }
 
   const filters = input.usuarioId
@@ -285,41 +350,208 @@ export async function findPublicationPhotoPaths(input: {
       )
     : eq(pgSchema.publicaciones.id, input.id);
   const [publication] = await getPgDb()
-    .select({
-      rutaLocalFoto1: pgSchema.publicaciones.rutaLocalFoto1,
-      rutaLocalFoto2: pgSchema.publicaciones.rutaLocalFoto2,
-      rutaLocalFoto3: pgSchema.publicaciones.rutaLocalFoto3,
-    })
+    .select({ id: pgSchema.publicaciones.id })
     .from(pgSchema.publicaciones)
     .where(filters)
     .limit(1);
 
-  return publication ?? null;
+  if (!publication) {
+    return null;
+  }
+
+  return getPgDb()
+    .select({
+      id: pgSchema.fotosPublicacion.id,
+      publicacionId: pgSchema.fotosPublicacion.publicacionId,
+      rutaLocal: pgSchema.fotosPublicacion.rutaLocal,
+      orden: pgSchema.fotosPublicacion.orden,
+    })
+    .from(pgSchema.fotosPublicacion)
+    .where(eq(pgSchema.fotosPublicacion.publicacionId, input.id))
+    .orderBy(asc(pgSchema.fotosPublicacion.orden));
 }
 
 export async function listPublicationPhotoPathsForUser(
   usuarioId: number,
-): Promise<PublicationPhotoPaths[]> {
+): Promise<PublicationPhotoRecord[]> {
   if (isDevelopmentDatabase()) {
     return getSqliteDb()
       .select({
-        rutaLocalFoto1: sqliteSchema.publicaciones.rutaLocalFoto1,
-        rutaLocalFoto2: sqliteSchema.publicaciones.rutaLocalFoto2,
-        rutaLocalFoto3: sqliteSchema.publicaciones.rutaLocalFoto3,
+        id: sqliteSchema.fotosPublicacion.id,
+        publicacionId: sqliteSchema.fotosPublicacion.publicacionId,
+        rutaLocal: sqliteSchema.fotosPublicacion.rutaLocal,
+        orden: sqliteSchema.fotosPublicacion.orden,
       })
-      .from(sqliteSchema.publicaciones)
+      .from(sqliteSchema.fotosPublicacion)
+      .innerJoin(
+        sqliteSchema.publicaciones,
+        eq(sqliteSchema.fotosPublicacion.publicacionId, sqliteSchema.publicaciones.id),
+      )
       .where(eq(sqliteSchema.publicaciones.usuarioId, usuarioId))
+      .orderBy(asc(sqliteSchema.fotosPublicacion.publicacionId), asc(sqliteSchema.fotosPublicacion.orden))
       .all();
   }
 
   return getPgDb()
     .select({
-      rutaLocalFoto1: pgSchema.publicaciones.rutaLocalFoto1,
-      rutaLocalFoto2: pgSchema.publicaciones.rutaLocalFoto2,
-      rutaLocalFoto3: pgSchema.publicaciones.rutaLocalFoto3,
+      id: pgSchema.fotosPublicacion.id,
+      publicacionId: pgSchema.fotosPublicacion.publicacionId,
+      rutaLocal: pgSchema.fotosPublicacion.rutaLocal,
+      orden: pgSchema.fotosPublicacion.orden,
     })
-    .from(pgSchema.publicaciones)
-    .where(eq(pgSchema.publicaciones.usuarioId, usuarioId));
+    .from(pgSchema.fotosPublicacion)
+    .innerJoin(
+      pgSchema.publicaciones,
+      eq(pgSchema.fotosPublicacion.publicacionId, pgSchema.publicaciones.id),
+    )
+    .where(eq(pgSchema.publicaciones.usuarioId, usuarioId))
+    .orderBy(asc(pgSchema.fotosPublicacion.publicacionId), asc(pgSchema.fotosPublicacion.orden));
+}
+
+export async function findPublicationPhoto(input: {
+  id: number;
+  orden: number;
+}): Promise<PublicationPhotoRecord | null> {
+  if (isDevelopmentDatabase()) {
+    const photo = getSqliteDb()
+      .select({
+        id: sqliteSchema.fotosPublicacion.id,
+        publicacionId: sqliteSchema.fotosPublicacion.publicacionId,
+        rutaLocal: sqliteSchema.fotosPublicacion.rutaLocal,
+        orden: sqliteSchema.fotosPublicacion.orden,
+      })
+      .from(sqliteSchema.fotosPublicacion)
+      .where(
+        and(
+          eq(sqliteSchema.fotosPublicacion.publicacionId, input.id),
+          eq(sqliteSchema.fotosPublicacion.orden, input.orden),
+        ),
+      )
+      .get();
+
+    return photo ?? null;
+  }
+
+  const [photo] = await getPgDb()
+    .select({
+      id: pgSchema.fotosPublicacion.id,
+      publicacionId: pgSchema.fotosPublicacion.publicacionId,
+      rutaLocal: pgSchema.fotosPublicacion.rutaLocal,
+      orden: pgSchema.fotosPublicacion.orden,
+    })
+    .from(pgSchema.fotosPublicacion)
+    .where(
+      and(
+        eq(pgSchema.fotosPublicacion.publicacionId, input.id),
+        eq(pgSchema.fotosPublicacion.orden, input.orden),
+      ),
+    )
+    .limit(1);
+
+  return photo ?? null;
+}
+
+export async function deletePublicationPhoto(input: {
+  id: number;
+  orden: number;
+  usuarioId: number;
+}): Promise<{ path: string; publicationDeleted: boolean } | null> {
+  if (isDevelopmentDatabase()) {
+    return getSqliteDb().transaction((db) => {
+      const photo = db
+        .select({
+          id: sqliteSchema.fotosPublicacion.id,
+          rutaLocal: sqliteSchema.fotosPublicacion.rutaLocal,
+        })
+        .from(sqliteSchema.fotosPublicacion)
+        .innerJoin(
+          sqliteSchema.publicaciones,
+          eq(sqliteSchema.fotosPublicacion.publicacionId, sqliteSchema.publicaciones.id),
+        )
+        .where(
+          and(
+            eq(sqliteSchema.fotosPublicacion.publicacionId, input.id),
+            eq(sqliteSchema.fotosPublicacion.orden, input.orden),
+            eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
+          ),
+        )
+        .get();
+
+      if (!photo) {
+        return null;
+      }
+
+      const photoCount = db
+        .select({ value: count() })
+        .from(sqliteSchema.fotosPublicacion)
+        .where(eq(sqliteSchema.fotosPublicacion.publicacionId, input.id))
+        .get();
+      const publicationDeleted = Number(photoCount?.value ?? 0) <= 1;
+
+      if (publicationDeleted) {
+        db.delete(sqliteSchema.publicaciones)
+          .where(
+            and(
+              eq(sqliteSchema.publicaciones.id, input.id),
+              eq(sqliteSchema.publicaciones.usuarioId, input.usuarioId),
+            ),
+          )
+          .run();
+      } else {
+        db.delete(sqliteSchema.fotosPublicacion)
+          .where(eq(sqliteSchema.fotosPublicacion.id, photo.id))
+          .run();
+      }
+
+      return { path: photo.rutaLocal, publicationDeleted };
+    });
+  }
+
+  return getPgDb().transaction(async (tx) => {
+    const [photo] = await tx
+      .select({
+        id: pgSchema.fotosPublicacion.id,
+        rutaLocal: pgSchema.fotosPublicacion.rutaLocal,
+      })
+      .from(pgSchema.fotosPublicacion)
+      .innerJoin(
+        pgSchema.publicaciones,
+        eq(pgSchema.fotosPublicacion.publicacionId, pgSchema.publicaciones.id),
+      )
+      .where(
+        and(
+          eq(pgSchema.fotosPublicacion.publicacionId, input.id),
+          eq(pgSchema.fotosPublicacion.orden, input.orden),
+          eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
+        ),
+      )
+      .limit(1);
+
+    if (!photo) {
+      return null;
+    }
+
+    const [photoCount] = await tx
+      .select({ value: count() })
+      .from(pgSchema.fotosPublicacion)
+      .where(eq(pgSchema.fotosPublicacion.publicacionId, input.id));
+    const publicationDeleted = Number(photoCount?.value ?? 0) <= 1;
+
+    if (publicationDeleted) {
+      await tx
+        .delete(pgSchema.publicaciones)
+        .where(
+          and(
+            eq(pgSchema.publicaciones.id, input.id),
+            eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
+          ),
+        );
+    } else {
+      await tx.delete(pgSchema.fotosPublicacion).where(eq(pgSchema.fotosPublicacion.id, photo.id));
+    }
+
+    return { path: photo.rutaLocal, publicationDeleted };
+  });
 }
 
 export async function updatePublication(input: {
@@ -390,4 +622,22 @@ export async function deletePublication(input: { id: number; usuarioId: number }
         eq(pgSchema.publicaciones.usuarioId, input.usuarioId),
       ),
     );
+}
+
+function attachPublicationPhotos(
+  publications: PublicationDatabaseRow[],
+  photos: PublicationPhotoRecord[],
+): PublicationListItem[] {
+  const photosByPublication = new Map<number, PublicationPhotoRecord[]>();
+
+  for (const photo of photos) {
+    const publicationPhotos = photosByPublication.get(photo.publicacionId) ?? [];
+    publicationPhotos.push(photo);
+    photosByPublication.set(photo.publicacionId, publicationPhotos);
+  }
+
+  return publications.map((publication) => ({
+    ...publication,
+    fotos: photosByPublication.get(publication.id) ?? [],
+  }));
 }

@@ -83,8 +83,56 @@ describe("AppShell gallery search", () => {
     expect(within(dialog).queryByRole("button", { name: "Borrar" })).toBeNull();
   });
 
+  it("renders every uploaded photo and navigates through the group", async () => {
+    mockAppShellFetch({ multiplePhotos: true });
+
+    render(<AppShell />);
+
+    const imageButtons = await screen.findAllByRole("button", { name: "Ver detalles de Portal azul" });
+    expect(imageButtons).toHaveLength(3);
+
+    fireEvent.click(imageButtons[1]);
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("2 de 3")).toBeDefined();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Foto anterior" }));
+    expect(within(dialog).getByText("1 de 3")).toBeDefined();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Foto siguiente" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Foto siguiente" }));
+    expect(within(dialog).getByText("3 de 3")).toBeDefined();
+    expect((within(dialog).getByRole("button", { name: "Foto siguiente" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("shows the group deletion confirmation for the last photo", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+
+    expect(
+      await screen.findByText("¿Desea eliminar esta imagen? Es la última del grupo, por lo que también se eliminará la publicación."),
+    ).toBeDefined();
+  });
+
+  it("confirms deleting only the current photo when a group has more images", async () => {
+    mockAppShellFetch({ multiplePhotos: true });
+
+    render(<AppShell />);
+
+    fireEvent.click((await screen.findAllByRole("button", { name: "Ver detalles de Portal azul" }))[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+
+    expect(
+      await screen.findByText("¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."),
+    ).toBeDefined();
+  });
+
   it("opens the login modal when an anonymous visitor clicks an image", async () => {
-    mockAppShellFetch(false);
+    mockAppShellFetch({ authenticated: false });
 
     render(<AppShell />);
 
@@ -94,7 +142,7 @@ describe("AppShell gallery search", () => {
   });
 });
 
-function mockAppShellFetch(authenticated = true) {
+function mockAppShellFetch({ authenticated = true, multiplePhotos = false } = {}) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
 
@@ -124,7 +172,13 @@ function mockAppShellFetch(authenticated = true) {
             creadoEn: "2026-07-01T10:00:00.000Z",
             isOwner: true,
             metadatos: { barrio: "Centro", color: "azul" },
-            fotos: [{ index: 1, url: "/foto-portal-azul.jpg" }],
+             fotos: multiplePhotos
+               ? [
+                   { id: 1, index: 1, url: "/foto-portal-azul-1.jpg" },
+                   { id: 3, index: 2, url: "/foto-portal-azul-2.jpg" },
+                   { id: 4, index: 3, url: "/foto-portal-azul-3.jpg" },
+                 ]
+               : [{ id: 1, index: 1, url: "/foto-portal-azul.jpg" }],
           },
           {
             id: 2,
@@ -136,7 +190,7 @@ function mockAppShellFetch(authenticated = true) {
             creadoEn: "2026-07-02T10:00:00.000Z",
             isOwner: false,
             metadatos: { barrio: "Cabanyal", color: "verde" },
-            fotos: [{ index: 1, url: "/foto-rosa-verde.jpg" }],
+            fotos: [{ id: 2, index: 1, url: "/foto-rosa-verde.jpg" }],
           },
         ],
       });

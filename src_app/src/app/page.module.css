@@ -628,6 +628,56 @@
   object-fit: contain;
 }
 
+.publicationPhotoArrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(255, 250, 240, 0.42);
+  border-radius: 50%;
+  background: rgba(6, 16, 35, 0.68);
+  color: #fffaf0;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.publicationPhotoArrow:hover,
+.publicationPhotoArrow:focus-visible {
+  background: rgba(6, 16, 35, 0.9);
+  outline: none;
+}
+
+.publicationPhotoArrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.previousPhotoArrow {
+  left: 16px;
+}
+
+.nextPhotoArrow {
+  right: 16px;
+}
+
+.publicationPhotoCounter {
+  position: absolute;
+  z-index: 2;
+  right: 50%;
+  bottom: 16px;
+  border: 1px solid rgba(255, 250, 240, 0.36);
+  border-radius: 999px;
+  background: rgba(6, 16, 35, 0.68);
+  color: #fffaf0;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 10px;
+  transform: translateX(50%);
+}
+
 .publicationPhotoThumbs {
   display: flex;
   gap: 8px;
@@ -726,6 +776,45 @@
 
 .publicationDetailActions .dangerButton {
   color: #b83232;
+}
+
+.confirmationModal {
+  display: grid;
+  gap: 18px;
+  max-width: 700px;
+  padding: 24px 0 8px;
+}
+
+.confirmationModal h2 {
+  font-size: clamp(28px, 5vw, 52px);
+  line-height: 1.02;
+}
+
+.confirmationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.confirmationActions button {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--tile);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  padding: 0 18px;
+}
+
+.confirmationActions .dangerButton {
+  color: #b83232;
+}
+
+.confirmationActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 @media (max-width: 860px) {
