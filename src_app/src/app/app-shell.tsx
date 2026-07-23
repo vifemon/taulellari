@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, UserRound, UsersRound } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -34,6 +34,7 @@ type Publication = {
 };
 
 type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
+type GalleryScope = "all" | "mine";
 
 export function AppShell() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -43,10 +44,14 @@ export function AppShell() {
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [galleryQuery, setGalleryQuery] = useState("");
+  const [galleryScope, setGalleryScope] = useState<GalleryScope>("all");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
+  const visiblePublications = galleryScope === "mine"
+    ? filteredPublications.filter((publication) => publication.isOwner)
+    : filteredPublications;
 
   useEffect(() => {
     refreshSession();
@@ -144,6 +149,7 @@ export function AppShell() {
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setGalleryScope("all");
     closeModal();
     await refreshGallery();
   }
@@ -197,10 +203,12 @@ export function AppShell() {
         <section className={styles.galleryIntro}>
           <span className={styles.kicker}>Galeria publica</span>
           <h2>Fotos abiertas. Datos sensibles bajo sesion.</h2>
-          <p>
-            Cualquier visitante puede ver las imagenes. Las descripciones,
-            coordenadas y acciones de edicion aparecen solo al iniciar sesion.
-          </p>
+          <GalleryScopeToggle
+            isAuthenticated={Boolean(user)}
+            onLogin={() => setModal("login")}
+            onScopeChange={setGalleryScope}
+            scope={galleryScope}
+          />
         </section>
         <GallerySearch
           onChange={setGalleryQuery}
@@ -209,7 +217,7 @@ export function AppShell() {
         <PublicationGallery
           hasSearch={deferredGalleryQuery.trim().length > 0}
           onOpen={openPublication}
-          publications={filteredPublications}
+          publications={visiblePublications}
         />
       </main>
 
@@ -342,6 +350,7 @@ export function AppShell() {
               onDeleteAccount={async () => {
                 await fetch("/api/users/me", { method: "DELETE" });
                 setUser(null);
+                setGalleryScope("all");
                 closeModal();
                 await refreshGallery();
               }}
@@ -393,6 +402,40 @@ function GallerySearch({
         value={query}
       />
     </section>
+  );
+}
+
+function GalleryScopeToggle({
+  isAuthenticated,
+  onLogin,
+  onScopeChange,
+  scope,
+}: {
+  isAuthenticated: boolean;
+  onLogin: () => void;
+  onScopeChange: (scope: GalleryScope) => void;
+  scope: GalleryScope;
+}) {
+  return (
+    <div className={styles.galleryScopeToggle} role="group" aria-label="Alcance de la galeria">
+      <button
+        aria-pressed={scope === "all"}
+        onClick={() => onScopeChange("all")}
+        type="button"
+      >
+        <UsersRound aria-hidden="true" size={18} strokeWidth={2.2} />
+        Todas las publicaciones
+      </button>
+      <button
+        aria-label={isAuthenticated ? "Mis publicaciones" : "Mis publicaciones, iniciar sesion"}
+        aria-pressed={scope === "mine"}
+        onClick={() => (isAuthenticated ? onScopeChange("mine") : onLogin())}
+        type="button"
+      >
+        <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
+        Mis publicaciones
+      </button>
+    </div>
   );
 }
 

@@ -109,6 +109,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
 - **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural.
+- **Alcance de galeria:** el toggle permite mostrar todas las publicaciones o filtrar solo las del usuario autenticado; por defecto muestra todas.
 - **Detalle de fotos multiples:** el modal conserva miniaturas y añade flechas no circulares para navegar por las fotos del mismo grupo, comenzando por la imagen seleccionada.
 - **Borrado de fotos:** se elimina solo la foto actual con confirmacion; si era la ultima, tambien se elimina la publicacion y sus metadatos.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.

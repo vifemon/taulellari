@@ -42,6 +42,26 @@ describe("AppShell gallery search", () => {
     expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining("/api/addresses"), expect.anything());
   });
 
+  it("switches between all publications and the current user's publications", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    expect(await screen.findByText("Portal azul")).toBeDefined();
+    expect(screen.getByText("Rosa verde")).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mis publicaciones" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Portal azul")).toBeDefined();
+      expect(screen.queryByText("Rosa verde")).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Todas las publicaciones" }));
+
+    expect(await screen.findByText("Rosa verde")).toBeDefined();
+  });
+
   it("shows an empty search state when no images match", async () => {
     mockAppShellFetch();
 
@@ -137,6 +157,16 @@ describe("AppShell gallery search", () => {
     render(<AppShell />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+
+    expect(await screen.findByRole("heading", { name: "Entra al archivo." })).toBeDefined();
+  });
+
+  it("opens the login modal when an anonymous visitor selects own publications", async () => {
+    mockAppShellFetch({ authenticated: false });
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Mis publicaciones, iniciar sesion" }));
 
     expect(await screen.findByRole("heading", { name: "Entra al archivo." })).toBeDefined();
   });
