@@ -39,9 +39,10 @@ Estado: en curso.
 - [x] **Imagen de fondo y acciones del HERO:** eliminar el decorativo `::after`, usar una imagen real de fondo en `heroScreen` y destacar las acciones principales de ver galeria y subir imagen.
 - [x] **Fotos multiples:** guardar cualquier numero de imagenes por publicacion, mostrar cada foto en la galeria y navegar por el grupo con miniaturas y flechas no circulares.
 - [x] **Borrado individual:** confirmar el borrado de la foto actual y eliminar el grupo cuando se borra su ultima imagen.
-- [x] **Galeria masonry:** presentar las fotos en columnas responsive tipo Pinterest manteniendo la proporcion natural de cada imagen.
+- [x] **Galeria masonry:** presentar las fotos en columnas responsive tipo Pinterest manteniendo la proporcion natural, con dos columnas tambien en mobile.
 - [x] **Filtro de galeria:** añadir toggle con iconos Lucide para alternar entre todas las publicaciones y las del usuario autenticado.
 - [x] **Modales responsive:** sustituir el cierre textual por `X` y corregir el acceso al contenido del detalle en tablet y movil.
+- [x] **Hero responsive:** apilar y centrar las acciones en tablet y ampliar verticalmente el contenedor en pantallas pequeñas.
 - [x] **Etiquetas de direcciones:** evitar la duplicacion de codigo postal, municipio, provincia y pais en las sugerencias y valores guardados.
 
 ## Fase 2: Contenerizacion Y Despliegue
