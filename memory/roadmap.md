@@ -44,6 +44,7 @@ Estado: en curso.
 - [x] **Modales responsive:** sustituir el cierre textual por `X` y corregir el acceso al contenido del detalle en tablet y movil.
 - [x] **Hero responsive:** apilar y centrar las acciones en tablet y ampliar verticalmente el contenedor en pantallas pequeñas.
 - [x] **Iconos de tema:** sustituir el texto del selector claro/oscuro por los iconos Lucide `Sun` y `Moon`.
+- [x] **Alineacion de acciones:** centrar los iconos `Sun`, `Moon` y `Plus` dentro de sus contenedores.
 - [x] **Etiquetas de direcciones:** evitar la duplicacion de codigo postal, municipio, provincia y pais en las sugerencias y valores guardados.
 
 ## Fase 2: Contenerizacion Y Despliegue

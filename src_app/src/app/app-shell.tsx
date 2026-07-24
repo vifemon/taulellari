@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Moon, Sun, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Moon, Plus, Sun, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -180,7 +180,7 @@ export function AppShell() {
             </button>
           )}
           <button className={styles.plusButton} onClick={() => setModal(user ? "upload" : "login")} type="button">
-            +
+            <Plus aria-hidden="true" size={25} strokeWidth={2.4} />
           </button>
         </div>
       </nav>
@@ -194,7 +194,7 @@ export function AppShell() {
               Ver galeria
             </a>
             <button className={styles.heroUploadAction} onClick={() => setModal(user ? "upload" : "login")} type="button">
-              <span>+</span>
+              <span aria-hidden="true"><Plus size={24} strokeWidth={2.4} /></span>
               Subir imagen
             </button>
           </div>
