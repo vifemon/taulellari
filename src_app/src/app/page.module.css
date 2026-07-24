@@ -526,7 +526,7 @@
   border-radius: 34px;
   background: var(--bg);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.36);
-  padding: clamp(22px, 4vw, 36px);
+  padding: clamp(72px, 8vw, 92px) clamp(22px, 4vw, 36px) clamp(22px, 4vw, 36px);
 }
 
 .detailModal {
@@ -647,21 +647,181 @@
 
 .profileLayout {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(20px, 4vw, 42px);
+}
+
+.profilePanel {
+  display: grid;
+  align-content: start;
   gap: 24px;
+}
+
+.profileIdentity {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--blue) 14%, transparent), transparent 62%),
+    var(--tile);
+  padding: 20px;
+  text-align: center;
+}
+
+.profileAvatar {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--blue-deep);
+  color: var(--white);
+  font-family: var(--font-geist-mono);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+}
+
+.profileIdentity h2 {
+  color: var(--ink);
+  font-size: clamp(26px, 3vw, 40px);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.profileIdentity p,
+.profileArchiveHeader > span:last-child,
+.profileEmpty {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.profileForm {
+  gap: 12px;
+}
+
+.profileForm label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.profileForm input {
+  font-size: 18px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.profileSecondaryActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profileSecondaryActions button {
+  min-height: 50px;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  padding: 0 14px;
+}
+
+.profileLogoutButton {
+  border: 1px solid var(--line);
+  background: var(--tile);
+  color: var(--ink);
+}
+
+.profileSecondaryActions .dangerButton {
+  border: 1px solid #b83232;
+  background: #b83232;
+  color: #fffaf0;
+}
+
+.profileArchive {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.profileArchiveHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profileArchiveHeader .kicker {
+  flex: 0 0 auto;
 }
 
 .profileGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-content: start;
-  gap: 6px;
+  gap: 8px;
 }
 
 .profileThumb {
+  position: relative;
   aspect-ratio: 1;
   overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--tile);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.profileThumb:hover {
+  box-shadow: 0 12px 28px rgba(6, 16, 35, 0.2);
+  transform: translateY(-2px);
+}
+
+.profileThumbDelete {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(255, 250, 240, 0.45);
   border-radius: 12px;
+  background: rgba(184, 50, 50, 0.92);
+  color: #fffaf0;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.profileThumb:hover .profileThumbDelete,
+.profileThumb:focus-within .profileThumbDelete {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.profileThumbDelete:hover,
+.profileThumbDelete:focus-visible {
+  background: #982525;
+  outline: 2px solid var(--white);
+  outline-offset: 1px;
+}
+
+.profileEmpty {
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  padding: 24px;
 }
 
 .publicationDetail {

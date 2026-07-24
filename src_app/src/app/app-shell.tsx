@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Moon, Plus, Sun, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -35,6 +35,7 @@ type Publication = {
 
 type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
 type GalleryScope = "all" | "mine";
+type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -43,6 +44,7 @@ export function AppShell() {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+  const [photoConfirmationOrigin, setPhotoConfirmationOrigin] = useState<PhotoConfirmationOrigin>("detail");
   const [galleryQuery, setGalleryQuery] = useState("");
   const [galleryScope, setGalleryScope] = useState<GalleryScope>("all");
   const [message, setMessage] = useState("");
@@ -124,12 +126,20 @@ export function AppShell() {
 
     if (!response.ok) {
       setMessage(data.error ?? "No se pudo borrar la imagen");
-      setModal("detail");
+      setModal(photoConfirmationOrigin);
+      return;
+    }
+
+    const refreshedPublications = await refreshGallery();
+
+    if (photoConfirmationOrigin === "profile") {
+      setSelectedPublication(null);
+      setSelectedPhotoIndex(null);
+      setModal("profile");
       return;
     }
 
     const currentPhotoPosition = publication.fotos.findIndex((photo) => photo.index === photoIndex);
-    const refreshedPublications = await refreshGallery();
     const refreshedPublication = refreshedPublications.find(({ id }) => id === publication.id);
 
     if (!refreshedPublication || refreshedPublication.fotos.length === 0) {
@@ -226,7 +236,7 @@ export function AppShell() {
       {modal ? (
         <ModalShell
           className={modal === "detail" ? styles.detailModal : undefined}
-          onClose={modal === "photo-confirm" ? () => setModal("detail") : closeModal}
+          onClose={modal === "photo-confirm" ? () => setModal(photoConfirmationOrigin) : closeModal}
         >
           {modal === "login" ? (
             <LoginModal
@@ -306,6 +316,7 @@ export function AppShell() {
               isSubmitting={isSubmitting}
               onDeleteRequest={(photoIndex) => {
                 setSelectedPhotoIndex(photoIndex);
+                setPhotoConfirmationOrigin("detail");
                 setModal("photo-confirm");
               }}
               onEdit={() => setModal("edit")}
@@ -316,7 +327,7 @@ export function AppShell() {
             <DeletePhotoConfirmation
               isLastPhoto={selectedPublication.fotos.length === 1}
               isSubmitting={isSubmitting}
-              onCancel={() => setModal("detail")}
+              onCancel={() => setModal(photoConfirmationOrigin)}
               onConfirm={() => deletePhoto(selectedPublication, selectedPhotoIndex)}
             />
           ) : null}
@@ -357,6 +368,12 @@ export function AppShell() {
                 await refreshGallery();
               }}
               onLogout={logout}
+              onDeletePhoto={(publication, photoIndex) => {
+                setSelectedPublication(publication);
+                setSelectedPhotoIndex(photoIndex);
+                setPhotoConfirmationOrigin("profile");
+                setModal("photo-confirm");
+              }}
               onSubmit={async (payload) => {
                 setIsSubmitting(true);
                 const response = await fetch("/api/users/me", {
@@ -768,6 +785,7 @@ function ProfileModal({
   isSubmitting,
   message,
   onDeleteAccount,
+  onDeletePhoto,
   onLogout,
   onSubmit,
   publications,
@@ -776,6 +794,7 @@ function ProfileModal({
   isSubmitting: boolean;
   message: string;
   onDeleteAccount: () => Promise<void>;
+  onDeletePhoto: (publication: Publication, photoIndex: number) => void;
   onLogout: () => Promise<void>;
   onSubmit: (payload: { email: string; nombre: string; apellidos: string; password?: string }) => Promise<void>;
   publications: Publication[];
@@ -785,28 +804,71 @@ function ProfileModal({
   const [nombre, setNombre] = useState(user.nombre);
   const [apellidos, setApellidos] = useState(user.apellidos);
   const [password, setPassword] = useState("");
+  const photoCount = publications.reduce((count, publication) => count + publication.fotos.length, 0);
+  const initials = `${user.nombre[0] ?? ""}${user.apellidos[0] ?? ""}`.toUpperCase();
 
   return (
     <div className={styles.profileLayout}>
-      <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password: password || undefined }))}>
-        <span className={styles.kicker}>Perfil</span>
-        <h2>{user.nombre} {user.apellidos}</h2>
-        <input onChange={(event) => setNombre(event.target.value)} value={nombre} />
-        <input onChange={(event) => setApellidos(event.target.value)} value={apellidos} />
-        <input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
-        <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Nueva contraseña opcional" type="password" value={password} />
-        <button disabled={isSubmitting} type="submit">Guardar perfil</button>
-        <button className={styles.textButton} onClick={onLogout} type="button">Cerrar sesion</button>
-        <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Borrar usuario</button>
-        {message ? <p className={styles.modalStatus}>{message}</p> : null}
-      </form>
-      <div className={styles.profileGrid}>
-        {publications.map((publication) => (
-          <div className={styles.profileThumb} key={publication.id}>
-            {publication.fotos[0] ? <Image alt={publication.titulo ?? "Foto"} fill src={publication.fotos[0].url} unoptimized /> : null}
+      <section className={styles.profilePanel}>
+        <div className={styles.profileIdentity}>
+          <span className={styles.profileAvatar} aria-hidden="true">{initials}</span>
+          <div>
+            <h2>{user.nombre} {user.apellidos}</h2>
+            <p>{user.email}</p>
           </div>
-        ))}
-      </div>
+        </div>
+        <form className={`${styles.modalForm} ${styles.profileForm}`} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password: password || undefined }))}>
+          <label>
+            Nombre
+            <input onChange={(event) => setNombre(event.target.value)} value={nombre} />
+          </label>
+          <label>
+            Apellidos
+            <input onChange={(event) => setApellidos(event.target.value)} value={apellidos} />
+          </label>
+          <label>
+            Email
+            <input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
+          </label>
+          <label>
+            Contraseña
+            <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Nueva contraseña opcional" type="password" value={password} />
+          </label>
+          <button disabled={isSubmitting} type="submit">Guardar perfil</button>
+          <div className={styles.profileSecondaryActions}>
+            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">Cerrar sesion</button>
+            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Borrar usuario</button>
+          </div>
+          {message ? <p className={styles.modalStatus}>{message}</p> : null}
+        </form>
+      </section>
+      <section className={styles.profileArchive} aria-label="Archivo fotografico personal">
+        <div className={styles.profileArchiveHeader}>
+          <span className={styles.kicker}>Archivo personal</span>
+          <span>{photoCount} {photoCount === 1 ? "imagen" : "imagenes"}</span>
+        </div>
+        {photoCount > 0 ? (
+          <div className={styles.profileGrid}>
+            {publications.flatMap((publication) =>
+              publication.fotos.map((photo, index) => (
+                <div className={styles.profileThumb} key={photo.id}>
+                  <Image alt={`${publication.titulo ?? "Foto"}, foto ${index + 1}`} fill src={photo.url} unoptimized />
+                  <button
+                    aria-label={`Borrar ${publication.titulo ?? "foto"}, foto ${index + 1}`}
+                    className={styles.profileThumbDelete}
+                    onClick={() => onDeletePhoto(publication, photo.index)}
+                    type="button"
+                  >
+                    <Trash2 aria-hidden="true" size={16} strokeWidth={2.4} />
+                  </button>
+                </div>
+              )),
+            )}
+          </div>
+        ) : (
+          <p className={styles.profileEmpty}>Todavia no has archivado ninguna imagen.</p>
+        )}
+      </section>
     </div>
   );
 }

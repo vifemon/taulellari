@@ -62,6 +62,32 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Rosa verde")).toBeDefined();
   });
 
+  it("shows every photo from the user's publication in the profile grid", async () => {
+    mockAppShellFetch({ multiplePhotos: true });
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ana" }));
+
+    expect(await screen.findAllByAltText(/Portal azul, foto/)).toHaveLength(3);
+  });
+
+  it("confirms deleting a profile thumbnail without leaving the profile flow", async () => {
+    mockAppShellFetch({ multiplePhotos: true });
+
+    render(<AppShell />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Borrar Portal azul, foto 1" }));
+
+    expect(
+      await screen.findByText("¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."),
+    ).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(await screen.findByText("Archivo personal")).toBeDefined();
+  });
+
   it("shows an empty search state when no images match", async () => {
     mockAppShellFetch();
 
