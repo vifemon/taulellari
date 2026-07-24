@@ -412,8 +412,8 @@ function GallerySearch({
 }) {
   return (
     <section className={styles.gallerySearch} aria-label="Buscar en la galeria">
-      <label htmlFor="gallery-search">Buscar en la galeria</label>
       <input
+        aria-label="Buscar en la galeria"
         id="gallery-search"
         onChange={(event) => onChange(event.target.value)}
         placeholder="Busca por titulo, descripcion o metadatos"
