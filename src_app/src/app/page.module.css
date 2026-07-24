@@ -840,9 +840,8 @@
   position: relative;
   min-height: min(68vh, 620px);
   overflow: hidden;
-  border: 1px solid var(--line);
   border-radius: 24px;
-  background: color-mix(in srgb, var(--blue) 9%, var(--tile));
+  background: transparent;
 }
 
 .publicationDetailImage img {
