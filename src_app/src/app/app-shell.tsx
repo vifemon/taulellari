@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Upload, UserRound, UsersRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -501,8 +501,8 @@ function ModalShell({
   return (
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
       <div className={`${styles.modalCard} ${className ?? ""}`}>
-        <button className={styles.closeButton} onClick={onClose} type="button">
-          Cerrar
+        <button aria-label="Cerrar" className={styles.closeButton} onClick={onClose} type="button">
+          <X aria-hidden="true" size={20} strokeWidth={2.4} />
         </button>
         {children}
       </div>

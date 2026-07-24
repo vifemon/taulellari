@@ -523,12 +523,19 @@
 
 .detailModal {
   width: min(100%, 1100px);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
 }
 
 .closeButton {
   position: absolute;
   top: 18px;
   right: 18px;
+  z-index: 5;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--tile);
@@ -536,7 +543,7 @@
   cursor: pointer;
   font: inherit;
   font-weight: 800;
-  padding: 8px 12px;
+  padding: 0;
 }
 
 .modalForm {
@@ -756,7 +763,9 @@
 .publicationDetailInfo {
   display: grid;
   gap: 16px;
+  min-width: 0;
   padding-top: 12px;
+  padding-right: 58px;
 }
 
 .publicationDetailInfo h2 {
@@ -905,6 +914,11 @@
 
   .publicationDetailInfo {
     padding-top: 0;
+    padding-right: 0;
+  }
+
+  .detailModal {
+    max-height: calc(100dvh - 20px);
   }
 }
 
