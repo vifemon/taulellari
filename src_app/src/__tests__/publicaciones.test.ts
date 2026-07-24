@@ -112,7 +112,7 @@ describe("Mapbox parsing", () => {
             id: "address.1",
             geometry: { coordinates: [-0.3768, 39.4743] },
             properties: {
-              full_address: "Carrer de la Pau 1",
+              full_address: "Carrer de la Pau 1, 46003 Valencia, Valencia, Espana",
               mapbox_id: "mapbox-address-1",
               place_formatted: "Valencia, Valencia, Espana",
             },
@@ -122,7 +122,7 @@ describe("Mapbox parsing", () => {
     ).toEqual([
       {
         id: "mapbox-address-1",
-        label: "Carrer de la Pau 1, Valencia, Valencia, Espana",
+        label: "Carrer de la Pau 1, 46003 Valencia, Valencia, Espana",
         latitude: 39.4743,
         longitude: -0.3768,
       },
@@ -149,5 +149,23 @@ describe("publication photos", () => {
     expect(getPhotoContentType("/data/photo.unknown")).toBe(
       "application/octet-stream",
     );
+  });
+
+  it("falls back to combining name and place when full address is unavailable", () => {
+    const suggestions = parseMapboxSuggestions({
+      features: [
+        {
+          id: "address.2",
+          geometry: { coordinates: [-0.3768, 39.4743] },
+          properties: {
+            mapbox_id: "mapbox-address-2",
+            name: "Carrer de la Pau 1",
+            place_formatted: "Valencia, Valencia, Espana",
+          },
+        },
+      ],
+    });
+
+    expect(suggestions[0]?.label).toBe("Carrer de la Pau 1, Valencia, Valencia, Espana");
   });
 });

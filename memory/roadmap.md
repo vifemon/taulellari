@@ -42,6 +42,7 @@ Estado: en curso.
 - [x] **Galeria masonry:** presentar las fotos en columnas responsive tipo Pinterest manteniendo la proporcion natural de cada imagen.
 - [x] **Filtro de galeria:** añadir toggle con iconos Lucide para alternar entre todas las publicaciones y las del usuario autenticado.
 - [x] **Modales responsive:** sustituir el cierre textual por `X` y corregir el acceso al contenido del detalle en tablet y movil.
+- [x] **Etiquetas de direcciones:** evitar la duplicacion de codigo postal, municipio, provincia y pais en las sugerencias y valores guardados.
 
 ## Fase 2: Contenerizacion Y Despliegue
 

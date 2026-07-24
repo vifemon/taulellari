@@ -83,9 +83,10 @@ function parseMapboxFeature(feature: MapboxFeature): AddressSuggestion | null {
     return null;
   }
 
-  const name = toText(feature.properties?.full_address) ?? toText(feature.properties?.name);
+  const fullAddress = toText(feature.properties?.full_address);
+  const name = toText(feature.properties?.name);
   const place = toText(feature.properties?.place_formatted);
-  const label = [name, place].filter(Boolean).join(", ");
+  const label = fullAddress ?? [name, place].filter(Boolean).join(", ");
 
   if (!label) {
     return null;

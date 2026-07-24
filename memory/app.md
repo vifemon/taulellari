@@ -89,6 +89,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Configuracion:** el token de Mapbox se cargara desde `MAPBOX_ACCESS_TOKEN` y no debe versionarse en el repositorio.
 - **Precision:** el buscador debe permitir filtrar y autocompletar calles e incluir numeros de portal especificos para seleccionar domicilios exactos.
 - **Comportamiento UI:** el buscador debe sugerir direcciones desde la primera letra de forma fluida en una lista flotante debajo del input.
+- **Etiquetas Mapbox:** se usa `full_address` como etiqueta completa cuando existe, evitando repetir codigo postal, municipio, provincia y pais al concatenar `place_formatted`.
 - **Acceso al buscador:** `/api/addresses` es publico para que el HERO pueda mostrar sugerencias a visitantes, manteniendo el token de Mapbox solo en servidor.
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 - **Formulario de subida:** el selector de direccion evita reabrir sugerencias tras una seleccion valida y su desplegable usa la altura visible disponible antes de activar scroll interno.
