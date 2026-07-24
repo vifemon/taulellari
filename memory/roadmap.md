@@ -43,6 +43,7 @@ Estado: en curso.
 - [x] **Filtro de galeria:** añadir toggle con iconos Lucide para alternar entre todas las publicaciones y las del usuario autenticado.
 - [x] **Modales responsive:** sustituir el cierre textual por `X` y corregir el acceso al contenido del detalle en tablet y movil.
 - [x] **Hero responsive:** apilar y centrar las acciones en tablet y ampliar verticalmente el contenedor en pantallas pequeñas.
+- [x] **Iconos de tema:** sustituir el texto del selector claro/oscuro por los iconos Lucide `Sun` y `Moon`.
 - [x] **Etiquetas de direcciones:** evitar la duplicacion de codigo postal, municipio, provincia y pais en las sugerencias y valores guardados.
 
 ## Fase 2: Contenerizacion Y Despliegue

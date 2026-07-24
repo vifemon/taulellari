@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Moon, Sun, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -162,11 +162,13 @@ export function AppShell() {
         </a>
         <div className={styles.navActions}>
           <button
+            aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
             className={styles.iconButton}
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
             type="button"
           >
-            {theme === "light" ? "Negro" : "Blanco"}
+            {theme === "light" ? <Sun aria-hidden="true" size={20} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={20} strokeWidth={2.2} />}
           </button>
           {user ? (
             <button className={styles.navButton} onClick={() => setModal("profile")} type="button">
