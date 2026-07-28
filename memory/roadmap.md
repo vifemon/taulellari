@@ -52,7 +52,13 @@ Estado: completada y mergeada en `develop`.
 
 Estado: en curso sobre `feature/fase-1.7-mapa-openlayers`.
 
-- [ ] **Visualizacion cartografica:** integrar OpenLayers para mostrar un mapa interactivo con las publicaciones geolocalizadas.
+- **Biblioteca:** OpenLayers (`ol`).
+- **Centro inicial:** Comunitat Valenciana.
+- **Clusterizacion obligatoria:** usar `ol/source/Cluster` para agrupar puntos que no puedan distinguirse por el nivel de zoom. Las publicaciones con la misma coordenada exacta deben mantenerse agrupadas siempre e indicar el numero total de imagenes de esa ubicacion.
+- **Marcadores:** los puntos individuales mostraran una miniatura de la foto principal dentro de un marco personalizado con la paleta de la aplicacion; los clusters se representaran con un circulo estilizado y su contador.
+- [x] **Paso 1. Selector de vista:** instalado `ol` y anadido, junto al selector de "Mis publicaciones / Todas las publicaciones", un selector para alternar entre "Vista Galeria" y "Vista Mapa" con los iconos `Images` y `Map` de `lucide-react`. Al elegir mapa se renderiza inicialmente un contenedor vacio preparado para OpenLayers.
+- [ ] **Paso 2. Carga de datos, centrado y clusterizacion:** centrar el mapa en la Comunitat Valenciana, cargar las publicaciones geolocalizadas desde la API y renderizar marcadores individuales o clusters segun proximidad y coordenadas identicas.
+- [ ] **Paso 3. Reactividad, filtros y modal:** sincronizar los marcadores con la busqueda y el filtro de publicaciones. El clic en un marcador individual abrira el modal de detalle existente; el clic en un cluster de coordenadas distintas aplicara zoom progresivo sobre su zona.
 
 ## Fase 1.8: Correcciones
 
@@ -82,12 +88,12 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico es desarrollar la **Fase 1.7: Implementacion de funcionalidad de mapa con OpenLayers**, integrando la visualizacion cartografica de las publicaciones de forma iterativa.
+El siguiente paso tecnico es el **Paso 1 de la Fase 1.7**: instalar `ol` y crear el selector de vista Galeria / Mapa con los iconos de Lucide, renderizando el contenedor vacio del mapa.
 
 ## Ultimo Estado Git
 
 - Rama actual antes de iniciar la Fase 1.7: `develop`.
 - `develop` mergeada con `feature/fase-1.6-refinamiento-ajustes` mediante fast-forward.
 - Commit principal: `403c85d style: simplify gallery search`.
-- `develop` tiene los cambios de la Fase 1.6 pendientes de push a `origin/develop`.
+- `develop` contiene y tiene publicados en `origin/develop` los cambios de la Fase 1.6.
 - Rama actual para la Fase 1.7: `feature/fase-1.7-mapa-openlayers`.

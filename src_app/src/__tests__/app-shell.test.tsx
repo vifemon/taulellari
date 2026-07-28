@@ -62,6 +62,22 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Rosa verde")).toBeDefined();
   });
 
+  it("switches between gallery and map views", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    expect(await screen.findByText("Portal azul")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
+
+    expect(screen.getByRole("region", { name: "Mapa de publicaciones" })).toBeDefined();
+    expect(screen.queryByText("Portal azul")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Vista Galeria" }));
+
+    expect(await screen.findByText("Portal azul")).toBeDefined();
+  });
+
   it("shows every photo from the user's publication in the profile grid", async () => {
     mockAppShellFetch({ multiplePhotos: true });
 

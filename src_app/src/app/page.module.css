@@ -346,7 +346,15 @@
   line-height: 1.6;
 }
 
-.galleryScopeToggle {
+.galleryControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.galleryScopeToggle,
+.galleryViewToggle {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -357,7 +365,8 @@
   padding: 4px;
 }
 
-.galleryScopeToggle button {
+.galleryScopeToggle button,
+.galleryViewToggle button {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -375,16 +384,31 @@
 }
 
 .galleryScopeToggle button:hover,
-.galleryScopeToggle button:focus-visible {
+.galleryScopeToggle button:focus-visible,
+.galleryViewToggle button:hover,
+.galleryViewToggle button:focus-visible {
   color: var(--ink);
   outline: none;
   transform: translateY(-1px);
 }
 
-.galleryScopeToggle button[aria-pressed="true"] {
+.galleryScopeToggle button[aria-pressed="true"],
+.galleryViewToggle button[aria-pressed="true"] {
   background: var(--blue-deep);
   color: var(--white);
   box-shadow: 0 8px 20px rgba(6, 16, 35, 0.18);
+}
+
+.mapViewport {
+  min-height: clamp(420px, 65vh, 720px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background:
+    linear-gradient(45deg, color-mix(in srgb, var(--blue) 6%, transparent) 25%, transparent 25%) 0 0 / 28px 28px,
+    linear-gradient(-45deg, color-mix(in srgb, var(--blue) 6%, transparent) 25%, transparent 25%) 0 0 / 28px 28px,
+    var(--tile);
+  box-shadow: 0 20px 70px rgba(6, 16, 35, 0.12);
 }
 
 .gallerySearch {

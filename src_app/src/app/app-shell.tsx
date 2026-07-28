@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Images, Map, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -35,6 +35,7 @@ type Publication = {
 
 type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
 type GalleryScope = "all" | "mine";
+type GalleryView = "gallery" | "map";
 type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
@@ -47,6 +48,7 @@ export function AppShell() {
   const [photoConfirmationOrigin, setPhotoConfirmationOrigin] = useState<PhotoConfirmationOrigin>("detail");
   const [galleryQuery, setGalleryQuery] = useState("");
   const [galleryScope, setGalleryScope] = useState<GalleryScope>("all");
+  const [galleryView, setGalleryView] = useState<GalleryView>("gallery");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
@@ -215,22 +217,29 @@ export function AppShell() {
         <section className={styles.galleryIntro}>
           <span className={styles.kicker}>Galeria publica</span>
           <h2>Fotos abiertas. Datos sensibles bajo sesion.</h2>
-          <GalleryScopeToggle
-            isAuthenticated={Boolean(user)}
-            onLogin={() => setModal("login")}
-            onScopeChange={setGalleryScope}
-            scope={galleryScope}
-          />
+          <div className={styles.galleryControls}>
+            <GalleryScopeToggle
+              isAuthenticated={Boolean(user)}
+              onLogin={() => setModal("login")}
+              onScopeChange={setGalleryScope}
+              scope={galleryScope}
+            />
+            <GalleryViewToggle onViewChange={setGalleryView} view={galleryView} />
+          </div>
         </section>
         <GallerySearch
           onChange={setGalleryQuery}
           query={galleryQuery}
         />
-        <PublicationGallery
-          hasSearch={deferredGalleryQuery.trim().length > 0}
-          onOpen={openPublication}
-          publications={visiblePublications}
-        />
+        {galleryView === "gallery" ? (
+          <PublicationGallery
+            hasSearch={deferredGalleryQuery.trim().length > 0}
+            onOpen={openPublication}
+            publications={visiblePublications}
+          />
+        ) : (
+          <section aria-label="Mapa de publicaciones" className={styles.mapViewport} />
+        )}
       </main>
 
       {modal ? (
@@ -453,6 +462,35 @@ function GalleryScopeToggle({
       >
         <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
         Mis publicaciones
+      </button>
+    </div>
+  );
+}
+
+function GalleryViewToggle({
+  onViewChange,
+  view,
+}: {
+  onViewChange: (view: GalleryView) => void;
+  view: GalleryView;
+}) {
+  return (
+    <div className={styles.galleryViewToggle} role="group" aria-label="Vista de publicaciones">
+      <button
+        aria-pressed={view === "gallery"}
+        onClick={() => onViewChange("gallery")}
+        type="button"
+      >
+        <Images aria-hidden="true" size={18} strokeWidth={2.2} />
+        Vista Galeria
+      </button>
+      <button
+        aria-pressed={view === "map"}
+        onClick={() => onViewChange("map")}
+        type="button"
+      >
+        <Map aria-hidden="true" size={18} strokeWidth={2.2} />
+        Vista Mapa
       </button>
     </div>
   );
