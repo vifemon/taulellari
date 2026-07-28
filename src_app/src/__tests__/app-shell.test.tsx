@@ -11,8 +11,26 @@ vi.mock("next/image", () => ({
 }));
 
 vi.mock("next/dynamic", () => ({
-  default: () => ({ theme }: { theme: "light" | "dark" }) => (
-    <section aria-label="Mapa de publicaciones" data-theme={theme} />
+  default: () => ({
+    onPublicationOpen,
+    publications,
+    theme,
+  }: {
+    onPublicationOpen: (publicationId: number) => void;
+    publications: { id: number }[];
+    theme: "light" | "dark";
+  }) => (
+    <section
+      aria-label="Mapa de publicaciones"
+      data-publication-ids={publications.map(({ id }) => id).join(",")}
+      data-theme={theme}
+    >
+      {publications[0] ? (
+        <button onClick={() => onPublicationOpen(publications[0].id)} type="button">
+          Abrir primer marcador
+        </button>
+      ) : null}
+    </section>
   ),
 }));
 
@@ -86,6 +104,37 @@ describe("AppShell gallery search", () => {
     fireEvent.click(screen.getByRole("button", { name: "Vista Galeria" }));
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
+  });
+
+  it("keeps map markers in sync with the search, scope, and detail modal", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    expect(await screen.findByText("Portal azul")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
+
+    const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
+    expect(map.getAttribute("data-publication-ids")).toBe("1,2");
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar en la galeria" }), {
+      target: { value: "cabanyal" },
+    });
+    await waitFor(() => {
+      expect(map.getAttribute("data-publication-ids")).toBe("2");
+    });
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar en la galeria" }), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Mis publicaciones" }));
+    await waitFor(() => {
+      expect(map.getAttribute("data-publication-ids")).toBe("1");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir primer marcador" }));
+    expect(await screen.findByText("Ficha de la pieza")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Portal azul" })).toBeDefined();
   });
 
   it("shows every photo from the user's publication in the profile grid", async () => {

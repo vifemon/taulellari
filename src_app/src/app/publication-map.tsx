@@ -1,8 +1,10 @@
 "use client";
 
 import Feature, { type FeatureLike } from "ol/Feature";
+import { LocateFixed } from "lucide-react";
 import OlMap from "ol/Map";
 import View from "ol/View";
+import Control from "ol/control/Control";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import Point from "ol/geom/Point";
@@ -12,10 +14,12 @@ import VectorSource from "ol/source/Vector";
 import XYZ from "ol/source/XYZ";
 import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from "ol/style";
 import { useEffect, useRef } from "react";
+import { createRoot } from "react-dom/client";
 
 import styles from "./page.module.css";
 
 const VALENCIAN_COMMUNITY_CENTER = fromLonLat([-0.55, 39.45]);
+const VALENCIAN_COMMUNITY_ZOOM = 8;
 
 type MapTheme = "light" | "dark";
 type MapPublication = {
@@ -215,9 +219,11 @@ function toPublicationFeatures(publications: MapPublication[]) {
 }
 
 export function PublicationMap({
+  onPublicationOpen,
   publications,
   theme,
 }: {
+  onPublicationOpen: (publicationId: number) => void;
   publications: MapPublication[];
   theme: MapTheme;
 }) {
@@ -225,6 +231,7 @@ export function PublicationMap({
   const mapRef = useRef<OlMap | null>(null);
   const baseLayerRef = useRef<TileLayer<XYZ> | null>(null);
   const publicationSourceRef = useRef<VectorSource | null>(null);
+  const onPublicationOpenRef = useRef(onPublicationOpen);
   const themeRef = useRef<MapTheme>(theme);
 
   useEffect(() => {
@@ -250,19 +257,82 @@ export function PublicationMap({
       target: mapElementRef.current,
       view: new View({
         center: VALENCIAN_COMMUNITY_CENTER,
-        zoom: 8,
+        zoom: VALENCIAN_COMMUNITY_ZOOM,
       }),
     });
     mapRef.current = map;
     publicationLayer.setStyle((feature) => getClusterStyles(feature, themeRef.current, () => map.render()));
 
+    const recenterButton = document.createElement("button");
+    recenterButton.setAttribute("aria-label", "Centrar en la Comunitat Valenciana");
+    recenterButton.setAttribute("title", "Centrar en la Comunitat Valenciana");
+    recenterButton.type = "button";
+    const recenterButtonRoot = createRoot(recenterButton);
+    recenterButtonRoot.render(<LocateFixed aria-hidden="true" size={18} strokeWidth={2.4} />);
+    const recenterElement = Object.assign(document.createElement("div"), {
+      className: "ol-recenter ol-unselectable ol-control",
+    });
+    recenterElement.appendChild(recenterButton);
+    const recenterControl = new Control({ element: recenterElement });
+    recenterButton.addEventListener("click", () => {
+      map.getView().animate({
+        center: VALENCIAN_COMMUNITY_CENTER,
+        duration: 350,
+        zoom: VALENCIAN_COMMUNITY_ZOOM,
+      });
+    });
+    map.addControl(recenterControl);
+
+    function handleMapClick(event: { pixel: number[] }) {
+      const clusterFeature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature) as FeatureLike | undefined;
+      const publications = clusterFeature?.get("features") as Feature<Point>[] | undefined;
+
+      if (!clusterFeature || !publications?.length) {
+        return;
+      }
+
+      if (publications.length === 1) {
+        const publicationId = publications[0].getId();
+
+        if (typeof publicationId === "number") {
+          onPublicationOpenRef.current(publicationId);
+        }
+        return;
+      }
+
+      const coordinates = new Set(
+        publications.map((publication) => publication.getGeometry()?.getCoordinates().join(",")),
+      );
+
+      if (coordinates.size > 1) {
+        const view = map.getView();
+        const zoom = view.getZoom() ?? 8;
+        const geometry = clusterFeature.getGeometry() as Point;
+
+        view.animate({
+          center: geometry.getCoordinates(),
+          duration: 350,
+          zoom: Math.min(zoom + 2, 18),
+        });
+      }
+    }
+
+    map.on("singleclick", handleMapClick);
+
     return () => {
+      recenterButtonRoot.unmount();
+      map.removeControl(recenterControl);
+      map.un("singleclick", handleMapClick);
       map.setTarget(undefined);
       mapRef.current = null;
       baseLayerRef.current = null;
       publicationSourceRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    onPublicationOpenRef.current = onPublicationOpen;
+  }, [onPublicationOpen]);
 
   useEffect(() => {
     themeRef.current = theme;

@@ -244,7 +244,18 @@ export function AppShell() {
             publications={visiblePublications}
           />
         ) : (
-          <PublicationMap publications={publications} theme={theme} />
+          <PublicationMap
+            onPublicationOpen={(publicationId) => {
+              const publication = visiblePublications.find(({ id }) => id === publicationId);
+              const photo = publication?.fotos[0];
+
+              if (publication && photo) {
+                openPublication(publication, photo.index);
+              }
+            }}
+            publications={visiblePublications}
+            theme={theme}
+          />
         )}
       </main>
 

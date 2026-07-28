@@ -60,7 +60,7 @@ Estado: en curso sobre `feature/fase-1.7-mapa-openlayers`.
 - [x] **Paso 2. Carga de datos, centrado y clusterizacion:** mapa centrado en la Comunitat Valenciana, con publicaciones geolocalizadas cargadas desde la API y agrupadas por proximidad o coordenadas identicas.
 - [x] **Paso 2, vertical 1. Mapa base:** renderizado el mapa de OpenLayers con la capa base monocroma Carto Positron en modo claro y Carto Dark Matter en modo oscuro, sincronizada con el selector de tema y centrada inicialmente en la Comunitat Valenciana.
 - [x] **Paso 2, vertical 2. Datos y marcadores:** publicaciones geolocalizadas integradas en una capa vectorial con `ol/source/Cluster`; los puntos individuales muestran la miniatura principal recortada en un marco circular y el total de fotos, mientras los clusters muestran el total de imagenes con el color terciario de la aplicacion.
-- [ ] **Paso 3. Reactividad, filtros y modal:** sincronizar los marcadores con la busqueda y el filtro de publicaciones. El clic en un marcador individual abrira el modal de detalle existente; el clic en un cluster de coordenadas distintas aplicara zoom progresivo sobre su zona.
+- [x] **Paso 3. Reactividad, filtros y modal:** marcadores sincronizados con la busqueda y el filtro de publicaciones; los marcadores individuales abren el modal de detalle existente y los clusters de coordenadas distintas aplican zoom progresivo. Anadido un control `LocateFixed` debajo del zoom para restablecer el centro y zoom iniciales de la Comunitat Valenciana. Cubierto con pruebas de filtros, modal y tema.
 
 ## Fase 1.8: Correcciones
 

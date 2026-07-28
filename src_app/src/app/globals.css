@@ -1,5 +1,14 @@
 @import "ol/ol.css";
 
+.ol-recenter {
+  top: 5.15em;
+  left: 0.5em;
+}
+
+.ol-recenter button {
+  font-weight: 900;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
