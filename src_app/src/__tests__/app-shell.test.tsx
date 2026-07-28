@@ -10,6 +10,12 @@ vi.mock("next/image", () => ({
   },
 }));
 
+vi.mock("next/dynamic", () => ({
+  default: () => ({ theme }: { theme: "light" | "dark" }) => (
+    <section aria-label="Mapa de publicaciones" data-theme={theme} />
+  ),
+}));
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -70,8 +76,12 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Portal azul")).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
 
-    expect(screen.getByRole("region", { name: "Mapa de publicaciones" })).toBeDefined();
+    const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
+    expect(map.getAttribute("data-theme")).toBe("light");
     expect(screen.queryByText("Portal azul")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Activar modo oscuro" }));
+    expect(map.getAttribute("data-theme")).toBe("dark");
 
     fireEvent.click(screen.getByRole("button", { name: "Vista Galeria" }));
 

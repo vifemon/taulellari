@@ -58,6 +58,8 @@ Estado: en curso sobre `feature/fase-1.7-mapa-openlayers`.
 - **Marcadores:** los puntos individuales mostraran una miniatura de la foto principal dentro de un marco personalizado con la paleta de la aplicacion; los clusters se representaran con un circulo estilizado y su contador.
 - [x] **Paso 1. Selector de vista:** instalado `ol` y anadido, junto al selector de "Mis publicaciones / Todas las publicaciones", un selector para alternar entre "Vista Galeria" y "Vista Mapa" con los iconos `Images` y `Map` de `lucide-react`. Al elegir mapa se renderiza inicialmente un contenedor vacio preparado para OpenLayers.
 - [ ] **Paso 2. Carga de datos, centrado y clusterizacion:** centrar el mapa en la Comunitat Valenciana, cargar las publicaciones geolocalizadas desde la API y renderizar marcadores individuales o clusters segun proximidad y coordenadas identicas.
+- [x] **Paso 2, vertical 1. Mapa base:** renderizado el mapa de OpenLayers con la capa base monocroma Carto Positron en modo claro y Carto Dark Matter en modo oscuro, sincronizada con el selector de tema y centrada inicialmente en la Comunitat Valenciana. Pendiente de revision antes de cargar publicaciones, marcadores y clusters.
+- [ ] **Paso 2, vertical 2. Datos y marcadores:** cargar las publicaciones geolocalizadas desde la API y renderizar marcadores individuales o clusters tras la revision del mapa base.
 - [ ] **Paso 3. Reactividad, filtros y modal:** sincronizar los marcadores con la busqueda y el filtro de publicaciones. El clic en un marcador individual abrira el modal de detalle existente; el clic en un cluster de coordenadas distintas aplicara zoom progresivo sobre su zona.
 
 ## Fase 1.8: Correcciones

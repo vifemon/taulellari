@@ -1,10 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Images, Map, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
+
+const PublicationMap = dynamic(
+  () => import("./publication-map").then((module) => module.PublicationMap),
+  { ssr: false },
+);
 
 type AuthUser = {
   id: number;
@@ -238,7 +244,7 @@ export function AppShell() {
             publications={visiblePublications}
           />
         ) : (
-          <section aria-label="Mapa de publicaciones" className={styles.mapViewport} />
+          <PublicationMap theme={theme} />
         )}
       </main>
 
