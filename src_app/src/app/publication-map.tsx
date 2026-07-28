@@ -320,8 +320,8 @@ export function PublicationMap({
     map.on("singleclick", handleMapClick);
 
     return () => {
-      recenterButtonRoot.unmount();
       map.removeControl(recenterControl);
+      queueMicrotask(() => recenterButtonRoot.unmount());
       map.un("singleclick", handleMapClick);
       map.setTarget(undefined);
       mapRef.current = null;
