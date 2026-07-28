@@ -40,7 +40,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 ## Estado Actual
 
-La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fase-1.6-refinamiento-ajustes`. Ya se refino el hero y el formulario de subida de publicaciones.
+La **Fase 1.6: Refinamiento y Ajustes** esta completada y mergeada en `develop`. La **Fase 1.7: Implementacion de funcionalidad de mapa con OpenLayers** esta en curso sobre la rama `feature/fase-1.7-mapa-openlayers` para integrar la visualizacion cartografica de las publicaciones geolocalizadas.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -94,6 +94,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 - **Formulario de subida:** el selector de direccion evita reabrir sugerencias tras una seleccion valida y su desplegable usa la altura visible disponible antes de activar scroll interno.
 - **Fotos multiples:** todos los archivos seleccionados se guardan y se mantienen agrupados bajo la misma publicacion y sus metadatos comunes.
+- **Visualizacion cartografica:** la Fase 1.7 integrara OpenLayers para mostrar en un mapa las publicaciones que ya disponen de coordenadas.
 
 ## Decisiones De Producto Y Diseno
 
@@ -136,7 +137,7 @@ La **Fase 1.6: Refinamiento y Ajustes** esta en curso sobre la rama `feature/fas
 - `npm run lint` correcto.
 - `npm run test` correcto con 26 tests.
 - `npm run build` correcto.
-- Rama actual de trabajo: `feature/fase-1.6-refinamiento-ajustes`.
+- Rama actual de trabajo: `feature/fase-1.7-mapa-openlayers`.
 
 ## Restricciones Importantes
 

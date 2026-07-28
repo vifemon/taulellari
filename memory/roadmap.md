@@ -33,7 +33,7 @@ Estado: completada y mergeada en `develop`.
 
 ## Fase 1.6: Refinamiento y Ajustes Concretos
 
-Estado: en curso.
+Estado: completada y mergeada en `develop`.
 
 - [x] **Buscador de galeria:** mover el buscador desde el HERO a la parte superior de la galeria y cambiarlo de busqueda Mapbox a filtro de imagenes por titulo, descripcion o metadatos.
 - [x] **Imagen de fondo y acciones del HERO:** eliminar el decorativo `::after`, usar una imagen real de fondo en `heroScreen` y destacar las acciones principales de ver galeria y subir imagen.
@@ -48,9 +48,21 @@ Estado: en curso.
 - [x] **Perfil refinado:** mejorar la ficha visual y permitir borrar una foto desde su miniatura con confirmacion.
 - [x] **Etiquetas de direcciones:** evitar la duplicacion de codigo postal, municipio, provincia y pais en las sugerencias y valores guardados.
 
+## Fase 1.7: Implementacion De Funcionalidad De Mapa Con OpenLayers
+
+Estado: en curso sobre `feature/fase-1.7-mapa-openlayers`.
+
+- [ ] **Visualizacion cartografica:** integrar OpenLayers para mostrar un mapa interactivo con las publicaciones geolocalizadas.
+
+## Fase 1.8: Correcciones
+
+Estado: pendiente tras la Fase 1.7.
+
+- [ ] **Ajustes finales:** realizar pequeñas correcciones y refinamientos finales de la aplicacion.
+
 ## Fase 2: Contenerizacion Y Despliegue
 
-Estado: pendiente tras la Fase 1.6.
+Estado: pendiente tras la Fase 1.8.
 
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
 
@@ -58,7 +70,6 @@ Estado: pendiente tras la Fase 1.6.
 
 Estado: futuro.
 
-- [ ] **Integracion de mapas:** incorporar OpenLayers para renderizar un mapa interactivo de Valencia con pines de cada azulejo fotografiado.
 - [ ] **Busqueda geografica:** filtrar azulejos cercanos a la ubicacion actual del usuario mediante consultas espaciales en la base de datos con PostGIS.
 - [ ] **Filtros y etiquetas:** anadir categorizacion por epocas, estilos arquitectonicos o barrios de Valencia, por ejemplo El Carmen, Ruzafa o Cabanyal.
 
@@ -71,12 +82,12 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico pendiente es iniciar la **Fase 1.6: Refinamiento y ajustes concretos**, trabajando cada detalle especifico de forma iterativa y sin cerrarlo hasta confirmacion explicita.
+El siguiente paso tecnico es desarrollar la **Fase 1.7: Implementacion de funcionalidad de mapa con OpenLayers**, integrando la visualizacion cartografica de las publicaciones de forma iterativa.
 
 ## Ultimo Estado Git
 
-- Rama actual tras el trabajo: `develop`.
-- `develop` mergeada con `feature/ui-ux-crud` mediante fast-forward.
-- Commit principal: `830022b feat: add user CRUD and app shell`.
-- Push realizado; `develop` esta sincronizada con `origin/develop`.
-- Rama actual para la Fase 1.6: `feature/fase-1.6-refinamiento-ajustes`.
+- Rama actual antes de iniciar la Fase 1.7: `develop`.
+- `develop` mergeada con `feature/fase-1.6-refinamiento-ajustes` mediante fast-forward.
+- Commit principal: `403c85d style: simplify gallery search`.
+- `develop` tiene los cambios de la Fase 1.6 pendientes de push a `origin/develop`.
+- Rama actual para la Fase 1.7: `feature/fase-1.7-mapa-openlayers`.
