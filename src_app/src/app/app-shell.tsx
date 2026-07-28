@@ -244,7 +244,7 @@ export function AppShell() {
             publications={visiblePublications}
           />
         ) : (
-          <PublicationMap theme={theme} />
+          <PublicationMap publications={publications} theme={theme} />
         )}
       </main>
 
