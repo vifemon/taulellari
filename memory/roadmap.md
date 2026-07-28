@@ -50,7 +50,7 @@ Estado: completada y mergeada en `develop`.
 
 ## Fase 1.7: Implementacion De Funcionalidad De Mapa Con OpenLayers
 
-Estado: en curso sobre `feature/fase-1.7-mapa-openlayers`.
+Estado: completada y mergeada en `develop`.
 
 - **Biblioteca:** OpenLayers (`ol`).
 - **Centro inicial:** Comunitat Valenciana.
@@ -90,12 +90,11 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico es el **Paso 1 de la Fase 1.7**: instalar `ol` y crear el selector de vista Galeria / Mapa con los iconos de Lucide, renderizando el contenedor vacio del mapa.
+El siguiente paso tecnico es iniciar la **Fase 1.8: Correcciones**, realizando los ajustes finales de la aplicacion de forma iterativa.
 
 ## Ultimo Estado Git
 
-- Rama actual antes de iniciar la Fase 1.7: `develop`.
-- `develop` mergeada con `feature/fase-1.6-refinamiento-ajustes` mediante fast-forward.
-- Commit principal: `403c85d style: simplify gallery search`.
-- `develop` contiene y tiene publicados en `origin/develop` los cambios de la Fase 1.6.
-- Rama actual para la Fase 1.7: `feature/fase-1.7-mapa-openlayers`.
+- Rama actual tras completar la Fase 1.7: `develop`.
+- `develop` mergeada con `feature/fase-1.7-mapa-openlayers` mediante fast-forward.
+- Commit principal: `5c0fc48 feat: add interactive map controls`.
+- `develop` contiene los cambios de la Fase 1.7 y esta pendiente de push a `origin/develop`.
