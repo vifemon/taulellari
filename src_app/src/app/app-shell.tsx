@@ -45,7 +45,7 @@ type GalleryView = "gallery" | "map";
 type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [modal, setModal] = useState<Modal>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);

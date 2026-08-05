@@ -95,11 +95,11 @@ describe("AppShell gallery search", () => {
     fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
 
     const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
-    expect(map.getAttribute("data-theme")).toBe("light");
+    expect(map.getAttribute("data-theme")).toBe("dark");
     expect(screen.queryByText("Portal azul")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Activar modo oscuro" }));
-    expect(map.getAttribute("data-theme")).toBe("dark");
+    fireEvent.click(screen.getByRole("button", { name: "Activar modo claro" }));
+    expect(map.getAttribute("data-theme")).toBe("light");
 
     fireEvent.click(screen.getByRole("button", { name: "Vista Galeria" }));
 
