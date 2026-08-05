@@ -106,6 +106,34 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Portal azul")).toBeDefined();
   });
 
+  it("opens the responsive navigation and exposes its actions", async () => {
+    mockAppShellFetch();
+
+    render(<AppShell />);
+
+    expect(await screen.findByText("Portal azul")).toBeDefined();
+    const navigation = screen.getByRole("navigation", { name: "Navegacion principal" });
+    const openMenuButton = within(navigation).getByRole("button", { name: "Abrir menu" });
+
+    expect(openMenuButton.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(openMenuButton);
+
+    expect(within(navigation).getByRole("button", { name: "Cerrar menu" }).getAttribute("aria-expanded")).toBe("true");
+    expect(within(navigation).getByRole("button", { name: "Activar modo claro" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Mi perfil de Ana" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Subir imagen" })).toBeDefined();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    const reopenedMenuButton = within(navigation).getByRole("button", { name: "Abrir menu" });
+    expect(document.activeElement).toBe(reopenedMenuButton);
+
+    fireEvent.click(reopenedMenuButton);
+    fireEvent.click(within(navigation).getByRole("button", { name: "Subir imagen" }));
+
+    expect(await screen.findByRole("heading", { name: "Sube una fachada." })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Abrir menu" }).getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("keeps map markers in sync with the search, scope, and detail modal", async () => {
     mockAppShellFetch();
 
@@ -142,7 +170,7 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Mi perfil de Ana" }));
 
     expect(await screen.findAllByAltText(/Portal azul, foto/)).toHaveLength(3);
   });
@@ -152,7 +180,7 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Mi perfil de Ana" }));
     fireEvent.click(await screen.findByRole("button", { name: "Borrar Portal azul, foto 1" }));
 
     expect(

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, Images, Map, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Images, Map, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -46,6 +46,7 @@ type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -57,6 +58,8 @@ export function AppShell() {
   const [galleryView, setGalleryView] = useState<GalleryView>("gallery");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navMenuId = useId();
+  const navMenuButtonRef = useRef<HTMLButtonElement>(null);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
   const visiblePublications = galleryScope === "mine"
@@ -66,6 +69,38 @@ export function AppShell() {
   useEffect(() => {
     refreshSession();
     refreshGallery();
+  }, []);
+
+  useEffect(() => {
+    if (!isNavMenuOpen) {
+      return;
+    }
+
+    function closeNavMenuOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsNavMenuOpen(false);
+        navMenuButtonRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", closeNavMenuOnEscape);
+    return () => window.removeEventListener("keydown", closeNavMenuOnEscape);
+  }, [isNavMenuOpen]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const desktopViewport = window.matchMedia("(min-width: 1101px)");
+    const closeNavMenuOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setIsNavMenuOpen(false);
+      }
+    };
+
+    desktopViewport.addEventListener("change", closeNavMenuOnDesktop);
+    return () => desktopViewport.removeEventListener("change", closeNavMenuOnDesktop);
   }, []);
 
   async function refreshSession() {
@@ -172,33 +207,64 @@ export function AppShell() {
     await refreshGallery();
   }
 
+  function openModalFromNavigation(nextModal: Exclude<Modal, null>) {
+    setIsNavMenuOpen(false);
+    setModal(nextModal);
+  }
+
   return (
     <div className={`${styles.app} ${styles[theme]}`}>
-      <nav className={styles.navbar}>
-        <a className={styles.brand} href="#hero" aria-label="Ir al inicio">
+      <nav aria-label="Navegacion principal" className={styles.navbar}>
+        <a className={styles.brand} href="#hero" aria-label="Ir al inicio" onClick={() => setIsNavMenuOpen(false)}>
           Taulellari
         </a>
-        <div className={styles.navActions}>
+        <button
+          aria-controls={navMenuId}
+          aria-expanded={isNavMenuOpen}
+          aria-label={isNavMenuOpen ? "Cerrar menu" : "Abrir menu"}
+          className={styles.menuButton}
+          onClick={() => setIsNavMenuOpen((isOpen) => !isOpen)}
+          ref={navMenuButtonRef}
+          type="button"
+        >
+          {isNavMenuOpen ? <X aria-hidden="true" size={24} strokeWidth={2.3} /> : <Menu aria-hidden="true" size={25} strokeWidth={2.3} />}
+        </button>
+        <div className={`${styles.navActions} ${isNavMenuOpen ? styles.navActionsOpen : ""}`} id={navMenuId}>
           <button
             aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
             className={styles.iconButton}
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            onClick={() => setTheme((currentTheme) => currentTheme === "light" ? "dark" : "light")}
             title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
             type="button"
           >
             {theme === "light" ? <Sun aria-hidden="true" size={20} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={20} strokeWidth={2.2} />}
+            <span className={styles.mobileNavLabel}>{theme === "light" ? "Modo oscuro" : "Modo claro"}</span>
           </button>
           {user ? (
-            <button className={styles.navButton} onClick={() => setModal("profile")} type="button">
-              {user.nombre}
+            <button
+              aria-label={`Mi perfil de ${user.nombre}`}
+              className={styles.navButton}
+              onClick={() => openModalFromNavigation("profile")}
+              type="button"
+            >
+              <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
+              <span className={styles.desktopNavLabel}>{user.nombre}</span>
+              <span className={styles.mobileNavLabel}>Mi perfil</span>
             </button>
           ) : (
-            <button className={styles.navButton} onClick={() => setModal("login")} type="button">
+            <button className={styles.navButton} onClick={() => openModalFromNavigation("login")} type="button">
+              <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
               Entrar
             </button>
           )}
-          <button className={styles.plusButton} onClick={() => setModal(user ? "upload" : "login")} type="button">
+          <button
+            aria-label="Subir imagen"
+            className={styles.plusButton}
+            onClick={() => openModalFromNavigation(user ? "upload" : "login")}
+            type="button"
+          >
             <Plus aria-hidden="true" size={25} strokeWidth={2.4} />
+            <span className={styles.mobileNavLabel}>Subir imagen</span>
           </button>
         </div>
       </nav>
