@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, Images, Map, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Images, MapPinned, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, Users, X } from "lucide-react";
 import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
 import styles from "./page.module.css";
@@ -289,6 +289,12 @@ export function AppShell() {
         <section className={styles.galleryIntro}>
           <span className={styles.kicker}>Galeria publica</span>
           <h2>Fotos abiertas. Datos sensibles bajo sesion.</h2>
+        </section>
+        <div className={styles.galleryToolbar}>
+          <GallerySearch
+            onChange={setGalleryQuery}
+            query={galleryQuery}
+          />
           <div className={styles.galleryControls}>
             <GalleryScopeToggle
               isAuthenticated={Boolean(user)}
@@ -298,11 +304,7 @@ export function AppShell() {
             />
             <GalleryViewToggle onViewChange={setGalleryView} view={galleryView} />
           </div>
-        </section>
-        <GallerySearch
-          onChange={setGalleryQuery}
-          query={galleryQuery}
-        />
+        </div>
         {galleryView === "gallery" ? (
           <PublicationGallery
             hasSearch={deferredGalleryQuery.trim().length > 0}
@@ -530,21 +532,22 @@ function GalleryScopeToggle({
   return (
     <div className={styles.galleryScopeToggle} role="group" aria-label="Alcance de la galeria">
       <button
+        aria-label="Todas las publicaciones"
         aria-pressed={scope === "all"}
         onClick={() => onScopeChange("all")}
+        title="Todas las publicaciones"
         type="button"
       >
-        <UsersRound aria-hidden="true" size={18} strokeWidth={2.2} />
-        Todas las publicaciones
+        <Users aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
       <button
         aria-label={isAuthenticated ? "Mis publicaciones" : "Mis publicaciones, iniciar sesion"}
         aria-pressed={scope === "mine"}
         onClick={() => (isAuthenticated ? onScopeChange("mine") : onLogin())}
+        title={isAuthenticated ? "Mis publicaciones" : "Mis publicaciones, iniciar sesion"}
         type="button"
       >
         <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
-        Mis publicaciones
       </button>
     </div>
   );
@@ -560,20 +563,22 @@ function GalleryViewToggle({
   return (
     <div className={styles.galleryViewToggle} role="group" aria-label="Vista de publicaciones">
       <button
+        aria-label="Vista Galeria"
         aria-pressed={view === "gallery"}
         onClick={() => onViewChange("gallery")}
+        title="Vista Galeria"
         type="button"
       >
         <Images aria-hidden="true" size={18} strokeWidth={2.2} />
-        Vista Galeria
       </button>
       <button
+        aria-label="Vista Mapa"
         aria-pressed={view === "map"}
         onClick={() => onViewChange("map")}
+        title="Vista Mapa"
         type="button"
       >
-        <Map aria-hidden="true" size={18} strokeWidth={2.2} />
-        Vista Mapa
+        <MapPinned aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
     </div>
   );
