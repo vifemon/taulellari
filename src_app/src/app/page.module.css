@@ -785,6 +785,8 @@
 }
 
 .profileSecondaryActions button {
+  width: 100%;
+  min-width: 0;
   min-height: 50px;
   border-radius: 999px;
   cursor: pointer;
@@ -1099,6 +1101,14 @@
 }
 
 @media (max-width: 860px) {
+  .modalBackdrop:has(.profileModal) {
+    place-items: start center;
+  }
+
+  .profileModal {
+    max-height: none;
+  }
+
   .heroScreen {
     align-content: center;
     min-height: 100svh;

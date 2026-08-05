@@ -327,7 +327,7 @@ export function AppShell() {
 
       {modal ? (
         <ModalShell
-          className={modal === "detail" ? styles.detailModal : undefined}
+          className={modal === "detail" ? styles.detailModal : modal === "profile" ? styles.profileModal : undefined}
           onClose={modal === "photo-confirm" ? () => setModal(photoConfirmationOrigin) : closeModal}
         >
           {modal === "login" ? (
