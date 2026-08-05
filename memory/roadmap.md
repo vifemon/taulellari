@@ -64,9 +64,15 @@ Estado: completada y mergeada en `develop`.
 
 ## Fase 1.8: Correcciones
 
-Estado: pendiente tras la Fase 1.7.
+Estado: en curso sobre `develop`.
 
-- [ ] **Ajustes finales:** realizar pequeñas correcciones y refinamientos finales de la aplicacion.
+- [x] **Hero glass:** reforzar el efecto glass del panel principal y actualizar la imagen fotografica de fondo.
+- [x] **Tema predeterminado:** iniciar la aplicacion en modo oscuro sin eliminar el selector de tema.
+- [x] **Navegacion responsive:** convertir la Navbar en un menu hamburguesa hasta `1100px`, con desplegable de ancho completo para tema, perfil o acceso y subida.
+- [x] **Perfil en smartphone:** repartir al 50% las acciones secundarias y permitir que el modal crezca y se desplace segun la cantidad de imagenes.
+- [x] **Controles de galeria simplificados:** mostrar los selectores de alcance y vista solo mediante iconos Lucide accesibles; usar `Users` y `MapPinned` para todas las publicaciones y mapa.
+- [x] **Barra de galeria:** reducir el buscador a unos `360px`, alinearlo con el borde izquierdo de la galeria o mapa y situar los controles en el borde derecho.
+- [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
 
 ## Fase 2: Contenerizacion Y Despliegue
 
@@ -90,11 +96,11 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico es iniciar la **Fase 1.8: Correcciones**, realizando los ajustes finales de la aplicacion de forma iterativa.
+El siguiente paso tecnico es continuar la **Fase 1.8: Correcciones** de forma iterativa hasta cerrar los ajustes finales de la aplicacion.
 
 ## Ultimo Estado Git
 
-- Rama actual tras completar la Fase 1.7: `develop`.
-- `develop` mergeada con `feature/fase-1.7-mapa-openlayers` mediante fast-forward.
-- Commit principal: `5c0fc48 feat: add interactive map controls`.
-- `develop` contiene los cambios de la Fase 1.7 y esta pendiente de push a `origin/develop`.
+- Rama actual: `develop`.
+- Ultimo commit: `a1ba07e style: align gallery toolbar controls`.
+- `develop` contiene la primera ronda de la Fase 1.8 y esta sincronizada con `origin/develop`.
+- No habia cambios de aplicacion pendientes al iniciar esta actualizacion documental.

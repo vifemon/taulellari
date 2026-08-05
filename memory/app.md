@@ -40,7 +40,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 ## Estado Actual
 
-Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. El siguiente trabajo previsto es la **Fase 1.8: Correcciones**, para realizar los ajustes finales de la aplicacion.
+Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso, con una primera ronda de ajustes visuales y responsive completada y publicada en `origin/develop`.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -110,20 +110,22 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Navegacion SPA con modales:** toda la experiencia principal ocurre en la raiz (`page.tsx`). Login, registro y formulario de subida mediante boton `+` se abren en modales que ocupan casi toda la pantalla en movil.
 - **Cierre de modales:** los modales usan el icono `X` de Lucide con etiqueta accesible en lugar de texto visible.
 - **Modal responsive de detalle:** el detalle de una foto limita su altura al viewport y usa scroll interno para mantener la informacion y acciones accesibles en tablet y movil.
-- **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), color de fondo temporal, buscador centrado y scroll hacia la galeria.
+- **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), imagen fotografica de fondo, panel central con efecto glass y scroll hacia la galeria.
 - **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el contenedor ocupa toda la altura disponible.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
-- **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural; usa tres columnas en desktop y dos en tablet y mobile.
+- **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural; usa cuatro columnas en desktop y dos en tablet y mobile.
 - **Alcance de galeria:** el toggle permite mostrar todas las publicaciones o filtrar solo las del usuario autenticado; por defecto muestra todas.
+- **Controles de galeria:** los selectores de alcance y vista usan solo iconos Lucide accesibles (`Users`, `UserRound`, `Images` y `MapPinned`). Se situan en el extremo derecho de la fila del buscador, alineados con el borde de la galeria o el mapa; el buscador mantiene un ancho aproximado de `360px` en escritorio.
 - **Detalle de fotos multiples:** el modal conserva miniaturas y añade flechas no circulares para navegar por las fotos del mismo grupo, comenzando por la imagen seleccionada.
 - **Borrado de fotos:** se elimina solo la foto actual con confirmacion; si era la ultima, tambien se elimina la publicacion y sus metadatos.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
-- **Perfil refinado:** el modal muestra identidad centrada, campos etiquetados, archivo personal con todas las fotos y borrado individual desde cada miniatura mediante `Trash2` y confirmacion.
+- **Perfil refinado:** el modal muestra identidad centrada, campos etiquetados, archivo personal con todas las fotos y borrado individual desde cada miniatura mediante `Trash2` y confirmacion. En smartphone crece segun la cantidad de imagenes, permite recorrer todo su contenido y reparte por igual el ancho de las acciones de cerrar sesion y borrar usuario.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
-- **Selector de tema:** la Navbar usa `Sun` en modo claro y `Moon` en modo oscuro, con etiquetas accesibles para alternar el tema.
+- **Selector de tema:** la Navbar usa `Sun` en modo claro y `Moon` en modo oscuro, con etiquetas accesibles para alternar el tema. El modo oscuro es el estado predeterminado.
+- **Navegacion responsive:** hasta `1100px`, la Navbar sustituye las acciones de escritorio por un boton hamburguesa a la derecha. El desplegable glass ocupa todo el ancho de la barra y agrupa cambio de tema, perfil o acceso y subida de imagen; se puede cerrar con el boton, al elegir una accion, con `Escape` o al volver a escritorio.
 - **Alineacion de iconos:** los controles de tema y subida usan contenedores centrados y el icono `Plus` de Lucide para mantener una alineacion visual consistente.
 - **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
 - **Subida sin limite fijo:** el selector acepta cualquier numero de imagenes compatibles; el limite practico queda condicionado por tamano, almacenamiento y recursos del servidor.
@@ -137,9 +139,10 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 34 tests.
+- `npm run test` correcto con 35 tests.
 - `npm run build` correcto.
 - Rama actual de trabajo: `develop`.
+- `develop` sincronizada con `origin/develop` en `a1ba07e`.
 
 ## Restricciones Importantes
 
