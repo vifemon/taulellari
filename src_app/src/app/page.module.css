@@ -382,10 +382,10 @@
 
 .galleryToolbar {
   display: flex;
-  width: min(100%, 570px);
+  width: 100%;
   align-items: center;
-  justify-self: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 24px;
 }
 
 .galleryControls {
@@ -459,11 +459,11 @@
 
 .gallerySearch {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 1 360px;
   flex-direction: column;
   align-items: center;
   min-width: 0;
-  width: auto;
+  width: min(100%, 360px);
   gap: 10px;
 }
 
