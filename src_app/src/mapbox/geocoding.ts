@@ -38,7 +38,7 @@ export async function searchMapboxAddresses(query: string) {
   url.searchParams.set("access_token", accessToken);
   url.searchParams.set("autocomplete", "true");
   url.searchParams.set("country", "es");
-  url.searchParams.set("language", "es");
+  url.searchParams.set("language", "ca");
   url.searchParams.set("limit", "6");
   url.searchParams.set("proximity", "-0.3763,39.4699");
   url.searchParams.set("types", "address");

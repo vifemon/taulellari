@@ -352,7 +352,7 @@ export function PublicationMap({
   }, [publications]);
 
   return (
-    <section aria-label="Mapa de publicaciones" className={styles.mapViewport}>
+    <section aria-label="Mapa de publicacions" className={styles.mapViewport}>
       <div className={styles.mapCanvas} ref={mapElementRef} />
     </section>
   );

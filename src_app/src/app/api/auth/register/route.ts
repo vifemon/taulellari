@@ -14,13 +14,13 @@ export async function POST(request: Request) {
   const input = parseRegisterInput(await readJsonObject(request));
 
   if (!input) {
-    return Response.json({ error: "Datos de registro invalidos" }, { status: 400 });
+    return Response.json({ error: "Les dades de registre no són vàlides" }, { status: 400 });
   }
 
   const existingUser = await findUserByEmail(input.email);
 
   if (existingUser) {
-    return Response.json({ error: "El email ya esta registrado" }, { status: 409 });
+    return Response.json({ error: "Este correu electrònic ja està registrat" }, { status: 409 });
   }
 
   const user = await createUser({

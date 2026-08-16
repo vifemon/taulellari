@@ -168,7 +168,7 @@ export function AppShell() {
     setIsSubmitting(false);
 
     if (!response.ok) {
-      setMessage(data.error ?? "No se pudo borrar la imagen");
+      setMessage(data.error ?? "No s'ha pogut esborrar la imatge");
       setModal(photoConfirmationOrigin);
       return;
     }
@@ -214,14 +214,14 @@ export function AppShell() {
 
   return (
     <div className={`${styles.app} ${styles[theme]}`}>
-      <nav aria-label="Navegacion principal" className={styles.navbar}>
-        <a className={styles.brand} href="#hero" aria-label="Ir al inicio" onClick={() => setIsNavMenuOpen(false)}>
+      <nav aria-label="Navegació principal" className={styles.navbar}>
+        <a className={styles.brand} href="#hero" aria-label="Anar a l'inici" onClick={() => setIsNavMenuOpen(false)}>
           Taulellari
         </a>
         <button
           aria-controls={navMenuId}
           aria-expanded={isNavMenuOpen}
-          aria-label={isNavMenuOpen ? "Cerrar menu" : "Abrir menu"}
+          aria-label={isNavMenuOpen ? "Tancar el menú" : "Obrir el menú"}
           className={styles.menuButton}
           onClick={() => setIsNavMenuOpen((isOpen) => !isOpen)}
           ref={navMenuButtonRef}
@@ -231,55 +231,55 @@ export function AppShell() {
         </button>
         <div className={`${styles.navActions} ${isNavMenuOpen ? styles.navActionsOpen : ""}`} id={navMenuId}>
           <button
-            aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
+            aria-label={theme === "light" ? "Activar el mode fosc" : "Activar el mode clar"}
             className={styles.iconButton}
             onClick={() => setTheme((currentTheme) => currentTheme === "light" ? "dark" : "light")}
-            title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
+            title={theme === "light" ? "Activar el mode fosc" : "Activar el mode clar"}
             type="button"
           >
             {theme === "light" ? <Sun aria-hidden="true" size={20} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={20} strokeWidth={2.2} />}
-            <span className={styles.mobileNavLabel}>{theme === "light" ? "Modo oscuro" : "Modo claro"}</span>
+            <span className={styles.mobileNavLabel}>{theme === "light" ? "Mode fosc" : "Mode clar"}</span>
           </button>
           {user ? (
             <button
-              aria-label={`Mi perfil de ${user.nombre}`}
+              aria-label={`El meu perfil: ${user.nombre}`}
               className={styles.navButton}
               onClick={() => openModalFromNavigation("profile")}
               type="button"
             >
               <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
               <span className={styles.desktopNavLabel}>{user.nombre}</span>
-              <span className={styles.mobileNavLabel}>Mi perfil</span>
+              <span className={styles.mobileNavLabel}>El meu perfil</span>
             </button>
           ) : (
             <button className={styles.navButton} onClick={() => openModalFromNavigation("login")} type="button">
               <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
-              Entrar
+              Log in
             </button>
           )}
           <button
-            aria-label="Subir imagen"
+            aria-label="Pujar imatge"
             className={styles.plusButton}
             onClick={() => openModalFromNavigation(user ? "upload" : "login")}
             type="button"
           >
             <Plus aria-hidden="true" size={25} strokeWidth={2.4} />
-            <span className={styles.mobileNavLabel}>Subir imagen</span>
+            <span className={styles.mobileNavLabel}>Pujar imatge</span>
           </button>
         </div>
       </nav>
 
       <header className={styles.heroScreen} id="hero">
         <div className={styles.heroContent}>
-          <span className={styles.kicker}>Ceramica viva de Valencia</span>
-          <h1>Busca, fotografia y conserva azulejos de calle.</h1>
+          <span className={styles.kicker}>Arxiu col·laboratiu de cases singulars</span>
+          <h1>Taulells, mosaics, rajoles, xapats</h1>
           <div className={styles.heroActions}>
             <a className={styles.heroPrimaryAction} href="#galeria">
-              Ver galeria
+              Accedeix
             </a>
             <button className={styles.heroUploadAction} onClick={() => setModal(user ? "upload" : "login")} type="button">
               <span aria-hidden="true"><Plus size={24} strokeWidth={2.4} /></span>
-              Subir imagen
+              Pujar imatge
             </button>
           </div>
         </div>
@@ -287,8 +287,8 @@ export function AppShell() {
 
       <main className={styles.gallerySurface} id="galeria">
         <section className={styles.galleryIntro}>
-          <span className={styles.kicker}>Galeria publica</span>
-          <h2>Fotos abiertas. Datos sensibles bajo sesion.</h2>
+          <span className={styles.kicker}>Galeria de publicacions</span>
+          <h2>Puja. Localitza. Descobreix</h2>
         </section>
         <div className={styles.galleryToolbar}>
           <GallerySearch
@@ -348,7 +348,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No se pudo iniciar sesion");
+                  setMessage(data.error ?? "No s'ha pogut iniciar la sessió");
                   return;
                 }
 
@@ -372,7 +372,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No se pudo registrar");
+                  setMessage(data.error ?? "No s'ha pogut completar el registre");
                   return;
                 }
 
@@ -394,7 +394,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok) {
-                  setMessage(data.error ?? "No se pudo guardar");
+                  setMessage(data.error ?? "No s'ha pogut guardar");
                   return;
                 }
 
@@ -440,7 +440,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok) {
-                  setMessage(data.error ?? "No se pudo editar");
+                  setMessage(data.error ?? "No s'ha pogut editar");
                   return;
                 }
 
@@ -479,12 +479,12 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No se pudo actualizar el perfil");
+                  setMessage(data.error ?? "No s'ha pogut actualitzar el perfil");
                   return;
                 }
 
                 setUser(data.user);
-                setMessage("Perfil actualizado");
+                setMessage("Perfil actualitzat");
               }}
               publications={publications.filter((publication) => publication.isOwner)}
               user={user}
@@ -510,7 +510,7 @@ function GallerySearch({
         aria-label="Buscar en la galeria"
         id="gallery-search"
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Busca por titulo, descripcion o metadatos"
+        placeholder="Buscar..."
         type="search"
         value={query}
       />
@@ -530,21 +530,21 @@ function GalleryScopeToggle({
   scope: GalleryScope;
 }) {
   return (
-    <div className={styles.galleryScopeToggle} role="group" aria-label="Alcance de la galeria">
+    <div className={styles.galleryScopeToggle} role="group" aria-label="Àmbit de la galeria">
       <button
-        aria-label="Todas las publicaciones"
+        aria-label="Totes les publicacions"
         aria-pressed={scope === "all"}
         onClick={() => onScopeChange("all")}
-        title="Todas las publicaciones"
+        title="Totes les publicacions"
         type="button"
       >
         <Users aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
       <button
-        aria-label={isAuthenticated ? "Mis publicaciones" : "Mis publicaciones, iniciar sesion"}
+        aria-label={isAuthenticated ? "Les meues publicacions" : "Les meues publicacions, inicia sessió"}
         aria-pressed={scope === "mine"}
         onClick={() => (isAuthenticated ? onScopeChange("mine") : onLogin())}
-        title={isAuthenticated ? "Mis publicaciones" : "Mis publicaciones, iniciar sesion"}
+        title={isAuthenticated ? "Les meues publicacions" : "Les meues publicacions, inicia sessió"}
         type="button"
       >
         <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
@@ -561,21 +561,21 @@ function GalleryViewToggle({
   view: GalleryView;
 }) {
   return (
-    <div className={styles.galleryViewToggle} role="group" aria-label="Vista de publicaciones">
+    <div className={styles.galleryViewToggle} role="group" aria-label="Vista de publicacions">
       <button
-        aria-label="Vista Galeria"
+        aria-label="Vista de galeria"
         aria-pressed={view === "gallery"}
         onClick={() => onViewChange("gallery")}
-        title="Vista Galeria"
+        title="Vista de galeria"
         type="button"
       >
         <Images aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
       <button
-        aria-label="Vista Mapa"
+        aria-label="Vista de mapa"
         aria-pressed={view === "map"}
         onClick={() => onViewChange("map")}
-        title="Vista Mapa"
+        title="Vista de mapa"
         type="button"
       >
         <MapPinned aria-hidden="true" size={18} strokeWidth={2.2} />
@@ -646,7 +646,7 @@ function ModalShell({
   return (
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
       <div className={`${styles.modalCard} ${className ?? ""}`}>
-        <button aria-label="Cerrar" className={styles.closeButton} onClick={onClose} type="button">
+        <button aria-label="Tancar" className={styles.closeButton} onClick={onClose} type="button">
           <X aria-hidden="true" size={20} strokeWidth={2.4} />
         </button>
         {children}
@@ -669,12 +669,12 @@ function LoginModal({
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit(email, password))}>
-      <span className={styles.kicker}>Login</span>
-      <h2>Entra al archivo.</h2>
-      <input onChange={(event) => setEmail(event.target.value)} placeholder="Email" required type="email" value={email} />
-      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contraseña" required type="password" value={password} />
+      <span className={styles.kicker}>Inici de sessió</span>
+      <h2>Entra a l&apos;arxiu.</h2>
+      <input onChange={(event) => setEmail(event.target.value)} placeholder="Correu electrònic" required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya" required type="password" value={password} />
       <button disabled={isSubmitting} type="submit">Entrar</button>
-      <button className={styles.textButton} onClick={onRegister} type="button">Crear cuenta</button>
+      <button className={styles.textButton} onClick={onRegister} type="button">Crear un compte</button>
     </form>
   );
 }
@@ -695,14 +695,14 @@ function RegisterModal({
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password }))}>
-      <span className={styles.kicker}>Registro</span>
-      <h2>Crea tu perfil.</h2>
-      <input onChange={(event) => setNombre(event.target.value)} placeholder="Nombre" required value={nombre} />
-      <input onChange={(event) => setApellidos(event.target.value)} placeholder="Apellidos" required value={apellidos} />
-      <input onChange={(event) => setEmail(event.target.value)} placeholder="Email" required type="email" value={email} />
-      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contraseña" required type="password" value={password} />
-      <button disabled={isSubmitting} type="submit">Registrarme</button>
-      <button className={styles.textButton} onClick={onLogin} type="button">Ya tengo cuenta</button>
+      <span className={styles.kicker}>Registre</span>
+      <h2>Crea el teu perfil.</h2>
+      <input onChange={(event) => setNombre(event.target.value)} placeholder="Nom" required value={nombre} />
+      <input onChange={(event) => setApellidos(event.target.value)} placeholder="Cognoms" required value={apellidos} />
+      <input onChange={(event) => setEmail(event.target.value)} placeholder="Correu electrònic" required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya" required type="password" value={password} />
+      <button disabled={isSubmitting} type="submit">Registrar-me</button>
+      <button className={styles.textButton} onClick={onLogin} type="button">Ja tinc un compte</button>
     </form>
   );
 }
@@ -765,12 +765,12 @@ function UploadModal({
       files.forEach((file) => formData.append("fotos", file));
       onSubmit(formData);
     }}>
-      <span className={styles.kicker}>Nueva pieza</span>
-      <h2>Sube una fachada.</h2>
-      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
-      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripcion (opcional)" rows={1} value={description} />
+      <span className={styles.kicker}>Nova publicació</span>
+      <h2>Puja les imatges d&apos;una casa i localitza-la</h2>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Títol" required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripció (opcional)" rows={1} value={description} />
       <div className={styles.heroSearch} ref={addressSearchRef}>
-        <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder="Direccion exacta" required value={address} />
+        <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder="Adreça exacta" required value={address} />
         {address && suggestions.length > 0 ? (
           <div className={styles.floatingSuggestions} style={{ maxHeight: suggestionsMaxHeight }}>
             {suggestions.map((suggestion) => (
@@ -782,11 +782,11 @@ function UploadModal({
         ) : null}
       </div>
       <label className={styles.fileUpload} htmlFor={fileInputId}>
-        <span>Subir fotos</span>
+        <span>Pujar fotos</span>
         <span className={styles.fileUploadIcon} aria-hidden="true">
           <Upload size={24} strokeWidth={2} />
         </span>
-        {files.length > 0 ? <small>{`${files.length} archivo${files.length === 1 ? "" : "s"} seleccionado${files.length === 1 ? "" : "s"}`}</small> : null}
+        {files.length > 0 ? <small>{`${files.length} fitxer${files.length === 1 ? "" : "s"} seleccionat${files.length === 1 ? "" : "s"}`}</small> : null}
         <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []))} type="file" />
       </label>
       <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">Guardar</button>
@@ -869,10 +869,10 @@ function EditPublicationModal({
         });
       }}
     >
-      <span className={styles.kicker}>Editar pieza</span>
-      <h2>Actualiza los datos.</h2>
-      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Titulo" required value={title} />
-      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripcion (opcional)" rows={1} value={description} />
+      <span className={styles.kicker}>Editar la peça</span>
+      <h2>Actualitza les dades.</h2>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Títol" required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripció (opcional)" rows={1} value={description} />
       <div className={styles.heroSearch} ref={addressSearchRef}>
         <input
           onChange={(event) => {
@@ -880,7 +880,7 @@ function EditPublicationModal({
             setSelectedAddress(null);
             setSuggestions([]);
           }}
-          placeholder="Direccion exacta"
+          placeholder="Adreça exacta"
           required
           value={address}
         />
@@ -902,7 +902,7 @@ function EditPublicationModal({
           </div>
         ) : null}
       </div>
-      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar cambios</button>
+      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar els canvis</button>
     </form>
   );
 }
@@ -945,33 +945,33 @@ function ProfileModal({
         </div>
         <form className={`${styles.modalForm} ${styles.profileForm}`} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password: password || undefined }))}>
           <label>
-            Nombre
+            Nom
             <input onChange={(event) => setNombre(event.target.value)} value={nombre} />
           </label>
           <label>
-            Apellidos
+            Cognoms
             <input onChange={(event) => setApellidos(event.target.value)} value={apellidos} />
           </label>
           <label>
-            Email
+            Correu electrònic
             <input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
           </label>
           <label>
-            Contraseña
-            <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Nueva contraseña opcional" type="password" value={password} />
+            Contrasenya
+            <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya nova (opcional)" type="password" value={password} />
           </label>
-          <button disabled={isSubmitting} type="submit">Guardar perfil</button>
+          <button disabled={isSubmitting} type="submit">Guardar el perfil</button>
           <div className={styles.profileSecondaryActions}>
-            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">Cerrar sesion</button>
-            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Borrar usuario</button>
+            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">Tancar la sessió</button>
+            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Esborrar l&apos;usuari</button>
           </div>
           {message ? <p className={styles.modalStatus}>{message}</p> : null}
         </form>
       </section>
-      <section className={styles.profileArchive} aria-label="Archivo fotografico personal">
+      <section className={styles.profileArchive} aria-label="Arxiu fotogràfic personal">
         <div className={styles.profileArchiveHeader}>
-          <span className={styles.kicker}>Archivo personal</span>
-          <span>{photoCount} {photoCount === 1 ? "imagen" : "imagenes"}</span>
+          <span className={styles.kicker}>Arxiu personal</span>
+          <span>{photoCount} {photoCount === 1 ? "imatge" : "imatges"}</span>
         </div>
         {photoCount > 0 ? (
           <div className={styles.profileGrid}>
@@ -980,7 +980,7 @@ function ProfileModal({
                 <div className={styles.profileThumb} key={photo.id}>
                   <Image alt={`${publication.titulo ?? "Foto"}, foto ${index + 1}`} fill src={photo.url} unoptimized />
                   <button
-                    aria-label={`Borrar ${publication.titulo ?? "foto"}, foto ${index + 1}`}
+                    aria-label={`Esborrar ${publication.titulo ?? "foto"}, foto ${index + 1}`}
                     className={styles.profileThumbDelete}
                     onClick={() => onDeletePhoto(publication, photo.index)}
                     type="button"
@@ -992,7 +992,7 @@ function ProfileModal({
             )}
           </div>
         ) : (
-          <p className={styles.profileEmpty}>Todavia no has archivado ninguna imagen.</p>
+          <p className={styles.profileEmpty}>Encara no has arxivat cap imatge.</p>
         )}
       </section>
     </div>
@@ -1035,7 +1035,7 @@ function PublicationDetailModal({
         <div className={styles.publicationDetailImage}>
           {activePhoto ? (
             <Image
-              alt={publication.titulo ?? "Imagen de la publicacion"}
+              alt={publication.titulo ?? "Imatge de la publicació"}
               fill
               sizes="(max-width: 860px) 90vw, 60vw"
               src={activePhoto.url}
@@ -1054,7 +1054,7 @@ function PublicationDetailModal({
                 <ChevronLeft aria-hidden="true" size={28} strokeWidth={2.5} />
               </button>
               <button
-                aria-label="Foto siguiente"
+                aria-label="Foto següent"
                 className={`${styles.publicationPhotoArrow} ${styles.nextPhotoArrow}`}
                 disabled={activePhotoPosition === publication.fotos.length - 1}
                 onClick={() => movePhoto(1)}
@@ -1069,10 +1069,10 @@ function PublicationDetailModal({
           ) : null}
         </div>
         {publication.fotos.length > 1 ? (
-          <div className={styles.publicationPhotoThumbs} aria-label="Fotos de la publicacion">
+          <div className={styles.publicationPhotoThumbs} aria-label="Fotos de la publicació">
             {publication.fotos.map((photo, index) => (
               <button
-                aria-label={`Ver foto ${index + 1}`}
+                aria-label={`Veure la foto ${index + 1}`}
                 className={`${styles.publicationPhotoThumb} ${photo.index === activePhoto?.index ? styles.activePhotoThumb : ""}`}
                 key={photo.id}
                 onClick={() => setActivePhotoIndex(photo.index)}
@@ -1085,23 +1085,23 @@ function PublicationDetailModal({
         ) : null}
       </div>
       <div className={styles.publicationDetailInfo}>
-        <span className={styles.kicker}>Ficha de la pieza</span>
-        <h2>{publication.titulo ?? "Pieza sin titulo"}</h2>
+        <span className={styles.kicker}>Fitxa de la peça</span>
+        <h2>{publication.titulo ?? "Peça sense títol"}</h2>
         {publication.descripcion ? <p className={styles.publicationDetailDescription}>{publication.descripcion}</p> : null}
         <dl className={styles.publicationDetailMeta}>
           <div>
-            <dt>Direccion</dt>
+            <dt>Adreça</dt>
             <dd>{publication.direccionTexto ?? "No disponible"}</dd>
           </div>
           {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? (
             <div>
-              <dt>Coordenadas</dt>
+              <dt>Coordenades</dt>
               <dd>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</dd>
             </div>
           ) : null}
           {publication.creadoEn ? (
             <div>
-              <dt>Archivada</dt>
+              <dt>Arxivada</dt>
               <dd>{formatPublicationDate(publication.creadoEn)}</dd>
             </div>
           ) : null}
@@ -1109,7 +1109,7 @@ function PublicationDetailModal({
         {publication.isOwner && activePhoto ? (
           <div className={styles.publicationDetailActions}>
             <button disabled={isSubmitting} onClick={onEdit} type="button">Editar</button>
-            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDeleteRequest(activePhoto.index)} type="button">Borrar</button>
+            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDeleteRequest(activePhoto.index)} type="button">Esborrar</button>
           </div>
         ) : null}
       </div>
@@ -1130,14 +1130,14 @@ function DeletePhotoConfirmation({
 }) {
   return (
     <div className={styles.confirmationModal}>
-      <span className={styles.kicker}>Eliminar imagen</span>
+      <span className={styles.kicker}>Eliminar la imatge</span>
       <h2>
         {isLastPhoto
-          ? "¿Desea eliminar esta imagen? Es la última del grupo, por lo que también se eliminará la publicación."
-          : "¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."}
+          ? "Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació."
+          : "Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup."}
       </h2>
       <div className={styles.confirmationActions}>
-        <button disabled={isSubmitting} onClick={onCancel} type="button">Cancelar</button>
+        <button disabled={isSubmitting} onClick={onCancel} type="button">Cancel·lar</button>
         <button className={styles.dangerButton} disabled={isSubmitting} onClick={onConfirm} type="button">Eliminar</button>
       </div>
     </div>
@@ -1158,7 +1158,7 @@ function PublicationGallery({
   );
 
   if (galleryPhotos.length === 0) {
-    return <p className={styles.emptyState}>{hasSearch ? "No hay imagenes que coincidan con la busqueda." : "Todavia no hay fotos publicadas."}</p>;
+    return <p className={styles.emptyState}>{hasSearch ? "No hi ha cap imatge que coincidisca amb la busca." : "Encara no hi ha fotos publicades."}</p>;
   }
 
   return (
@@ -1166,14 +1166,14 @@ function PublicationGallery({
       {galleryPhotos.map(({ photo, publication }) => (
         <article className={styles.publicCard} key={`${publication.id}-${photo.id}`}>
           <button
-            aria-label={`Ver detalles de ${publication.titulo ?? "la imagen"}`}
+            aria-label={`Veure els detalls de ${publication.titulo ?? "la imatge"}`}
             className={`${styles.publicImageButton} ${publication.titulo ? styles.hasImageOverlay : ""}`}
             onClick={() => onOpen(publication, photo.index)}
             type="button"
           >
             <div className={styles.publicImage}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt={publication.titulo ?? "Azulejo"} decoding="async" loading="lazy" src={photo.url} />
+              <img alt={publication.titulo ?? "Taulell"} decoding="async" loading="lazy" src={photo.url} />
             </div>
             {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
           </button>
@@ -1189,7 +1189,7 @@ function submitCredentials(event: FormEvent<HTMLFormElement>, callback: () => Pr
 }
 
 function formatPublicationDate(value: string) {
-  return new Intl.DateTimeFormat("es", {
+  return new Intl.DateTimeFormat("ca-ES-valencia", {
     day: "2-digit",
     month: "short",
     year: "numeric",

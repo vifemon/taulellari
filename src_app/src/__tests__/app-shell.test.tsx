@@ -21,13 +21,13 @@ vi.mock("next/dynamic", () => ({
     theme: "light" | "dark";
   }) => (
     <section
-      aria-label="Mapa de publicaciones"
+      aria-label="Mapa de publicacions"
       data-publication-ids={publications.map(({ id }) => id).join(",")}
       data-theme={theme}
     >
       {publications[0] ? (
         <button onClick={() => onPublicationOpen(publications[0].id)} type="button">
-          Abrir primer marcador
+          Obrir el primer marcador
         </button>
       ) : null}
     </section>
@@ -74,14 +74,14 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Portal azul")).toBeDefined();
     expect(screen.getByText("Rosa verde")).toBeDefined();
 
-    fireEvent.click(screen.getByRole("button", { name: "Mis publicaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: "Les meues publicacions" }));
 
     await waitFor(() => {
       expect(screen.getByText("Portal azul")).toBeDefined();
       expect(screen.queryByText("Rosa verde")).toBeNull();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Todas las publicaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: "Totes les publicacions" }));
 
     expect(await screen.findByText("Rosa verde")).toBeDefined();
   });
@@ -92,16 +92,17 @@ describe("AppShell gallery search", () => {
     render(<AppShell />);
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
-    fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
+    expect(screen.getByRole("link", { name: "Accedeix" })).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Vista de mapa" }));
 
-    const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
+    const map = await screen.findByRole("region", { name: "Mapa de publicacions" });
     expect(map.getAttribute("data-theme")).toBe("dark");
     expect(screen.queryByText("Portal azul")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Activar modo claro" }));
+    fireEvent.click(screen.getByRole("button", { name: "Activar el mode clar" }));
     expect(map.getAttribute("data-theme")).toBe("light");
 
-    fireEvent.click(screen.getByRole("button", { name: "Vista Galeria" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vista de galeria" }));
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
   });
@@ -112,26 +113,27 @@ describe("AppShell gallery search", () => {
     render(<AppShell />);
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
-    const navigation = screen.getByRole("navigation", { name: "Navegacion principal" });
-    const openMenuButton = within(navigation).getByRole("button", { name: "Abrir menu" });
+    const navigation = screen.getByRole("navigation", { name: "Navegació principal" });
+    const openMenuButton = within(navigation).getByRole("button", { name: "Obrir el menú" });
 
     expect(openMenuButton.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(openMenuButton);
 
-    expect(within(navigation).getByRole("button", { name: "Cerrar menu" }).getAttribute("aria-expanded")).toBe("true");
-    expect(within(navigation).getByRole("button", { name: "Activar modo claro" })).toBeDefined();
-    expect(within(navigation).getByRole("button", { name: "Mi perfil de Ana" })).toBeDefined();
-    expect(within(navigation).getByRole("button", { name: "Subir imagen" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Tancar el menú" }).getAttribute("aria-expanded")).toBe("true");
+    expect(within(navigation).getByRole("button", { name: "Activar el mode clar" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "El meu perfil: Ana" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Pujar imatge" })).toBeDefined();
 
     fireEvent.keyDown(window, { key: "Escape" });
-    const reopenedMenuButton = within(navigation).getByRole("button", { name: "Abrir menu" });
+    const reopenedMenuButton = within(navigation).getByRole("button", { name: "Obrir el menú" });
     expect(document.activeElement).toBe(reopenedMenuButton);
 
     fireEvent.click(reopenedMenuButton);
-    fireEvent.click(within(navigation).getByRole("button", { name: "Subir imagen" }));
+    fireEvent.click(within(navigation).getByRole("button", { name: "Pujar imatge" }));
 
-    expect(await screen.findByRole("heading", { name: "Sube una fachada." })).toBeDefined();
-    expect(within(navigation).getByRole("button", { name: "Abrir menu" }).getAttribute("aria-expanded")).toBe("false");
+    expect(await screen.findByText("Nova publicació")).toBeDefined();
+    expect(await screen.findByRole("heading", { name: "Puja les imatges d'una casa i localitza-la" })).toBeDefined();
+    expect(within(navigation).getByRole("button", { name: "Obrir el menú" }).getAttribute("aria-expanded")).toBe("false");
   });
 
   it("keeps map markers in sync with the search, scope, and detail modal", async () => {
@@ -140,9 +142,9 @@ describe("AppShell gallery search", () => {
     render(<AppShell />);
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
-    fireEvent.click(screen.getByRole("button", { name: "Vista Mapa" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vista de mapa" }));
 
-    const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
+    const map = await screen.findByRole("region", { name: "Mapa de publicacions" });
     expect(map.getAttribute("data-publication-ids")).toBe("1,2");
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Buscar en la galeria" }), {
@@ -155,13 +157,13 @@ describe("AppShell gallery search", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: "Buscar en la galeria" }), {
       target: { value: "" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Mis publicaciones" }));
+    fireEvent.click(screen.getByRole("button", { name: "Les meues publicacions" }));
     await waitFor(() => {
       expect(map.getAttribute("data-publication-ids")).toBe("1");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Abrir primer marcador" }));
-    expect(await screen.findByText("Ficha de la pieza")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Obrir el primer marcador" }));
+    expect(await screen.findByText("Fitxa de la peça")).toBeDefined();
     expect(screen.getByRole("heading", { name: "Portal azul" })).toBeDefined();
   });
 
@@ -170,7 +172,7 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Mi perfil de Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
 
     expect(await screen.findAllByAltText(/Portal azul, foto/)).toHaveLength(3);
   });
@@ -180,15 +182,15 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Mi perfil de Ana" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Borrar Portal azul, foto 1" }));
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar Portal azul, foto 1" }));
 
     expect(
-      await screen.findByText("¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."),
+      await screen.findByText("Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup."),
     ).toBeDefined();
 
-    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
-    expect(await screen.findByText("Archivo personal")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel·lar" }));
+    expect(await screen.findByText("Arxiu personal")).toBeDefined();
   });
 
   it("shows an empty search state when no images match", async () => {
@@ -202,7 +204,7 @@ describe("AppShell gallery search", () => {
       target: { value: "sin coincidencias" },
     });
 
-    expect(await screen.findByText("No hay imagenes que coincidan con la busqueda.")).toBeDefined();
+    expect(await screen.findByText("No hi ha cap imatge que coincidisca amb la busca.")).toBeDefined();
   });
 
   it("opens publication details with owner actions after clicking an image", async () => {
@@ -210,13 +212,13 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Veure els detalls de Portal azul" }));
 
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Ficha de la pieza")).toBeDefined();
+    expect(within(dialog).getByText("Fitxa de la peça")).toBeDefined();
     expect(within(dialog).getByText("Carrer Major 12, Manises")).toBeDefined();
     expect(within(dialog).getByRole("button", { name: "Editar" })).toBeDefined();
-    expect(within(dialog).getByRole("button", { name: "Borrar" })).toBeDefined();
+    expect(within(dialog).getByRole("button", { name: "Esborrar" })).toBeDefined();
   });
 
   it("does not show owner actions for another user's publication", async () => {
@@ -224,12 +226,12 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Rosa verde" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Veure els detalls de Rosa verde" }));
 
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Avinguda del Port 4, Valencia")).toBeDefined();
     expect(within(dialog).queryByRole("button", { name: "Editar" })).toBeNull();
-    expect(within(dialog).queryByRole("button", { name: "Borrar" })).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: "Esborrar" })).toBeNull();
   });
 
   it("renders every uploaded photo and navigates through the group", async () => {
@@ -237,7 +239,7 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    const imageButtons = await screen.findAllByRole("button", { name: "Ver detalles de Portal azul" });
+    const imageButtons = await screen.findAllByRole("button", { name: "Veure els detalls de Portal azul" });
     expect(imageButtons).toHaveLength(3);
 
     fireEvent.click(imageButtons[1]);
@@ -248,10 +250,10 @@ describe("AppShell gallery search", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Foto anterior" }));
     expect(within(dialog).getByText("1 de 3")).toBeDefined();
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Foto siguiente" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Foto siguiente" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Foto següent" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Foto següent" }));
     expect(within(dialog).getByText("3 de 3")).toBeDefined();
-    expect((within(dialog).getByRole("button", { name: "Foto siguiente" }) as HTMLButtonElement).disabled).toBe(true);
+    expect((within(dialog).getByRole("button", { name: "Foto següent" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("shows the group deletion confirmation for the last photo", async () => {
@@ -259,11 +261,11 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Veure els detalls de Portal azul" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar" }));
 
     expect(
-      await screen.findByText("¿Desea eliminar esta imagen? Es la última del grupo, por lo que también se eliminará la publicación."),
+      await screen.findByText("Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació."),
     ).toBeDefined();
   });
 
@@ -272,11 +274,11 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click((await screen.findAllByRole("button", { name: "Ver detalles de Portal azul" }))[0]);
-    fireEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+    fireEvent.click((await screen.findAllByRole("button", { name: "Veure els detalls de Portal azul" }))[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar" }));
 
     expect(
-      await screen.findByText("¿Desea eliminar esta imagen? Si es así se eliminará la imagen actual y se mantendrán el resto de imágenes del mismo grupo."),
+      await screen.findByText("Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup."),
     ).toBeDefined();
   });
 
@@ -285,9 +287,10 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Ver detalles de Portal azul" }));
+    expect(await screen.findByRole("button", { name: "Log in" })).toBeDefined();
+    fireEvent.click(await screen.findByRole("button", { name: "Veure els detalls de Portal azul" }));
 
-    expect(await screen.findByRole("heading", { name: "Entra al archivo." })).toBeDefined();
+    expect(await screen.findByRole("heading", { name: "Entra a l'arxiu." })).toBeDefined();
   });
 
   it("opens the login modal when an anonymous visitor selects own publications", async () => {
@@ -295,9 +298,9 @@ describe("AppShell gallery search", () => {
 
     render(<AppShell />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Mis publicaciones, iniciar sesion" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Les meues publicacions, inicia sessió" }));
 
-    expect(await screen.findByRole("heading", { name: "Entra al archivo." })).toBeDefined();
+    expect(await screen.findByRole("heading", { name: "Entra a l'arxiu." })).toBeDefined();
   });
 });
 

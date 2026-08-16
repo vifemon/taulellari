@@ -72,32 +72,32 @@ export function Gallery() {
   }
 
   return (
-    <section className={styles.galleryPanel} aria-label="Galeria de publicaciones">
+    <section className={styles.galleryPanel} aria-label="Galeria de publicacions">
       <div className={styles.galleryHeader}>
         <span className={styles.kicker}>Galeria visual</span>
         <div>
-          <h2>El archivo empieza aqui.</h2>
+          <h2>L&apos;arxiu comença ací.</h2>
           <p>
-            Las piezas guardadas aparecen ordenadas por fecha, con sus fotos y
-            direccion exacta protegidas por sesion.
+            Les peces guardades apareixen ordenades per data; les fotos i
+            l&apos;adreça exacta només es mostren si has iniciat sessió.
           </p>
         </div>
         <button className={styles.secondaryButton} onClick={() => loadGallery()} type="button">
-          Actualizar
+          Actualitzar
         </button>
       </div>
 
-      {state === "loading" ? <p className={styles.status}>Cargando galeria...</p> : null}
+      {state === "loading" ? <p className={styles.status}>Carregant la galeria...</p> : null}
       {state === "anonymous" ? (
-        <p className={styles.status}>Inicia sesion para ver tus publicaciones.</p>
+        <p className={styles.status}>Inicia sessió per a veure les teues publicacions.</p>
       ) : null}
       {state === "error" ? (
-        <p className={styles.status}>No se pudo cargar la galeria.</p>
+        <p className={styles.status}>No s&apos;ha pogut carregar la galeria.</p>
       ) : null}
       {state === "ready" && publications.length === 0 ? (
         <div className={styles.emptyGallery}>
-          <strong>No hay piezas archivadas todavia.</strong>
-          <span>Guarda la primera fachada para inaugurar el mosaico.</span>
+          <strong>Encara no hi ha cap peça arxivada.</strong>
+          <span>Guarda la primera façana per a inaugurar el mosaic.</span>
         </div>
       ) : null}
 
@@ -137,7 +137,7 @@ export function Gallery() {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("es", {
+  return new Intl.DateTimeFormat("ca-ES-valencia", {
     day: "2-digit",
     month: "short",
     year: "numeric",

@@ -14,13 +14,13 @@ export async function GET(
   const photoIndex = Number(index);
 
   if (!Number.isSafeInteger(publicationId) || !Number.isSafeInteger(photoIndex) || photoIndex < 1) {
-    return Response.json({ error: "Foto no encontrada" }, { status: 404 });
+    return Response.json({ error: "No s'ha trobat la foto" }, { status: 404 });
   }
 
   const photo = await findPublicationPhoto({ id: publicationId, orden: photoIndex });
 
   if (!photo) {
-    return Response.json({ error: "Foto no encontrada" }, { status: 404 });
+    return Response.json({ error: "No s'ha trobat la foto" }, { status: 404 });
   }
 
   try {
@@ -33,7 +33,7 @@ export async function GET(
       },
     });
   } catch {
-    return Response.json({ error: "Foto no encontrada" }, { status: 404 });
+    return Response.json({ error: "No s'ha trobat la foto" }, { status: 404 });
   }
 }
 
@@ -44,7 +44,7 @@ export async function DELETE(
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
   }
 
   const { id, index } = await context.params;
@@ -52,7 +52,7 @@ export async function DELETE(
   const photoIndex = Number(index);
 
   if (!Number.isSafeInteger(publicationId) || !Number.isSafeInteger(photoIndex) || photoIndex < 1) {
-    return Response.json({ error: "Foto no encontrada" }, { status: 404 });
+    return Response.json({ error: "No s'ha trobat la foto" }, { status: 404 });
   }
 
   const deleted = await deletePublicationPhoto({
@@ -62,7 +62,7 @@ export async function DELETE(
   });
 
   if (!deleted) {
-    return Response.json({ error: "Foto no encontrada" }, { status: 404 });
+    return Response.json({ error: "No s'ha trobat la foto" }, { status: 404 });
   }
 
   await removeSavedPhotos([deleted.path]);

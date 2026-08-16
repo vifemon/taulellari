@@ -20,6 +20,7 @@
   --upload-bg: color-mix(in srgb, var(--blue) 7%, var(--tile));
   --upload-icon-bg: var(--blue-deep);
   --upload-icon-ink: var(--white);
+  --navbar-height: 64px;
   min-height: 100vh;
   background:
     radial-gradient(
@@ -357,7 +358,7 @@
 .gallerySurface {
   display: grid;
   gap: 28px;
-  padding: 32px max(18px, calc((100vw - 1120px) / 2)) 80px;
+  padding: calc(var(--navbar-height) + 32px) max(18px, calc((100vw - 1120px) / 2)) 80px;
 }
 
 .galleryIntro {

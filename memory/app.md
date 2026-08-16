@@ -38,9 +38,19 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 
+## Idioma Y Localizacion
+
+- **Idioma de producto:** todo el contenido visible y accesible de la interfaz se redacta en valenciano de Valencia, incluyendo navegacion, formularios, placeholders, estados vacios, confirmaciones, mensajes de validacion, errores de API y etiquetas `aria`.
+- **Variante linguistica:** se priorizan las formas propias del valenciano de Valencia frente a variantes orientales. Las futuras incorporaciones de copy deben mantener este criterio.
+- **Idioma del documento:** el elemento `html` declara `lang="ca-ES-valencia"` y las fechas visibles usan el mismo locale mediante `Intl.DateTimeFormat`.
+- **Geocodificacion:** Mapbox recibe `language=ca`, ya que el proveedor no ofrece un codigo separado para la variante valenciana. Las etiquetas del mapa base proceden de CARTO y dependen del proveedor externo.
+- **Excepcion de producto:** el acceso anonimo de la Navbar conserva deliberadamente el texto ingles `Log in`.
+- **Contratos tecnicos:** los identificadores internos, campos de API y nombres de base de datos existentes, como `publicaciones`, `titulo` o `direccionTexto`, no se traducen para evitar cambios de contrato. Tampoco se modifica el contenido introducido por usuarios ni las direcciones devueltas por servicios externos.
+- **Cobertura:** las pruebas de `AppShell` usan el copy valenciano y protegen los textos principales de navegacion y publicacion.
+
 ## Estado Actual
 
-Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso, con una primera ronda de ajustes visuales y responsive completada y publicada en `origin/develop`.
+Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso e incorpora ajustes visuales, mejoras responsive y la localizacion completa de la experiencia al valenciano de Valencia.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -113,6 +123,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), imagen fotografica de fondo, panel central con efecto glass y scroll hacia la galeria.
 - **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el contenedor ocupa toda la altura disponible.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
+- **Ancla de galeria:** la seccion `#galeria` reserva en su parte superior un espacio de `64px`, equivalente a la altura de la Navbar fija, mas su separacion visual habitual. El espacio deja ver el fondo real de la pagina para evitar cambios de tono y que el encabezado quede oculto al usar `Accedeix`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
 - **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural; usa cuatro columnas en desktop y dos en tablet y mobile.
@@ -142,7 +153,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - `npm run test` correcto con 35 tests.
 - `npm run build` correcto.
 - Rama actual de trabajo: `develop`.
-- `develop` sincronizada con `origin/develop` en `a1ba07e`.
+- `develop` contiene la localizacion valenciana y los ultimos ajustes de navegacion de la galeria.
 
 ## Restricciones Importantes
 

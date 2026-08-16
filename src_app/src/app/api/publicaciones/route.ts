@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
   }
 
   const formData = await request.formData();

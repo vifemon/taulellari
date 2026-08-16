@@ -17,19 +17,19 @@ export async function PATCH(request: Request) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
   }
 
   const input = parseProfileInput(await readJsonObject(request));
 
   if (!input) {
-    return Response.json({ error: "Datos de perfil invalidos" }, { status: 400 });
+    return Response.json({ error: "Les dades del perfil no són vàlides" }, { status: 400 });
   }
 
   const existingUser = await findUserByEmail(input.email);
 
   if (existingUser && existingUser.id !== currentUser.id) {
-    return Response.json({ error: "El email ya esta registrado" }, { status: 409 });
+    return Response.json({ error: "Este correu electrònic ja està registrat" }, { status: 409 });
   }
 
   const user = await updateUser({
@@ -47,7 +47,7 @@ export async function DELETE() {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
   }
 
   const publications = await listPublicationPhotoPathsForUser(currentUser.id);

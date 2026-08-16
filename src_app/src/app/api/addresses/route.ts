@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     return Response.json({ suggestions });
   } catch {
     return Response.json(
-      { error: "No se pudieron buscar direcciones" },
+      { error: "No s'han pogut buscar adreces" },
       { status: 502 },
     );
   }

@@ -72,6 +72,8 @@ Estado: en curso sobre `develop`.
 - [x] **Perfil en smartphone:** repartir al 50% las acciones secundarias y permitir que el modal crezca y se desplace segun la cantidad de imagenes.
 - [x] **Controles de galeria simplificados:** mostrar los selectores de alcance y vista solo mediante iconos Lucide accesibles; usar `Users` y `MapPinned` para todas las publicaciones y mapa.
 - [x] **Barra de galeria:** reducir el buscador a unos `360px`, alinearlo con el borde izquierdo de la galeria o mapa y situar los controles en el borde derecho.
+- [x] **Localizacion valenciana:** traducir todo el copy visible y accesible al valenciano de Valencia, declarar `ca-ES-valencia`, localizar fechas, validaciones y errores, y solicitar a Mapbox las direcciones en `ca`.
+- [x] **Ancla de galeria:** reservar sobre el encabezado de `#galeria` un espacio con el fondo real de la pagina equivalente a la altura de la Navbar fija para evitar que `Accedeix` deje el titulo oculto.
 - [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
 
 ## Fase 2: Contenerizacion Y Despliegue
@@ -101,6 +103,5 @@ El siguiente paso tecnico es continuar la **Fase 1.8: Correcciones** de forma it
 ## Ultimo Estado Git
 
 - Rama actual: `develop`.
-- Ultimo commit: `a1ba07e style: align gallery toolbar controls`.
-- `develop` contiene la primera ronda de la Fase 1.8 y esta sincronizada con `origin/develop`.
-- No habia cambios de aplicacion pendientes al iniciar esta actualizacion documental.
+- `develop` contiene la localizacion valenciana y el ajuste del ancla de galeria de la Fase 1.8.
+- La interfaz, las etiquetas accesibles, las validaciones y los errores de API orientados al usuario siguen la politica linguistica descrita en `memory/app.md`.
