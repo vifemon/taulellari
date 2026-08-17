@@ -7,6 +7,7 @@ import {
 import { getPublicationPhotoEntries } from "@/publicaciones/photos";
 import { removeSavedPhotos } from "@/publicaciones/storage";
 import { validatePublicationFields } from "@/publicaciones/validation";
+import { API_ERROR_CODES } from "@/i18n/error-codes";
 
 export async function PATCH(
   request: Request,
@@ -15,13 +16,13 @@ export async function PATCH(
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.authRequired }, { status: 401 });
   }
 
   const publicationId = await parsePublicationId(context);
 
   if (!publicationId) {
-    return Response.json({ error: "No s'ha trobat la publicació" }, { status: 404 });
+    return Response.json({ error: API_ERROR_CODES.publicationNotFound }, { status: 404 });
   }
 
   const body: unknown = await request.json();
@@ -44,7 +45,7 @@ export async function PATCH(
   });
 
   if (!existing) {
-    return Response.json({ error: "No s'ha trobat la publicació" }, { status: 404 });
+    return Response.json({ error: API_ERROR_CODES.publicationNotFound }, { status: 404 });
   }
 
   await updatePublication({
@@ -63,13 +64,13 @@ export async function DELETE(
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.authRequired }, { status: 401 });
   }
 
   const publicationId = await parsePublicationId(context);
 
   if (!publicationId) {
-    return Response.json({ error: "No s'ha trobat la publicació" }, { status: 404 });
+    return Response.json({ error: API_ERROR_CODES.publicationNotFound }, { status: 404 });
   }
 
   const photos = await findPublicationPhotoPaths({
@@ -78,7 +79,7 @@ export async function DELETE(
   });
 
   if (!photos) {
-    return Response.json({ error: "No s'ha trobat la publicació" }, { status: 404 });
+    return Response.json({ error: API_ERROR_CODES.publicationNotFound }, { status: 404 });
   }
 
   await deletePublication({ id: publicationId, usuarioId: user.id });

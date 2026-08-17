@@ -1,0 +1,210 @@
+{
+  "metadata": {
+    "title": "Taulellari",
+    "description": "Archivo privado de azulejos tradicionales geolocalizados."
+  },
+  "common": {
+    "close": "Cerrar",
+    "fields": {
+      "name": "Nombre",
+      "surnames": "Apellidos",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "title": "Título",
+      "optionalDescription": "Descripción (opcional)",
+      "exactAddress": "Dirección exacta"
+    }
+  },
+  "navigation": {
+    "label": "Navegación principal",
+    "goHome": "Ir al inicio",
+    "menu": {
+      "open": "Abrir el menú",
+      "close": "Cerrar el menú"
+    },
+    "profile": {
+      "label": "Mi perfil: {{name}}",
+      "text": "Mi perfil"
+    },
+    "login": "Entrar",
+    "uploadImage": "Subir imagen",
+    "language": {
+      "switch": "Cambiar a valenciano"
+    }
+  },
+  "theme": {
+    "activateDark": "Activar el modo oscuro",
+    "activateLight": "Activar el modo claro",
+    "dark": "Modo oscuro",
+    "light": "Modo claro"
+  },
+  "hero": {
+    "kicker": "Archivo colaborativo de casas singulares",
+    "title": "Azulejos, mosaicos, baldosas, chapados",
+    "access": "Acceder",
+    "uploadImage": "Subir imagen"
+  },
+  "gallery": {
+    "intro": {
+      "kicker": "Galería de publicaciones",
+      "title": "Sube. Localiza. Descubre"
+    },
+    "search": {
+      "label": "Buscar en la galería",
+      "placeholder": "Buscar..."
+    },
+    "scope": {
+      "label": "Alcance de la galería",
+      "all": "Todas las publicaciones",
+      "mine": "Mis publicaciones",
+      "mineRequiresLogin": "Mis publicaciones, inicia sesión"
+    },
+    "view": {
+      "label": "Vista de publicaciones",
+      "gallery": "Vista de galería",
+      "map": "Vista de mapa"
+    },
+    "empty": {
+      "default": "Todavía no hay fotos publicadas.",
+      "search": "No hay ninguna imagen que coincida con la búsqueda."
+    },
+    "card": {
+      "openDetailsNamed": "Ver los detalles de {{title}}",
+      "openDetailsGeneric": "Ver los detalles de la imagen",
+      "imageAltFallback": "Azulejo"
+    }
+  },
+  "auth": {
+    "login": {
+      "kicker": "Inicio de sesión",
+      "heading": "Entra en el archivo.",
+      "submit": "Entrar",
+      "createAccount": "Crear una cuenta"
+    },
+    "register": {
+      "kicker": "Registro",
+      "heading": "Crea tu perfil.",
+      "submit": "Registrarme",
+      "alreadyRegistered": "Ya tengo una cuenta"
+    }
+  },
+  "publication": {
+    "upload": {
+      "kicker": "Nueva publicación",
+      "heading": "Sube las imágenes de una casa y localízala",
+      "uploadPhotos": "Subir fotos",
+      "filesSelected_one": "{{count}} archivo seleccionado",
+      "filesSelected_other": "{{count}} archivos seleccionados",
+      "save": "Guardar"
+    },
+    "edit": {
+      "kicker": "Editar la publicación",
+      "heading": "Actualiza los datos.",
+      "save": "Guardar los cambios"
+    },
+    "detail": {
+      "kicker": "Ficha de la publicación",
+      "untitled": "Publicación sin título",
+      "imageAltFallback": "Imagen de la publicación",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Foto siguiente",
+      "photoCounter": "{{current}} de {{total}}",
+      "photosLabel": "Fotos de la publicación",
+      "viewPhoto": "Ver la foto {{number}}",
+      "address": "Dirección",
+      "unavailable": "No disponible",
+      "coordinates": "Coordenadas",
+      "archivedAt": "Archivada",
+      "edit": "Editar",
+      "delete": "Borrar"
+    },
+    "deletePhoto": {
+      "kicker": "Eliminar la imagen",
+      "lastPhotoWarning": "¿Quieres eliminar esta imagen? Es la última del grupo y, por tanto, también se eliminará la publicación.",
+      "groupPhotoWarning": "¿Quieres eliminar esta imagen? Si es así, se eliminará la imagen actual y se conservarán las demás imágenes del mismo grupo.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    }
+  },
+  "profile": {
+    "newPasswordPlaceholder": "Nueva contraseña (opcional)",
+    "save": "Guardar el perfil",
+    "logout": "Cerrar la sesión",
+    "deleteAccount": "Borrar el usuario",
+    "updated": "Perfil actualizado",
+    "archive": {
+      "label": "Archivo fotográfico personal",
+      "kicker": "Archivo personal",
+      "photoCount_one": "{{count}} imagen",
+      "photoCount_other": "{{count}} imágenes",
+      "photoAlt": "{{title}}, foto {{number}}",
+      "fallbackPhotoTitle": "Foto",
+      "deletePhotoLabel": "Borrar {{title}}, foto {{number}}",
+      "fallbackDeletePhotoTitle": "foto",
+      "empty": "Todavía no has archivado ninguna imagen."
+    }
+  },
+  "map": {
+    "label": "Mapa de publicaciones",
+    "recenter": "Centrar en la Comunidad Valenciana",
+    "attribution": {
+      "contributors": "colaboradores"
+    },
+    "controls": {
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "attributions": "Atribuciones",
+      "resetRotation": "Restablecer la rotación"
+    }
+  },
+  "legacyGallery": {
+    "label": "Galería de publicaciones",
+    "kicker": "Galería visual",
+    "heading": "El archivo empieza aquí.",
+    "description": "Las publicaciones guardadas aparecen ordenadas por fecha; las fotos y la dirección exacta solo se muestran si has iniciado sesión.",
+    "refresh": "Actualizar",
+    "loading": "Cargando la galería...",
+    "anonymous": "Inicia sesión para ver tus publicaciones.",
+    "loadError": "No se ha podido cargar la galería.",
+    "emptyTitle": "Todavía no hay ninguna publicación archivada.",
+    "emptyDescription": "Guarda la primera fachada para inaugurar el mosaico.",
+    "photoAlt": "{{title}}, foto {{number}}"
+  },
+  "errors": {
+    "auth": {
+      "required": "No has iniciado sesión",
+      "invalidCredentials": "Las credenciales no son válidas",
+      "invalidRegistration": "Los datos de registro no son válidos",
+      "emailTaken": "Este correo electrónico ya está registrado",
+      "loginFailed": "No se ha podido iniciar la sesión",
+      "registerFailed": "No se ha podido completar el registro"
+    },
+    "profile": {
+      "invalid": "Los datos del perfil no son válidos",
+      "updateFailed": "No se ha podido actualizar el perfil"
+    },
+    "publication": {
+      "notFound": "No se ha encontrado la publicación",
+      "saveFailed": "No se ha podido guardar",
+      "editFailed": "No se ha podido editar"
+    },
+    "photo": {
+      "notFound": "No se ha encontrado la foto",
+      "deleteFailed": "No se ha podido borrar la imagen"
+    },
+    "address": {
+      "searchFailed": "No se han podido buscar direcciones"
+    }
+  },
+  "validation": {
+    "publication": {
+      "titleRequired": "El título es obligatorio",
+      "descriptionTooLong": "La descripción es demasiado larga",
+      "addressRequired": "La dirección es obligatoria",
+      "invalidCoordinates": "Las coordenadas no son válidas",
+      "photoRequired": "Sube al menos una foto",
+      "unsupportedPhotoType": "Todas las fotos deben tener un formato de imagen compatible",
+      "photoTooLarge": "Cada foto debe pesar 8 MB como máximo"
+    }
+  }
+}

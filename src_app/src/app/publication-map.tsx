@@ -5,6 +5,7 @@ import { LocateFixed } from "lucide-react";
 import OlMap from "ol/Map";
 import View from "ol/View";
 import Control from "ol/control/Control";
+import { defaults as defaultControls } from "ol/control/defaults";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import Point from "ol/geom/Point";
@@ -15,6 +16,7 @@ import XYZ from "ol/source/XYZ";
 import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from "ol/style";
 import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
+import { useTranslation } from "react-i18next";
 
 import styles from "./page.module.css";
 
@@ -40,10 +42,10 @@ export function getBaseMapUrl(theme: MapTheme) {
   return `https://{a-d}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`;
 }
 
-function createBaseMapSource(theme: MapTheme) {
+function createBaseMapSource(theme: MapTheme, contributorsLabel: string) {
   return new XYZ({
     attributions: [
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ${contributorsLabel}`,
       '&copy; <a href="https://carto.com/attributions">CARTO</a>',
     ],
     url: getBaseMapUrl(theme),
@@ -227,19 +229,29 @@ export function PublicationMap({
   publications: MapPublication[];
   theme: MapTheme;
 }) {
+  const { i18n, t } = useTranslation();
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<OlMap | null>(null);
   const baseLayerRef = useRef<TileLayer<XYZ> | null>(null);
   const publicationSourceRef = useRef<VectorSource | null>(null);
+  const recenterButtonRef = useRef<HTMLButtonElement | null>(null);
   const onPublicationOpenRef = useRef(onPublicationOpen);
   const themeRef = useRef<MapTheme>(theme);
+  const controlLabelsRef = useRef({
+    attributions: t("map.controls.attributions"),
+    contributors: t("map.attribution.contributors"),
+    recenter: t("map.recenter"),
+    resetRotation: t("map.controls.resetRotation"),
+    zoomIn: t("map.controls.zoomIn"),
+    zoomOut: t("map.controls.zoomOut"),
+  });
 
   useEffect(() => {
     if (!mapElementRef.current) {
       return;
     }
 
-    const baseLayer = new TileLayer({ source: createBaseMapSource("light") });
+    const baseLayer = new TileLayer({ source: createBaseMapSource("light", controlLabelsRef.current.contributors) });
     const publicationSource = new VectorSource();
     const clusterSource = new Cluster({
       distance: 56,
@@ -250,6 +262,14 @@ export function PublicationMap({
     publicationSourceRef.current = publicationSource;
 
     const map = new OlMap({
+      controls: defaultControls({
+        attributionOptions: { tipLabel: controlLabelsRef.current.attributions },
+        rotateOptions: { tipLabel: controlLabelsRef.current.resetRotation },
+        zoomOptions: {
+          zoomInTipLabel: controlLabelsRef.current.zoomIn,
+          zoomOutTipLabel: controlLabelsRef.current.zoomOut,
+        },
+      }),
       layers: [
         baseLayer,
         publicationLayer,
@@ -264,9 +284,10 @@ export function PublicationMap({
     publicationLayer.setStyle((feature) => getClusterStyles(feature, themeRef.current, () => map.render()));
 
     const recenterButton = document.createElement("button");
-    recenterButton.setAttribute("aria-label", "Centrar en la Comunitat Valenciana");
-    recenterButton.setAttribute("title", "Centrar en la Comunitat Valenciana");
+    recenterButton.setAttribute("aria-label", controlLabelsRef.current.recenter);
+    recenterButton.setAttribute("title", controlLabelsRef.current.recenter);
     recenterButton.type = "button";
+    recenterButtonRef.current = recenterButton;
     const recenterButtonRoot = createRoot(recenterButton);
     recenterButtonRoot.render(<LocateFixed aria-hidden="true" size={18} strokeWidth={2.4} />);
     const recenterElement = Object.assign(document.createElement("div"), {
@@ -327,8 +348,29 @@ export function PublicationMap({
       mapRef.current = null;
       baseLayerRef.current = null;
       publicationSourceRef.current = null;
+      recenterButtonRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const labels = {
+      attributions: t("map.controls.attributions"),
+      contributors: t("map.attribution.contributors"),
+      recenter: t("map.recenter"),
+      resetRotation: t("map.controls.resetRotation"),
+      zoomIn: t("map.controls.zoomIn"),
+      zoomOut: t("map.controls.zoomOut"),
+    };
+    controlLabelsRef.current = labels;
+
+    setMapControlLabel(mapElementRef.current, ".ol-attribution button", labels.attributions);
+    setMapControlLabel(mapElementRef.current, ".ol-rotate button", labels.resetRotation);
+    setMapControlLabel(mapElementRef.current, ".ol-zoom-in", labels.zoomIn);
+    setMapControlLabel(mapElementRef.current, ".ol-zoom-out", labels.zoomOut);
+
+    recenterButtonRef.current?.setAttribute("aria-label", labels.recenter);
+    recenterButtonRef.current?.setAttribute("title", labels.recenter);
+  }, [i18n.resolvedLanguage, t]);
 
   useEffect(() => {
     onPublicationOpenRef.current = onPublicationOpen;
@@ -336,9 +378,9 @@ export function PublicationMap({
 
   useEffect(() => {
     themeRef.current = theme;
-    baseLayerRef.current?.setSource(createBaseMapSource(theme));
+    baseLayerRef.current?.setSource(createBaseMapSource(theme, t("map.attribution.contributors")));
     mapRef.current?.render();
-  }, [theme]);
+  }, [i18n.resolvedLanguage, t, theme]);
 
   useEffect(() => {
     const source = publicationSourceRef.current;
@@ -352,8 +394,14 @@ export function PublicationMap({
   }, [publications]);
 
   return (
-    <section aria-label="Mapa de publicacions" className={styles.mapViewport}>
+    <section aria-label={t("map.label")} className={styles.mapViewport}>
       <div className={styles.mapCanvas} ref={mapElementRef} />
     </section>
   );
+}
+
+function setMapControlLabel(container: HTMLDivElement | null, selector: string, label: string) {
+  const button = container?.querySelector<HTMLButtonElement>(selector);
+  button?.setAttribute("aria-label", label);
+  button?.setAttribute("title", label);
 }

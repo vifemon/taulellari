@@ -1,3 +1,5 @@
+import { API_ERROR_CODES } from "@/i18n/error-codes";
+
 export const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
 
 const SUPPORTED_IMAGE_TYPES = new Set([
@@ -31,26 +33,26 @@ export function validatePublicationFields(input: {
   const titulo = normalizeRequiredText(input.titulo, 120);
 
   if (!titulo) {
-    return { ok: false, error: "El títol és obligatori" };
+    return { ok: false, error: API_ERROR_CODES.publicationTitleRequired };
   }
 
   const descripcion = normalizeOptionalText(input.descripcion, 120);
 
   if (descripcion === false) {
-    return { ok: false, error: "La descripció és massa llarga" };
+    return { ok: false, error: API_ERROR_CODES.publicationDescriptionTooLong };
   }
 
   const direccionTexto = normalizeRequiredText(input.direccionTexto, 300);
 
   if (!direccionTexto) {
-    return { ok: false, error: "L'adreça és obligatòria" };
+    return { ok: false, error: API_ERROR_CODES.publicationAddressRequired };
   }
 
   const latitud = toNumber(input.latitud);
   const longitud = toNumber(input.longitud);
 
   if (!isValidLatitude(latitud) || !isValidLongitude(longitud)) {
-    return { ok: false, error: "Les coordenades no són vàlides" };
+    return { ok: false, error: API_ERROR_CODES.publicationCoordinatesInvalid };
   }
 
   return {
@@ -67,16 +69,16 @@ export function validatePublicationFields(input: {
 
 export function validatePhotoFiles(files: File[]) {
   if (files.length < 1) {
-    return "Puja almenys una foto";
+    return API_ERROR_CODES.photoRequired;
   }
 
   for (const file of files) {
     if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
-      return "Totes les fotos han de tindre un format d'imatge compatible";
+      return API_ERROR_CODES.photoTypeUnsupported;
     }
 
     if (file.size > MAX_PHOTO_SIZE_BYTES) {
-      return "Cada foto ha de pesar 8 MB com a màxim";
+      return API_ERROR_CODES.photoTooLarge;
     }
   }
 

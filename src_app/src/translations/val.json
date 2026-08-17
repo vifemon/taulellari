@@ -1,0 +1,210 @@
+{
+  "metadata": {
+    "title": "Taulellari",
+    "description": "Arxiu privat de taulells tradicionals geolocalitzats."
+  },
+  "common": {
+    "close": "Tancar",
+    "fields": {
+      "name": "Nom",
+      "surnames": "Cognoms",
+      "email": "Correu electrònic",
+      "password": "Contrasenya",
+      "title": "Títol",
+      "optionalDescription": "Descripció (opcional)",
+      "exactAddress": "Adreça exacta"
+    }
+  },
+  "navigation": {
+    "label": "Navegació principal",
+    "goHome": "Anar a l'inici",
+    "menu": {
+      "open": "Obrir el menú",
+      "close": "Tancar el menú"
+    },
+    "profile": {
+      "label": "El meu perfil: {{name}}",
+      "text": "El meu perfil"
+    },
+    "login": "Log in",
+    "uploadImage": "Pujar imatge",
+    "language": {
+      "switch": "Canviar a castellà"
+    }
+  },
+  "theme": {
+    "activateDark": "Activar el mode fosc",
+    "activateLight": "Activar el mode clar",
+    "dark": "Mode fosc",
+    "light": "Mode clar"
+  },
+  "hero": {
+    "kicker": "Arxiu col·laboratiu de cases singulars",
+    "title": "Taulells, mosaics, rajoles, xapats",
+    "access": "Accedeix",
+    "uploadImage": "Pujar imatge"
+  },
+  "gallery": {
+    "intro": {
+      "kicker": "Galeria de publicacions",
+      "title": "Puja. Localitza. Descobreix"
+    },
+    "search": {
+      "label": "Buscar en la galeria",
+      "placeholder": "Buscar..."
+    },
+    "scope": {
+      "label": "Àmbit de la galeria",
+      "all": "Totes les publicacions",
+      "mine": "Les meues publicacions",
+      "mineRequiresLogin": "Les meues publicacions, inicia sessió"
+    },
+    "view": {
+      "label": "Vista de publicacions",
+      "gallery": "Vista de galeria",
+      "map": "Vista de mapa"
+    },
+    "empty": {
+      "default": "Encara no hi ha fotos publicades.",
+      "search": "No hi ha cap imatge que coincidisca amb la busca."
+    },
+    "card": {
+      "openDetailsNamed": "Veure els detalls de {{title}}",
+      "openDetailsGeneric": "Veure els detalls de la imatge",
+      "imageAltFallback": "Taulell"
+    }
+  },
+  "auth": {
+    "login": {
+      "kicker": "Inici de sessió",
+      "heading": "Entra a l'arxiu.",
+      "submit": "Entrar",
+      "createAccount": "Crear un compte"
+    },
+    "register": {
+      "kicker": "Registre",
+      "heading": "Crea el teu perfil.",
+      "submit": "Registrar-me",
+      "alreadyRegistered": "Ja tinc un compte"
+    }
+  },
+  "publication": {
+    "upload": {
+      "kicker": "Nova publicació",
+      "heading": "Puja les imatges d'una casa i localitza-la",
+      "uploadPhotos": "Pujar fotos",
+      "filesSelected_one": "{{count}} fitxer seleccionat",
+      "filesSelected_other": "{{count}} fitxers seleccionats",
+      "save": "Guardar"
+    },
+    "edit": {
+      "kicker": "Editar la peça",
+      "heading": "Actualitza les dades.",
+      "save": "Guardar els canvis"
+    },
+    "detail": {
+      "kicker": "Fitxa de la peça",
+      "untitled": "Peça sense títol",
+      "imageAltFallback": "Imatge de la publicació",
+      "previousPhoto": "Foto anterior",
+      "nextPhoto": "Foto següent",
+      "photoCounter": "{{current}} de {{total}}",
+      "photosLabel": "Fotos de la publicació",
+      "viewPhoto": "Veure la foto {{number}}",
+      "address": "Adreça",
+      "unavailable": "No disponible",
+      "coordinates": "Coordenades",
+      "archivedAt": "Arxivada",
+      "edit": "Editar",
+      "delete": "Esborrar"
+    },
+    "deletePhoto": {
+      "kicker": "Eliminar la imatge",
+      "lastPhotoWarning": "Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació.",
+      "groupPhotoWarning": "Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup.",
+      "cancel": "Cancel·lar",
+      "confirm": "Eliminar"
+    }
+  },
+  "profile": {
+    "newPasswordPlaceholder": "Contrasenya nova (opcional)",
+    "save": "Guardar el perfil",
+    "logout": "Tancar la sessió",
+    "deleteAccount": "Esborrar l'usuari",
+    "updated": "Perfil actualitzat",
+    "archive": {
+      "label": "Arxiu fotogràfic personal",
+      "kicker": "Arxiu personal",
+      "photoCount_one": "{{count}} imatge",
+      "photoCount_other": "{{count}} imatges",
+      "photoAlt": "{{title}}, foto {{number}}",
+      "fallbackPhotoTitle": "Foto",
+      "deletePhotoLabel": "Esborrar {{title}}, foto {{number}}",
+      "fallbackDeletePhotoTitle": "foto",
+      "empty": "Encara no has arxivat cap imatge."
+    }
+  },
+  "map": {
+    "label": "Mapa de publicacions",
+    "recenter": "Centrar en la Comunitat Valenciana",
+    "attribution": {
+      "contributors": "col·laboradors"
+    },
+    "controls": {
+      "zoomIn": "Apropar",
+      "zoomOut": "Allunyar",
+      "attributions": "Atribucions",
+      "resetRotation": "Restablir la rotació"
+    }
+  },
+  "legacyGallery": {
+    "label": "Galeria de publicacions",
+    "kicker": "Galeria visual",
+    "heading": "L'arxiu comença ací.",
+    "description": "Les peces guardades apareixen ordenades per data; les fotos i l'adreça exacta només es mostren si has iniciat sessió.",
+    "refresh": "Actualitzar",
+    "loading": "Carregant la galeria...",
+    "anonymous": "Inicia sessió per a veure les teues publicacions.",
+    "loadError": "No s'ha pogut carregar la galeria.",
+    "emptyTitle": "Encara no hi ha cap peça arxivada.",
+    "emptyDescription": "Guarda la primera façana per a inaugurar el mosaic.",
+    "photoAlt": "{{title}}, foto {{number}}"
+  },
+  "errors": {
+    "auth": {
+      "required": "No has iniciat sessió",
+      "invalidCredentials": "Les credencials no són vàlides",
+      "invalidRegistration": "Les dades de registre no són vàlides",
+      "emailTaken": "Este correu electrònic ja està registrat",
+      "loginFailed": "No s'ha pogut iniciar la sessió",
+      "registerFailed": "No s'ha pogut completar el registre"
+    },
+    "profile": {
+      "invalid": "Les dades del perfil no són vàlides",
+      "updateFailed": "No s'ha pogut actualitzar el perfil"
+    },
+    "publication": {
+      "notFound": "No s'ha trobat la publicació",
+      "saveFailed": "No s'ha pogut guardar",
+      "editFailed": "No s'ha pogut editar"
+    },
+    "photo": {
+      "notFound": "No s'ha trobat la foto",
+      "deleteFailed": "No s'ha pogut esborrar la imatge"
+    },
+    "address": {
+      "searchFailed": "No s'han pogut buscar adreces"
+    }
+  },
+  "validation": {
+    "publication": {
+      "titleRequired": "El títol és obligatori",
+      "descriptionTooLong": "La descripció és massa llarga",
+      "addressRequired": "L'adreça és obligatòria",
+      "invalidCoordinates": "Les coordenades no són vàlides",
+      "photoRequired": "Puja almenys una foto",
+      "unsupportedPhotoType": "Totes les fotos han de tindre un format d'imatge compatible",
+      "photoTooLarge": "Cada foto ha de pesar 8 MB com a màxim"
+    }
+  }
+}

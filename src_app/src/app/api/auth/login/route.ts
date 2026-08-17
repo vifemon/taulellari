@@ -9,6 +9,7 @@ import {
   sessionCookieOptions,
 } from "@/auth/session";
 import { findUserByEmail } from "@/db/repositories";
+import { API_ERROR_CODES } from "@/i18n/error-codes";
 
 type LoginBody = {
   email?: unknown;
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
   const password = validatePassword(body?.password);
 
   if (!email || !password) {
-    return Response.json({ error: "Les credencials no són vàlides" }, { status: 400 });
+    return Response.json({ error: API_ERROR_CODES.invalidCredentials }, { status: 400 });
   }
 
   const authSecret = getAuthSecret();
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     !userWithPassword ||
     !(await verifyPassword(password, userWithPassword.passwordHash))
   ) {
-    return Response.json({ error: "Les credencials no són vàlides" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.invalidCredentials }, { status: 401 });
   }
 
   const user = {

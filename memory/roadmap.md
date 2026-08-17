@@ -73,6 +73,8 @@ Estado: en curso sobre `develop`.
 - [x] **Controles de galeria simplificados:** mostrar los selectores de alcance y vista solo mediante iconos Lucide accesibles; usar `Users` y `MapPinned` para todas las publicaciones y mapa.
 - [x] **Barra de galeria:** reducir el buscador a unos `360px`, alinearlo con el borde izquierdo de la galeria o mapa y situar los controles en el borde derecho.
 - [x] **Localizacion valenciana:** traducir todo el copy visible y accesible al valenciano de Valencia, declarar `ca-ES-valencia`, localizar fechas, validaciones y errores, y solicitar a Mapbox las direcciones en `ca`.
+- [x] **Internacionalizacion i18n:** instalar `i18next` y `react-i18next`, crear catalogos `val`/`es`, migrar el copy a claves `t`, persistir el idioma en cookie y localizar metadata, fechas, mapa, validaciones y errores mediante codigos estables.
+- [x] **Selector de idioma:** mostrar `val` o `es` en un control circular equivalente al boton de tema y distribuir tema, idioma y perfil en tres columnas iguales en tablet y smartphone, manteniendo la subida en una segunda fila completa.
 - [x] **Ancla de galeria:** reservar sobre el encabezado de `#galeria` un espacio con el fondo real de la pagina equivalente a la altura de la Navbar fija para evitar que `Accedeix` deje el titulo oculto.
 - [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
 
@@ -103,5 +105,5 @@ El siguiente paso tecnico es continuar la **Fase 1.8: Correcciones** de forma it
 ## Ultimo Estado Git
 
 - Rama actual: `develop`.
-- `develop` contiene la localizacion valenciana y el ajuste del ancla de galeria de la Fase 1.8.
-- La interfaz, las etiquetas accesibles, las validaciones y los errores de API orientados al usuario siguen la politica linguistica descrita en `memory/app.md`.
+- `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive de la Fase 1.8.
+- La interfaz, metadata, etiquetas accesibles, validaciones y errores orientados al usuario se resuelven desde los catalogos descritos en `memory/app.md`.

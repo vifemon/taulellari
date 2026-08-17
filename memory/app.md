@@ -37,20 +37,25 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Iconos:** `lucide-react` como libreria de iconos React tree-shakeable.
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
+- **Internacionalizacion:** `i18next` y `react-i18next` con recursos JSON cargados de forma estatica.
 
-## Idioma Y Localizacion
+## Idioma E Internacionalizacion
 
-- **Idioma de producto:** todo el contenido visible y accesible de la interfaz se redacta en valenciano de Valencia, incluyendo navegacion, formularios, placeholders, estados vacios, confirmaciones, mensajes de validacion, errores de API y etiquetas `aria`.
-- **Variante linguistica:** se priorizan las formas propias del valenciano de Valencia frente a variantes orientales. Las futuras incorporaciones de copy deben mantener este criterio.
-- **Idioma del documento:** el elemento `html` declara `lang="ca-ES-valencia"` y las fechas visibles usan el mismo locale mediante `Intl.DateTimeFormat`.
-- **Geocodificacion:** Mapbox recibe `language=ca`, ya que el proveedor no ofrece un codigo separado para la variante valenciana. Las etiquetas del mapa base proceden de CARTO y dependen del proveedor externo.
-- **Excepcion de producto:** el acceso anonimo de la Navbar conserva deliberadamente el texto ingles `Log in`.
-- **Contratos tecnicos:** los identificadores internos, campos de API y nombres de base de datos existentes, como `publicaciones`, `titulo` o `direccionTexto`, no se traducen para evitar cambios de contrato. Tampoco se modifica el contenido introducido por usuarios ni las direcciones devueltas por servicios externos.
-- **Cobertura:** las pruebas de `AppShell` usan el copy valenciano y protegen los textos principales de navegacion y publicacion.
+- **Idiomas disponibles:** valenciano de Valencia (`val`) y castellano (`es`). El valenciano sigue siendo el idioma predeterminado.
+- **Catalogos:** todo el copy visible y accesible vive en `src_app/src/translations/val.json` y `src_app/src/translations/es.json`. Las claves cubren navegacion, formularios, placeholders, estados, confirmaciones, validaciones, errores, metadata, mapa y etiquetas `aria`/`title`.
+- **Variante valenciana:** el catalogo `val` prioriza las formas propias del valenciano de Valencia frente a variantes orientales. Las futuras incorporaciones deben actualizar ambos JSON y mantener paridad de claves.
+- **Renderizado:** el layout lee la cookie `taulellari_locale`, crea una instancia i18next aislada y renderiza el mismo idioma en servidor y cliente. La preferencia se conserva durante un ano.
+- **Idioma del documento:** `val` se publica como `lang="ca-ES-valencia"` y `es` como `lang="es-ES"`. Las fechas y la metadata usan el locale activo.
+- **Selector:** la Navbar muestra el codigo activo `val` o `es` en un control circular de `42px`, equivalente al boton de tema y con tipografia compacta. Al pulsarlo cambia el catalogo, actualiza la cookie, sincroniza `html.lang` y refresca el contenido de servidor.
+- **Geocodificacion:** Mapbox recibe `language=ca` para `val` y `language=es` para castellano. El proveedor no ofrece un codigo separado para la variante valenciana; las etiquetas del mapa base CARTO siguen dependiendo del proveedor externo.
+- **Errores traducibles:** las APIs y validaciones devuelven codigos estables, no frases. `AppShell` transforma esos codigos en claves i18n para que un mensaje visible cambie de idioma junto con la interfaz.
+- **Excepcion valenciana:** el acceso anonimo conserva deliberadamente `Log in` en `val`; el catalogo castellano muestra `Entrar`.
+- **Contratos tecnicos:** los identificadores internos, campos de API y nombres de base de datos existentes, como `publicaciones`, `titulo` o `direccionTexto`, no se traducen. Tampoco se modifica contenido de usuarios ni direcciones externas.
+- **Cobertura:** Vitest comprueba el cambio en caliente, cookie, `html.lang`, plurales, fallback y paridad entre catalogos.
 
 ## Estado Actual
 
-Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso e incorpora ajustes visuales, mejoras responsive y la localizacion completa de la experiencia al valenciano de Valencia.
+Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso e incorpora ajustes visuales, mejoras responsive e internacionalizacion completa en valenciano de Valencia y castellano.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -136,7 +141,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Perfil refinado:** el modal muestra identidad centrada, campos etiquetados, archivo personal con todas las fotos y borrado individual desde cada miniatura mediante `Trash2` y confirmacion. En smartphone crece segun la cantidad de imagenes, permite recorrer todo su contenido y reparte por igual el ancho de las acciones de cerrar sesion y borrar usuario.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
 - **Selector de tema:** la Navbar usa `Sun` en modo claro y `Moon` en modo oscuro, con etiquetas accesibles para alternar el tema. El modo oscuro es el estado predeterminado.
-- **Navegacion responsive:** hasta `1100px`, la Navbar sustituye las acciones de escritorio por un boton hamburguesa a la derecha. El desplegable glass ocupa todo el ancho de la barra y agrupa cambio de tema, perfil o acceso y subida de imagen; se puede cerrar con el boton, al elegir una accion, con `Escape` o al volver a escritorio.
+- **Navegacion responsive:** hasta `1100px`, la Navbar sustituye las acciones de escritorio por un boton hamburguesa a la derecha. Tema, idioma y perfil o acceso se reparten por igual la primera fila en tres columnas; la subida ocupa toda la segunda fila. En smartphone se ocultan las etiquetas secundarias de tema y perfil para evitar desbordamientos.
 - **Alineacion de iconos:** los controles de tema y subida usan contenedores centrados y el icono `Plus` de Lucide para mantener una alineacion visual consistente.
 - **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
 - **Subida sin limite fijo:** el selector acepta cualquier numero de imagenes compatibles; el limite practico queda condicionado por tamano, almacenamiento y recursos del servidor.
@@ -150,10 +155,10 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 35 tests.
+- `npm run test` correcto con 42 tests.
 - `npm run build` correcto.
 - Rama actual de trabajo: `develop`.
-- `develop` contiene la localizacion valenciana y los ultimos ajustes de navegacion de la galeria.
+- `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive.
 
 ## Restricciones Importantes
 

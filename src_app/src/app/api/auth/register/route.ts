@@ -9,18 +9,19 @@ import {
 import { hashPassword } from "@/auth/password";
 import { parseRegisterInput, readJsonObject } from "@/auth/user-input";
 import { createUser, findUserByEmail } from "@/db/repositories";
+import { API_ERROR_CODES } from "@/i18n/error-codes";
 
 export async function POST(request: Request) {
   const input = parseRegisterInput(await readJsonObject(request));
 
   if (!input) {
-    return Response.json({ error: "Les dades de registre no són vàlides" }, { status: 400 });
+    return Response.json({ error: API_ERROR_CODES.invalidRegistration }, { status: 400 });
   }
 
   const existingUser = await findUserByEmail(input.email);
 
   if (existingUser) {
-    return Response.json({ error: "Este correu electrònic ja està registrat" }, { status: 409 });
+    return Response.json({ error: API_ERROR_CODES.emailTaken }, { status: 409 });
   }
 
   const user = await createUser({

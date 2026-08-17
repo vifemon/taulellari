@@ -2,8 +2,13 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Images, MapPinned, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, Users, X } from "lucide-react";
-import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
+import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState, useTransition } from "react";
+import { useTranslation } from "react-i18next";
+
+import { LANGUAGE_TAGS, LOCALE_COOKIE_NAME, normalizeLocale } from "@/i18n/config";
+import { getErrorTranslationKey } from "@/i18n/error-codes";
 
 import styles from "./page.module.css";
 
@@ -45,6 +50,8 @@ type GalleryView = "gallery" | "map";
 type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
+  const { i18n, t } = useTranslation();
+  const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
@@ -58,9 +65,11 @@ export function AppShell() {
   const [galleryView, setGalleryView] = useState<GalleryView>("gallery");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLanguagePending, startLanguageTransition] = useTransition();
   const navMenuId = useId();
   const navMenuButtonRef = useRef<HTMLButtonElement>(null);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
+  const locale = normalizeLocale(i18n.resolvedLanguage);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
   const visiblePublications = galleryScope === "mine"
     ? filteredPublications.filter((publication) => publication.isOwner)
@@ -168,7 +177,7 @@ export function AppShell() {
     setIsSubmitting(false);
 
     if (!response.ok) {
-      setMessage(data.error ?? "No s'ha pogut esborrar la imatge");
+      setMessage(getErrorTranslationKey(data.error, "errors.photo.deleteFailed"));
       setModal(photoConfirmationOrigin);
       return;
     }
@@ -212,16 +221,27 @@ export function AppShell() {
     setModal(nextModal);
   }
 
+  function toggleLanguage() {
+    const nextLocale = locale === "val" ? "es" : "val";
+    const secureAttribute = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${LOCALE_COOKIE_NAME}=${nextLocale}; Path=/; Max-Age=31536000; SameSite=Lax${secureAttribute}`;
+    document.documentElement.lang = LANGUAGE_TAGS[nextLocale];
+
+    void i18n.changeLanguage(nextLocale).then(() => {
+      startLanguageTransition(() => router.refresh());
+    });
+  }
+
   return (
     <div className={`${styles.app} ${styles[theme]}`}>
-      <nav aria-label="Navegació principal" className={styles.navbar}>
-        <a className={styles.brand} href="#hero" aria-label="Anar a l'inici" onClick={() => setIsNavMenuOpen(false)}>
-          Taulellari
+      <nav aria-label={t("navigation.label")} className={styles.navbar}>
+        <a className={styles.brand} href="#hero" aria-label={t("navigation.goHome")} onClick={() => setIsNavMenuOpen(false)}>
+          {t("metadata.title")}
         </a>
         <button
           aria-controls={navMenuId}
           aria-expanded={isNavMenuOpen}
-          aria-label={isNavMenuOpen ? "Tancar el menú" : "Obrir el menú"}
+          aria-label={t(isNavMenuOpen ? "navigation.menu.close" : "navigation.menu.open")}
           className={styles.menuButton}
           onClick={() => setIsNavMenuOpen((isOpen) => !isOpen)}
           ref={navMenuButtonRef}
@@ -231,55 +251,65 @@ export function AppShell() {
         </button>
         <div className={`${styles.navActions} ${isNavMenuOpen ? styles.navActionsOpen : ""}`} id={navMenuId}>
           <button
-            aria-label={theme === "light" ? "Activar el mode fosc" : "Activar el mode clar"}
-            className={styles.iconButton}
+            aria-label={t(theme === "light" ? "theme.activateDark" : "theme.activateLight")}
+            className={`${styles.iconButton} ${styles.themeButton}`}
             onClick={() => setTheme((currentTheme) => currentTheme === "light" ? "dark" : "light")}
-            title={theme === "light" ? "Activar el mode fosc" : "Activar el mode clar"}
+            title={t(theme === "light" ? "theme.activateDark" : "theme.activateLight")}
             type="button"
           >
             {theme === "light" ? <Sun aria-hidden="true" size={20} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={20} strokeWidth={2.2} />}
-            <span className={styles.mobileNavLabel}>{theme === "light" ? "Mode fosc" : "Mode clar"}</span>
+            <span className={styles.mobileNavLabel}>{t(theme === "light" ? "theme.dark" : "theme.light")}</span>
+          </button>
+          <button
+            aria-label={t("navigation.language.switch")}
+            className={styles.languageButton}
+            disabled={isLanguagePending}
+            onClick={toggleLanguage}
+            title={t("navigation.language.switch")}
+            type="button"
+          >
+            {locale}
           </button>
           {user ? (
             <button
-              aria-label={`El meu perfil: ${user.nombre}`}
-              className={styles.navButton}
+              aria-label={t("navigation.profile.label", { name: user.nombre })}
+              className={`${styles.navButton} ${styles.profileButton}`}
               onClick={() => openModalFromNavigation("profile")}
               type="button"
             >
               <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
               <span className={styles.desktopNavLabel}>{user.nombre}</span>
-              <span className={styles.mobileNavLabel}>El meu perfil</span>
+              <span className={styles.mobileNavLabel}>{t("navigation.profile.text")}</span>
             </button>
           ) : (
-            <button className={styles.navButton} onClick={() => openModalFromNavigation("login")} type="button">
+            <button className={`${styles.navButton} ${styles.profileButton}`} onClick={() => openModalFromNavigation("login")} type="button">
               <UserRound aria-hidden="true" className={styles.mobileNavIcon} size={20} strokeWidth={2.2} />
-              Log in
+              {t("navigation.login")}
             </button>
           )}
           <button
-            aria-label="Pujar imatge"
+            aria-label={t("navigation.uploadImage")}
             className={styles.plusButton}
             onClick={() => openModalFromNavigation(user ? "upload" : "login")}
             type="button"
           >
             <Plus aria-hidden="true" size={25} strokeWidth={2.4} />
-            <span className={styles.mobileNavLabel}>Pujar imatge</span>
+            <span className={styles.mobileNavLabel}>{t("navigation.uploadImage")}</span>
           </button>
         </div>
       </nav>
 
       <header className={styles.heroScreen} id="hero">
         <div className={styles.heroContent}>
-          <span className={styles.kicker}>Arxiu col·laboratiu de cases singulars</span>
-          <h1>Taulells, mosaics, rajoles, xapats</h1>
+          <span className={styles.kicker}>{t("hero.kicker")}</span>
+          <h1>{t("hero.title")}</h1>
           <div className={styles.heroActions}>
             <a className={styles.heroPrimaryAction} href="#galeria">
-              Accedeix
+              {t("hero.access")}
             </a>
             <button className={styles.heroUploadAction} onClick={() => setModal(user ? "upload" : "login")} type="button">
               <span aria-hidden="true"><Plus size={24} strokeWidth={2.4} /></span>
-              Pujar imatge
+              {t("hero.uploadImage")}
             </button>
           </div>
         </div>
@@ -287,8 +317,8 @@ export function AppShell() {
 
       <main className={styles.gallerySurface} id="galeria">
         <section className={styles.galleryIntro}>
-          <span className={styles.kicker}>Galeria de publicacions</span>
-          <h2>Puja. Localitza. Descobreix</h2>
+          <span className={styles.kicker}>{t("gallery.intro.kicker")}</span>
+          <h2>{t("gallery.intro.title")}</h2>
         </section>
         <div className={styles.galleryToolbar}>
           <GallerySearch
@@ -348,7 +378,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No s'ha pogut iniciar la sessió");
+                  setMessage(getErrorTranslationKey(data.error, "errors.auth.loginFailed"));
                   return;
                 }
 
@@ -372,7 +402,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No s'ha pogut completar el registre");
+                  setMessage(getErrorTranslationKey(data.error, "errors.auth.registerFailed"));
                   return;
                 }
 
@@ -394,7 +424,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok) {
-                  setMessage(data.error ?? "No s'ha pogut guardar");
+                  setMessage(getErrorTranslationKey(data.error, "errors.publication.saveFailed"));
                   return;
                 }
 
@@ -440,7 +470,7 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok) {
-                  setMessage(data.error ?? "No s'ha pogut editar");
+                  setMessage(getErrorTranslationKey(data.error, "errors.publication.editFailed"));
                   return;
                 }
 
@@ -479,18 +509,18 @@ export function AppShell() {
                 setIsSubmitting(false);
 
                 if (!response.ok || !data.user) {
-                  setMessage(data.error ?? "No s'ha pogut actualitzar el perfil");
+                  setMessage(getErrorTranslationKey(data.error, "errors.profile.updateFailed"));
                   return;
                 }
 
                 setUser(data.user);
-                setMessage("Perfil actualitzat");
+                setMessage("profile.updated");
               }}
               publications={publications.filter((publication) => publication.isOwner)}
               user={user}
             />
           ) : null}
-          {message ? <p className={styles.modalStatus}>{message}</p> : null}
+          {message ? <p className={styles.modalStatus}>{t(message)}</p> : null}
         </ModalShell>
       ) : null}
     </div>
@@ -504,13 +534,15 @@ function GallerySearch({
   onChange: (query: string) => void;
   query: string;
 }) {
+  const { t } = useTranslation();
+
   return (
-    <section className={styles.gallerySearch} aria-label="Buscar en la galeria">
+    <section className={styles.gallerySearch} aria-label={t("gallery.search.label")}>
       <input
-        aria-label="Buscar en la galeria"
+        aria-label={t("gallery.search.label")}
         id="gallery-search"
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Buscar..."
+        placeholder={t("gallery.search.placeholder")}
         type="search"
         value={query}
       />
@@ -529,22 +561,24 @@ function GalleryScopeToggle({
   onScopeChange: (scope: GalleryScope) => void;
   scope: GalleryScope;
 }) {
+  const { t } = useTranslation();
+
   return (
-    <div className={styles.galleryScopeToggle} role="group" aria-label="Àmbit de la galeria">
+    <div className={styles.galleryScopeToggle} role="group" aria-label={t("gallery.scope.label")}>
       <button
-        aria-label="Totes les publicacions"
+        aria-label={t("gallery.scope.all")}
         aria-pressed={scope === "all"}
         onClick={() => onScopeChange("all")}
-        title="Totes les publicacions"
+        title={t("gallery.scope.all")}
         type="button"
       >
         <Users aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
       <button
-        aria-label={isAuthenticated ? "Les meues publicacions" : "Les meues publicacions, inicia sessió"}
+        aria-label={t(isAuthenticated ? "gallery.scope.mine" : "gallery.scope.mineRequiresLogin")}
         aria-pressed={scope === "mine"}
         onClick={() => (isAuthenticated ? onScopeChange("mine") : onLogin())}
-        title={isAuthenticated ? "Les meues publicacions" : "Les meues publicacions, inicia sessió"}
+        title={t(isAuthenticated ? "gallery.scope.mine" : "gallery.scope.mineRequiresLogin")}
         type="button"
       >
         <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
@@ -560,22 +594,24 @@ function GalleryViewToggle({
   onViewChange: (view: GalleryView) => void;
   view: GalleryView;
 }) {
+  const { t } = useTranslation();
+
   return (
-    <div className={styles.galleryViewToggle} role="group" aria-label="Vista de publicacions">
+    <div className={styles.galleryViewToggle} role="group" aria-label={t("gallery.view.label")}>
       <button
-        aria-label="Vista de galeria"
+        aria-label={t("gallery.view.gallery")}
         aria-pressed={view === "gallery"}
         onClick={() => onViewChange("gallery")}
-        title="Vista de galeria"
+        title={t("gallery.view.gallery")}
         type="button"
       >
         <Images aria-hidden="true" size={18} strokeWidth={2.2} />
       </button>
       <button
-        aria-label="Vista de mapa"
+        aria-label={t("gallery.view.map")}
         aria-pressed={view === "map"}
         onClick={() => onViewChange("map")}
-        title="Vista de mapa"
+        title={t("gallery.view.map")}
         type="button"
       >
         <MapPinned aria-hidden="true" size={18} strokeWidth={2.2} />
@@ -643,10 +679,12 @@ function ModalShell({
   className?: string;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
       <div className={`${styles.modalCard} ${className ?? ""}`}>
-        <button aria-label="Tancar" className={styles.closeButton} onClick={onClose} type="button">
+        <button aria-label={t("common.close")} className={styles.closeButton} onClick={onClose} type="button">
           <X aria-hidden="true" size={20} strokeWidth={2.4} />
         </button>
         {children}
@@ -666,15 +704,16 @@ function LoginModal({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { t } = useTranslation();
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit(email, password))}>
-      <span className={styles.kicker}>Inici de sessió</span>
-      <h2>Entra a l&apos;arxiu.</h2>
-      <input onChange={(event) => setEmail(event.target.value)} placeholder="Correu electrònic" required type="email" value={email} />
-      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya" required type="password" value={password} />
-      <button disabled={isSubmitting} type="submit">Entrar</button>
-      <button className={styles.textButton} onClick={onRegister} type="button">Crear un compte</button>
+      <span className={styles.kicker}>{t("auth.login.kicker")}</span>
+      <h2>{t("auth.login.heading")}</h2>
+      <input onChange={(event) => setEmail(event.target.value)} placeholder={t("common.fields.email")} required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder={t("common.fields.password")} required type="password" value={password} />
+      <button disabled={isSubmitting} type="submit">{t("auth.login.submit")}</button>
+      <button className={styles.textButton} onClick={onRegister} type="button">{t("auth.login.createAccount")}</button>
     </form>
   );
 }
@@ -692,17 +731,18 @@ function RegisterModal({
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [password, setPassword] = useState("");
+  const { t } = useTranslation();
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password }))}>
-      <span className={styles.kicker}>Registre</span>
-      <h2>Crea el teu perfil.</h2>
-      <input onChange={(event) => setNombre(event.target.value)} placeholder="Nom" required value={nombre} />
-      <input onChange={(event) => setApellidos(event.target.value)} placeholder="Cognoms" required value={apellidos} />
-      <input onChange={(event) => setEmail(event.target.value)} placeholder="Correu electrònic" required type="email" value={email} />
-      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya" required type="password" value={password} />
-      <button disabled={isSubmitting} type="submit">Registrar-me</button>
-      <button className={styles.textButton} onClick={onLogin} type="button">Ja tinc un compte</button>
+      <span className={styles.kicker}>{t("auth.register.kicker")}</span>
+      <h2>{t("auth.register.heading")}</h2>
+      <input onChange={(event) => setNombre(event.target.value)} placeholder={t("common.fields.name")} required value={nombre} />
+      <input onChange={(event) => setApellidos(event.target.value)} placeholder={t("common.fields.surnames")} required value={apellidos} />
+      <input onChange={(event) => setEmail(event.target.value)} placeholder={t("common.fields.email")} required type="email" value={email} />
+      <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder={t("common.fields.password")} required type="password" value={password} />
+      <button disabled={isSubmitting} type="submit">{t("auth.register.submit")}</button>
+      <button className={styles.textButton} onClick={onLogin} type="button">{t("auth.register.alreadyRegistered")}</button>
     </form>
   );
 }
@@ -720,6 +760,8 @@ function UploadModal({
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const { i18n, t } = useTranslation();
+  const locale = normalizeLocale(i18n.resolvedLanguage);
   const fileInputId = useId();
   const {
     containerRef: addressSearchRef,
@@ -734,7 +776,7 @@ function UploadModal({
 
     const controller = new AbortController();
 
-    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}`, {
+    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}&lang=${locale}`, {
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : { suggestions: [] }))
@@ -750,7 +792,7 @@ function UploadModal({
       });
 
     return () => controller.abort();
-  }, [deferredAddress, selectedAddress]);
+  }, [deferredAddress, locale, selectedAddress]);
 
   return (
     <form className={styles.modalForm} onSubmit={(event) => {
@@ -765,12 +807,12 @@ function UploadModal({
       files.forEach((file) => formData.append("fotos", file));
       onSubmit(formData);
     }}>
-      <span className={styles.kicker}>Nova publicació</span>
-      <h2>Puja les imatges d&apos;una casa i localitza-la</h2>
-      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Títol" required value={title} />
-      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripció (opcional)" rows={1} value={description} />
+      <span className={styles.kicker}>{t("publication.upload.kicker")}</span>
+      <h2>{t("publication.upload.heading")}</h2>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder={t("common.fields.title")} required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder={t("common.fields.optionalDescription")} rows={1} value={description} />
       <div className={styles.heroSearch} ref={addressSearchRef}>
-        <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder="Adreça exacta" required value={address} />
+        <input onChange={(event) => { setAddress(event.target.value); setSelectedAddress(null); setSuggestions([]); }} placeholder={t("common.fields.exactAddress")} required value={address} />
         {address && suggestions.length > 0 ? (
           <div className={styles.floatingSuggestions} style={{ maxHeight: suggestionsMaxHeight }}>
             {suggestions.map((suggestion) => (
@@ -782,14 +824,14 @@ function UploadModal({
         ) : null}
       </div>
       <label className={styles.fileUpload} htmlFor={fileInputId}>
-        <span>Pujar fotos</span>
+        <span>{t("publication.upload.uploadPhotos")}</span>
         <span className={styles.fileUploadIcon} aria-hidden="true">
           <Upload size={24} strokeWidth={2} />
         </span>
-        {files.length > 0 ? <small>{`${files.length} fitxer${files.length === 1 ? "" : "s"} seleccionat${files.length === 1 ? "" : "s"}`}</small> : null}
+        {files.length > 0 ? <small>{t("publication.upload.filesSelected", { count: files.length })}</small> : null}
         <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []))} type="file" />
       </label>
-      <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">Guardar</button>
+      <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">{t("publication.upload.save")}</button>
     </form>
   );
 }
@@ -823,6 +865,8 @@ function EditPublicationModal({
       : null,
   );
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const { i18n, t } = useTranslation();
+  const locale = normalizeLocale(i18n.resolvedLanguage);
   const {
     containerRef: addressSearchRef,
     maxHeight: suggestionsMaxHeight,
@@ -836,7 +880,7 @@ function EditPublicationModal({
 
     const controller = new AbortController();
 
-    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}`, {
+    fetch(`/api/addresses?q=${encodeURIComponent(deferredAddress)}&lang=${locale}`, {
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : { suggestions: [] }))
@@ -852,7 +896,7 @@ function EditPublicationModal({
       });
 
     return () => controller.abort();
-  }, [deferredAddress, selectedAddress]);
+  }, [deferredAddress, locale, selectedAddress]);
 
   return (
     <form
@@ -869,10 +913,10 @@ function EditPublicationModal({
         });
       }}
     >
-      <span className={styles.kicker}>Editar la peça</span>
-      <h2>Actualitza les dades.</h2>
-      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Títol" required value={title} />
-      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder="Descripció (opcional)" rows={1} value={description} />
+      <span className={styles.kicker}>{t("publication.edit.kicker")}</span>
+      <h2>{t("publication.edit.heading")}</h2>
+      <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder={t("common.fields.title")} required value={title} />
+      <textarea maxLength={120} onChange={(event) => setDescription(event.target.value)} placeholder={t("common.fields.optionalDescription")} rows={1} value={description} />
       <div className={styles.heroSearch} ref={addressSearchRef}>
         <input
           onChange={(event) => {
@@ -880,7 +924,7 @@ function EditPublicationModal({
             setSelectedAddress(null);
             setSuggestions([]);
           }}
-          placeholder="Adreça exacta"
+          placeholder={t("common.fields.exactAddress")}
           required
           value={address}
         />
@@ -902,7 +946,7 @@ function EditPublicationModal({
           </div>
         ) : null}
       </div>
-      <button disabled={isSubmitting || !selectedAddress} type="submit">Guardar els canvis</button>
+      <button disabled={isSubmitting || !selectedAddress} type="submit">{t("publication.edit.save")}</button>
     </form>
   );
 }
@@ -930,6 +974,7 @@ function ProfileModal({
   const [nombre, setNombre] = useState(user.nombre);
   const [apellidos, setApellidos] = useState(user.apellidos);
   const [password, setPassword] = useState("");
+  const { t } = useTranslation();
   const photoCount = publications.reduce((count, publication) => count + publication.fotos.length, 0);
   const initials = `${user.nombre[0] ?? ""}${user.apellidos[0] ?? ""}`.toUpperCase();
 
@@ -945,42 +990,53 @@ function ProfileModal({
         </div>
         <form className={`${styles.modalForm} ${styles.profileForm}`} onSubmit={(event) => submitCredentials(event, () => onSubmit({ email, nombre, apellidos, password: password || undefined }))}>
           <label>
-            Nom
+            {t("common.fields.name")}
             <input onChange={(event) => setNombre(event.target.value)} value={nombre} />
           </label>
           <label>
-            Cognoms
+            {t("common.fields.surnames")}
             <input onChange={(event) => setApellidos(event.target.value)} value={apellidos} />
           </label>
           <label>
-            Correu electrònic
+            {t("common.fields.email")}
             <input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
           </label>
           <label>
-            Contrasenya
-            <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder="Contrasenya nova (opcional)" type="password" value={password} />
+            {t("common.fields.password")}
+            <input minLength={8} onChange={(event) => setPassword(event.target.value)} placeholder={t("profile.newPasswordPlaceholder")} type="password" value={password} />
           </label>
-          <button disabled={isSubmitting} type="submit">Guardar el perfil</button>
+          <button disabled={isSubmitting} type="submit">{t("profile.save")}</button>
           <div className={styles.profileSecondaryActions}>
-            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">Tancar la sessió</button>
-            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">Esborrar l&apos;usuari</button>
+            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">{t("profile.logout")}</button>
+            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">{t("profile.deleteAccount")}</button>
           </div>
-          {message ? <p className={styles.modalStatus}>{message}</p> : null}
+          {message ? <p className={styles.modalStatus}>{t(message)}</p> : null}
         </form>
       </section>
-      <section className={styles.profileArchive} aria-label="Arxiu fotogràfic personal">
+      <section className={styles.profileArchive} aria-label={t("profile.archive.label")}>
         <div className={styles.profileArchiveHeader}>
-          <span className={styles.kicker}>Arxiu personal</span>
-          <span>{photoCount} {photoCount === 1 ? "imatge" : "imatges"}</span>
+          <span className={styles.kicker}>{t("profile.archive.kicker")}</span>
+          <span>{t("profile.archive.photoCount", { count: photoCount })}</span>
         </div>
         {photoCount > 0 ? (
           <div className={styles.profileGrid}>
             {publications.flatMap((publication) =>
               publication.fotos.map((photo, index) => (
                 <div className={styles.profileThumb} key={photo.id}>
-                  <Image alt={`${publication.titulo ?? "Foto"}, foto ${index + 1}`} fill src={photo.url} unoptimized />
+                  <Image
+                    alt={t("profile.archive.photoAlt", {
+                      title: publication.titulo ?? t("profile.archive.fallbackPhotoTitle"),
+                      number: index + 1,
+                    })}
+                    fill
+                    src={photo.url}
+                    unoptimized
+                  />
                   <button
-                    aria-label={`Esborrar ${publication.titulo ?? "foto"}, foto ${index + 1}`}
+                    aria-label={t("profile.archive.deletePhotoLabel", {
+                      title: publication.titulo ?? t("profile.archive.fallbackDeletePhotoTitle"),
+                      number: index + 1,
+                    })}
                     className={styles.profileThumbDelete}
                     onClick={() => onDeletePhoto(publication, photo.index)}
                     type="button"
@@ -992,7 +1048,7 @@ function ProfileModal({
             )}
           </div>
         ) : (
-          <p className={styles.profileEmpty}>Encara no has arxivat cap imatge.</p>
+          <p className={styles.profileEmpty}>{t("profile.archive.empty")}</p>
         )}
       </section>
     </div>
@@ -1012,6 +1068,7 @@ function PublicationDetailModal({
   onEdit: () => void;
   publication: Publication;
 }) {
+  const { i18n, t } = useTranslation();
   const [activePhotoIndex, setActivePhotoIndex] = useState(initialPhotoIndex);
   const activePhotoPosition = Math.max(
     0,
@@ -1035,7 +1092,7 @@ function PublicationDetailModal({
         <div className={styles.publicationDetailImage}>
           {activePhoto ? (
             <Image
-              alt={publication.titulo ?? "Imatge de la publicació"}
+              alt={publication.titulo ?? t("publication.detail.imageAltFallback")}
               fill
               sizes="(max-width: 860px) 90vw, 60vw"
               src={activePhoto.url}
@@ -1045,7 +1102,7 @@ function PublicationDetailModal({
           {publication.fotos.length > 1 ? (
             <>
               <button
-                aria-label="Foto anterior"
+                aria-label={t("publication.detail.previousPhoto")}
                 className={`${styles.publicationPhotoArrow} ${styles.previousPhotoArrow}`}
                 disabled={activePhotoPosition === 0}
                 onClick={() => movePhoto(-1)}
@@ -1054,7 +1111,7 @@ function PublicationDetailModal({
                 <ChevronLeft aria-hidden="true" size={28} strokeWidth={2.5} />
               </button>
               <button
-                aria-label="Foto següent"
+                aria-label={t("publication.detail.nextPhoto")}
                 className={`${styles.publicationPhotoArrow} ${styles.nextPhotoArrow}`}
                 disabled={activePhotoPosition === publication.fotos.length - 1}
                 onClick={() => movePhoto(1)}
@@ -1063,16 +1120,19 @@ function PublicationDetailModal({
                 <ChevronRight aria-hidden="true" size={28} strokeWidth={2.5} />
               </button>
               <span className={styles.publicationPhotoCounter}>
-                {activePhotoPosition + 1} de {publication.fotos.length}
+                {t("publication.detail.photoCounter", {
+                  current: activePhotoPosition + 1,
+                  total: publication.fotos.length,
+                })}
               </span>
             </>
           ) : null}
         </div>
         {publication.fotos.length > 1 ? (
-          <div className={styles.publicationPhotoThumbs} aria-label="Fotos de la publicació">
+          <div className={styles.publicationPhotoThumbs} aria-label={t("publication.detail.photosLabel")}>
             {publication.fotos.map((photo, index) => (
               <button
-                aria-label={`Veure la foto ${index + 1}`}
+                aria-label={t("publication.detail.viewPhoto", { number: index + 1 })}
                 className={`${styles.publicationPhotoThumb} ${photo.index === activePhoto?.index ? styles.activePhotoThumb : ""}`}
                 key={photo.id}
                 onClick={() => setActivePhotoIndex(photo.index)}
@@ -1085,31 +1145,31 @@ function PublicationDetailModal({
         ) : null}
       </div>
       <div className={styles.publicationDetailInfo}>
-        <span className={styles.kicker}>Fitxa de la peça</span>
-        <h2>{publication.titulo ?? "Peça sense títol"}</h2>
+        <span className={styles.kicker}>{t("publication.detail.kicker")}</span>
+        <h2>{publication.titulo ?? t("publication.detail.untitled")}</h2>
         {publication.descripcion ? <p className={styles.publicationDetailDescription}>{publication.descripcion}</p> : null}
         <dl className={styles.publicationDetailMeta}>
           <div>
-            <dt>Adreça</dt>
-            <dd>{publication.direccionTexto ?? "No disponible"}</dd>
+            <dt>{t("publication.detail.address")}</dt>
+            <dd>{publication.direccionTexto ?? t("publication.detail.unavailable")}</dd>
           </div>
           {typeof publication.latitud === "number" && typeof publication.longitud === "number" ? (
             <div>
-              <dt>Coordenades</dt>
+              <dt>{t("publication.detail.coordinates")}</dt>
               <dd>{publication.latitud.toFixed(5)}, {publication.longitud.toFixed(5)}</dd>
             </div>
           ) : null}
           {publication.creadoEn ? (
             <div>
-              <dt>Arxivada</dt>
-              <dd>{formatPublicationDate(publication.creadoEn)}</dd>
+              <dt>{t("publication.detail.archivedAt")}</dt>
+              <dd>{formatPublicationDate(publication.creadoEn, LANGUAGE_TAGS[normalizeLocale(i18n.resolvedLanguage)])}</dd>
             </div>
           ) : null}
         </dl>
         {publication.isOwner && activePhoto ? (
           <div className={styles.publicationDetailActions}>
-            <button disabled={isSubmitting} onClick={onEdit} type="button">Editar</button>
-            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDeleteRequest(activePhoto.index)} type="button">Esborrar</button>
+            <button disabled={isSubmitting} onClick={onEdit} type="button">{t("publication.detail.edit")}</button>
+            <button className={styles.dangerButton} disabled={isSubmitting} onClick={() => onDeleteRequest(activePhoto.index)} type="button">{t("publication.detail.delete")}</button>
           </div>
         ) : null}
       </div>
@@ -1128,17 +1188,19 @@ function DeletePhotoConfirmation({
   onCancel: () => void;
   onConfirm: () => Promise<void>;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className={styles.confirmationModal}>
-      <span className={styles.kicker}>Eliminar la imatge</span>
+      <span className={styles.kicker}>{t("publication.deletePhoto.kicker")}</span>
       <h2>
         {isLastPhoto
-          ? "Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació."
-          : "Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup."}
+          ? t("publication.deletePhoto.lastPhotoWarning")
+          : t("publication.deletePhoto.groupPhotoWarning")}
       </h2>
       <div className={styles.confirmationActions}>
-        <button disabled={isSubmitting} onClick={onCancel} type="button">Cancel·lar</button>
-        <button className={styles.dangerButton} disabled={isSubmitting} onClick={onConfirm} type="button">Eliminar</button>
+        <button disabled={isSubmitting} onClick={onCancel} type="button">{t("publication.deletePhoto.cancel")}</button>
+        <button className={styles.dangerButton} disabled={isSubmitting} onClick={onConfirm} type="button">{t("publication.deletePhoto.confirm")}</button>
       </div>
     </div>
   );
@@ -1153,12 +1215,13 @@ function PublicationGallery({
   onOpen: (publication: Publication, photoIndex: number) => void;
   publications: Publication[];
 }) {
+  const { t } = useTranslation();
   const galleryPhotos = publications.flatMap((publication) =>
     publication.fotos.map((photo) => ({ photo, publication })),
   );
 
   if (galleryPhotos.length === 0) {
-    return <p className={styles.emptyState}>{hasSearch ? "No hi ha cap imatge que coincidisca amb la busca." : "Encara no hi ha fotos publicades."}</p>;
+    return <p className={styles.emptyState}>{t(hasSearch ? "gallery.empty.search" : "gallery.empty.default")}</p>;
   }
 
   return (
@@ -1166,14 +1229,16 @@ function PublicationGallery({
       {galleryPhotos.map(({ photo, publication }) => (
         <article className={styles.publicCard} key={`${publication.id}-${photo.id}`}>
           <button
-            aria-label={`Veure els detalls de ${publication.titulo ?? "la imatge"}`}
+            aria-label={publication.titulo
+              ? t("gallery.card.openDetailsNamed", { title: publication.titulo })
+              : t("gallery.card.openDetailsGeneric")}
             className={`${styles.publicImageButton} ${publication.titulo ? styles.hasImageOverlay : ""}`}
             onClick={() => onOpen(publication, photo.index)}
             type="button"
           >
             <div className={styles.publicImage}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt={publication.titulo ?? "Taulell"} decoding="async" loading="lazy" src={photo.url} />
+              <img alt={publication.titulo ?? t("gallery.card.imageAltFallback")} decoding="async" loading="lazy" src={photo.url} />
             </div>
             {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
           </button>
@@ -1188,8 +1253,8 @@ function submitCredentials(event: FormEvent<HTMLFormElement>, callback: () => Pr
   callback();
 }
 
-function formatPublicationDate(value: string) {
-  return new Intl.DateTimeFormat("ca-ES-valencia", {
+function formatPublicationDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",

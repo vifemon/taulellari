@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { LANGUAGE_TAGS, normalizeLocale } from "@/i18n/config";
 
 import styles from "./page.module.css";
 
@@ -22,6 +25,7 @@ type GalleryPublication = {
 type GalleryState = "idle" | "loading" | "anonymous" | "ready" | "error";
 
 export function Gallery() {
+  const { i18n, t } = useTranslation();
   const [state, setState] = useState<GalleryState>("idle");
   const [publications, setPublications] = useState<GalleryPublication[]>([]);
 
@@ -72,32 +76,29 @@ export function Gallery() {
   }
 
   return (
-    <section className={styles.galleryPanel} aria-label="Galeria de publicacions">
+    <section className={styles.galleryPanel} aria-label={t("legacyGallery.label")}>
       <div className={styles.galleryHeader}>
-        <span className={styles.kicker}>Galeria visual</span>
+        <span className={styles.kicker}>{t("legacyGallery.kicker")}</span>
         <div>
-          <h2>L&apos;arxiu comença ací.</h2>
-          <p>
-            Les peces guardades apareixen ordenades per data; les fotos i
-            l&apos;adreça exacta només es mostren si has iniciat sessió.
-          </p>
+          <h2>{t("legacyGallery.heading")}</h2>
+          <p>{t("legacyGallery.description")}</p>
         </div>
         <button className={styles.secondaryButton} onClick={() => loadGallery()} type="button">
-          Actualitzar
+          {t("legacyGallery.refresh")}
         </button>
       </div>
 
-      {state === "loading" ? <p className={styles.status}>Carregant la galeria...</p> : null}
+      {state === "loading" ? <p className={styles.status}>{t("legacyGallery.loading")}</p> : null}
       {state === "anonymous" ? (
-        <p className={styles.status}>Inicia sessió per a veure les teues publicacions.</p>
+        <p className={styles.status}>{t("legacyGallery.anonymous")}</p>
       ) : null}
       {state === "error" ? (
-        <p className={styles.status}>No s&apos;ha pogut carregar la galeria.</p>
+        <p className={styles.status}>{t("legacyGallery.loadError")}</p>
       ) : null}
       {state === "ready" && publications.length === 0 ? (
         <div className={styles.emptyGallery}>
-          <strong>Encara no hi ha cap peça arxivada.</strong>
-          <span>Guarda la primera façana per a inaugurar el mosaic.</span>
+          <strong>{t("legacyGallery.emptyTitle")}</strong>
+          <span>{t("legacyGallery.emptyDescription")}</span>
         </div>
       ) : null}
 
@@ -109,7 +110,7 @@ export function Gallery() {
                 {publication.fotos.map((photo, index) => (
                   <div className={styles.tileImage} key={photo.index}>
                     <Image
-                      alt={`${publication.titulo}, foto ${index + 1}`}
+                      alt={t("legacyGallery.photoAlt", { title: publication.titulo, number: index + 1 })}
                       fill
                       priority={publicationIndex === 0 && index === 0}
                       sizes="(max-width: 880px) 88vw, 30vw"
@@ -120,7 +121,7 @@ export function Gallery() {
                 ))}
               </div>
               <div className={styles.tileBody}>
-                <span>{formatDate(publication.creadoEn)}</span>
+                <span>{formatDate(publication.creadoEn, LANGUAGE_TAGS[normalizeLocale(i18n.resolvedLanguage)])}</span>
                 <h3>{publication.titulo}</h3>
                 {publication.descripcion ? <p>{publication.descripcion}</p> : null}
                 <p>{publication.direccionTexto}</p>
@@ -136,8 +137,8 @@ export function Gallery() {
   );
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("ca-ES-valencia", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",

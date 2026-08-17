@@ -5,6 +5,7 @@ import {
 } from "@/db/repositories";
 import { getPublicationPhotoEntries } from "@/publicaciones/photos";
 import { removeSavedPhotos, savePublicationPhotos } from "@/publicaciones/storage";
+import { API_ERROR_CODES } from "@/i18n/error-codes";
 import {
   validatePhotoFiles,
   validatePublicationFields,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.authRequired }, { status: 401 });
   }
 
   const formData = await request.formData();

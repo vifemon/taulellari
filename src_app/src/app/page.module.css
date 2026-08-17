@@ -113,6 +113,7 @@
 
 .navButton,
 .iconButton,
+.languageButton,
 .plusButton,
 .menuButton,
 .textButton,
@@ -124,7 +125,8 @@
 }
 
 .navButton,
-.iconButton {
+.iconButton,
+.languageButton {
   min-height: 42px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -156,8 +158,22 @@
   line-height: 1;
 }
 
+.languageButton {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0;
+  text-transform: lowercase;
+}
+
 .navButton:focus-visible,
 .iconButton:focus-visible,
+.languageButton:focus-visible,
 .plusButton:focus-visible,
 .menuButton:focus-visible {
   outline: 3px solid var(--ochre);
@@ -1201,7 +1217,7 @@
     left: 0;
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     border: 1px solid var(--line);
     border-radius: 26px;
@@ -1231,6 +1247,7 @@
 
   .navActions .navButton,
   .navActions .iconButton,
+  .navActions .languageButton,
   .navActions .plusButton {
     display: flex;
     width: 100%;
@@ -1245,15 +1262,28 @@
     color: var(--ink);
     font-size: 16px;
     line-height: 1;
-    padding: 0 18px;
+    padding: 0 10px;
     text-align: center;
   }
 
   .navActions .plusButton {
     grid-column: 1 / -1;
+    grid-row: 2;
     border-color: transparent;
     background: var(--blue-deep);
     color: var(--white);
+  }
+
+  .themeButton {
+    grid-column: 1;
+  }
+
+  .languageButton {
+    grid-column: 2;
+  }
+
+  .profileButton {
+    grid-column: 3;
   }
 
   .mobileNavLabel {
@@ -1283,5 +1313,15 @@
   .heroUploadAction {
     justify-content: center;
     padding: 6px 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navActions .mobileNavLabel {
+    display: none;
+  }
+
+  .navActions .plusButton .mobileNavLabel {
+    display: inline;
   }
 }

@@ -12,24 +12,25 @@ import {
 } from "@/db/repositories";
 import { getPublicationPhotoEntries } from "@/publicaciones/photos";
 import { removeSavedPhotos } from "@/publicaciones/storage";
+import { API_ERROR_CODES } from "@/i18n/error-codes";
 
 export async function PATCH(request: Request) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.authRequired }, { status: 401 });
   }
 
   const input = parseProfileInput(await readJsonObject(request));
 
   if (!input) {
-    return Response.json({ error: "Les dades del perfil no són vàlides" }, { status: 400 });
+    return Response.json({ error: API_ERROR_CODES.invalidProfile }, { status: 400 });
   }
 
   const existingUser = await findUserByEmail(input.email);
 
   if (existingUser && existingUser.id !== currentUser.id) {
-    return Response.json({ error: "Este correu electrònic ja està registrat" }, { status: 409 });
+    return Response.json({ error: API_ERROR_CODES.emailTaken }, { status: 409 });
   }
 
   const user = await updateUser({
@@ -47,7 +48,7 @@ export async function DELETE() {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    return Response.json({ error: "No has iniciat sessió" }, { status: 401 });
+    return Response.json({ error: API_ERROR_CODES.authRequired }, { status: 401 });
   }
 
   const publications = await listPublicationPhotoPathsForUser(currentUser.id);
