@@ -300,6 +300,12 @@ export function AppShell() {
       </nav>
 
       <header className={styles.heroScreen} id="hero">
+        <div aria-hidden="true" className={styles.heroBackgroundTrack}>
+          <span className={styles.heroBackgroundTile} />
+          <span className={`${styles.heroBackgroundTile} ${styles.heroBackgroundTileMirrored}`} />
+          <span className={styles.heroBackgroundTile} />
+          <span className={`${styles.heroBackgroundTile} ${styles.heroBackgroundTileMirrored}`} />
+        </div>
         <div className={styles.heroContent}>
           <span className={styles.kicker}>{t("hero.kicker")}</span>
           <h1>{t("hero.title")}</h1>

@@ -181,17 +181,62 @@
 }
 
 .heroScreen {
+  position: relative;
   display: grid;
   min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
   place-items: center;
-  background:
-    linear-gradient(180deg, rgba(6, 16, 35, 0.18), rgba(6, 16, 35, 0.56)),
-    url("/hero_bg.jpg") center / cover;
+  background: var(--blue-deep);
   padding: 96px 18px 36px;
+}
+
+.heroScreen::after {
+  position: absolute;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(6, 16, 35, 0.18), rgba(6, 16, 35, 0.56));
+  content: "";
+  inset: 0;
+  pointer-events: none;
+}
+
+.heroBackgroundTrack {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 400%;
+  flex-direction: column;
+  animation: heroBackgroundScroll 100s linear infinite;
+  pointer-events: none;
+  transform: translateY(-50%);
+  will-change: transform;
+}
+
+.heroBackgroundTile {
+  flex: 0 0 25%;
+  background: url("/hero_bg.jpg") center / cover no-repeat;
+}
+
+.heroBackgroundTileMirrored {
+  transform: scaleY(-1);
+}
+
+@keyframes heroBackgroundScroll {
+  from {
+    transform: translateY(-50%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .heroContent {
   position: relative;
+  z-index: 2;
   display: grid;
   width: min(100%, 1120px);
   align-content: end;
@@ -1187,6 +1232,12 @@
 
   .galleryControls {
     align-self: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroBackgroundTrack {
+    animation: none;
   }
 }
 

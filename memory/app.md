@@ -126,6 +126,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Cierre de modales:** los modales usan el icono `X` de Lucide con etiqueta accesible en lugar de texto visible.
 - **Modal responsive de detalle:** el detalle de una foto limita su altura al viewport y usa scroll interno para mantener la informacion y acciones accesibles en tablet y movil.
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), imagen fotografica de fondo, panel central con efecto glass y scroll hacia la galeria.
+- **Fondo animado del Hero:** la imagen se repite en una cinta vertical de cuatro paneles que avanza de arriba abajo en un ciclo lineal de `100s`. Los paneles alternos se reflejan verticalmente para ocultar el corte entre repeticiones; la capa es decorativa, no captura eventos y detiene su animacion cuando el usuario activa `prefers-reduced-motion`.
 - **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el contenedor ocupa toda la altura disponible.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Ancla de galeria:** la seccion `#galeria` reserva en su parte superior un espacio de `64px`, equivalente a la altura de la Navbar fija, mas su separacion visual habitual. El espacio deja ver el fondo real de la pagina para evitar cambios de tono y que el encabezado quede oculto al usar `Accedeix`.

@@ -67,6 +67,7 @@ Estado: completada y mergeada en `develop`.
 Estado: en curso sobre `develop`.
 
 - [x] **Hero glass:** reforzar el efecto glass del panel principal y actualizar la imagen fotografica de fondo.
+- [x] **Fondo infinito del Hero:** animar una cinta vertical repetitiva de la imagen principal con movimiento descendente suave, un ciclo de `100s`, uniones reflejadas sin salto y soporte para movimiento reducido.
 - [x] **Tema predeterminado:** iniciar la aplicacion en modo oscuro sin eliminar el selector de tema.
 - [x] **Navegacion responsive:** convertir la Navbar en un menu hamburguesa hasta `1100px`, con desplegable de ancho completo para tema, perfil o acceso y subida.
 - [x] **Perfil en smartphone:** repartir al 50% las acciones secundarias y permitir que el modal crezca y se desplace segun la cantidad de imagenes.
