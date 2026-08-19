@@ -101,6 +101,7 @@ describe("AppShell gallery search", () => {
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
     expect(screen.getByText("Rosa verde")).toBeDefined();
+    expect(screen.getByText("Totes les publicacions")).toBeDefined();
 
     fireEvent.click(screen.getByRole("button", { name: "Les meues publicacions" }));
 
@@ -108,6 +109,8 @@ describe("AppShell gallery search", () => {
       expect(screen.getByText("Portal azul")).toBeDefined();
       expect(screen.queryByText("Rosa verde")).toBeNull();
     });
+    expect(screen.getByText("Les meues publicacions")).toBeDefined();
+    expect(screen.queryByText("Totes les publicacions")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Totes les publicacions" }));
 
@@ -121,9 +124,16 @@ describe("AppShell gallery search", () => {
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
     expect(screen.getByRole("link", { name: "Accedeix" })).toBeDefined();
+    const activeGalleryButton = screen.getByRole("button", { name: "Vista de galeria" });
+    expect(within(activeGalleryButton).getByText("Vista de galeria")).toBeDefined();
+    expect(activeGalleryButton.querySelector("svg")).not.toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Vista de mapa" }));
 
     const map = await screen.findByRole("region", { name: "Mapa de publicacions" });
+    const activeMapButton = screen.getByRole("button", { name: "Vista de mapa" });
+    expect(within(activeMapButton).getByText("Vista de mapa")).toBeDefined();
+    expect(activeMapButton.querySelector("svg")).not.toBeNull();
+    expect(screen.queryByText("Vista de galeria")).toBeNull();
     expect(map.getAttribute("data-theme")).toBe("dark");
     expect(screen.queryByText("Portal azul")).toBeNull();
 
@@ -148,7 +158,11 @@ describe("AppShell gallery search", () => {
     fireEvent.click(openMenuButton);
 
     expect(within(navigation).getByRole("button", { name: "Tancar el menú" }).getAttribute("aria-expanded")).toBe("true");
-    expect(within(navigation).getByRole("button", { name: "Activar el mode clar" })).toBeDefined();
+    const themeButton = within(navigation).getByRole("button", { name: "Activar el mode clar" });
+    expect(within(themeButton).getByText("Mode fosc")).toBeDefined();
+    fireEvent.click(themeButton);
+    expect(within(navigation).getByRole("button", { name: "Activar el mode fosc" })).toBeDefined();
+    expect(within(themeButton).getByText("Mode clar")).toBeDefined();
     expect(within(navigation).getByRole("button", { name: "Canviar a castellà" }).textContent).toBe("val");
     expect(within(navigation).getByRole("button", { name: "El meu perfil: Ana" })).toBeDefined();
     expect(within(navigation).getByRole("button", { name: "Pujar imatge" })).toBeDefined();

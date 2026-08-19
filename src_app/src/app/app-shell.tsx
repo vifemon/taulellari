@@ -258,7 +258,7 @@ export function AppShell() {
             type="button"
           >
             {theme === "light" ? <Sun aria-hidden="true" size={20} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={20} strokeWidth={2.2} />}
-            <span className={styles.mobileNavLabel}>{t(theme === "light" ? "theme.dark" : "theme.light")}</span>
+            <span className={styles.mobileNavLabel}>{t(theme === "light" ? "theme.light" : "theme.dark")}</span>
           </button>
           <button
             aria-label={t("navigation.language.switch")}
@@ -579,6 +579,7 @@ function GalleryScopeToggle({
         type="button"
       >
         <Users aria-hidden="true" size={18} strokeWidth={2.2} />
+        {scope === "all" ? <span className={styles.mobileActiveControlLabel}>{t("gallery.scope.all")}</span> : null}
       </button>
       <button
         aria-label={t(isAuthenticated ? "gallery.scope.mine" : "gallery.scope.mineRequiresLogin")}
@@ -588,6 +589,7 @@ function GalleryScopeToggle({
         type="button"
       >
         <UserRound aria-hidden="true" size={18} strokeWidth={2.2} />
+        {scope === "mine" ? <span className={styles.mobileActiveControlLabel}>{t("gallery.scope.mine")}</span> : null}
       </button>
     </div>
   );
@@ -612,6 +614,7 @@ function GalleryViewToggle({
         type="button"
       >
         <Images aria-hidden="true" size={18} strokeWidth={2.2} />
+        {view === "gallery" ? <span className={styles.mobileActiveControlLabel}>{t("gallery.view.gallery")}</span> : null}
       </button>
       <button
         aria-label={t("gallery.view.map")}
@@ -621,6 +624,7 @@ function GalleryViewToggle({
         type="button"
       >
         <MapPinned aria-hidden="true" size={18} strokeWidth={2.2} />
+        {view === "map" ? <span className={styles.mobileActiveControlLabel}>{t("gallery.view.map")}</span> : null}
       </button>
     </div>
   );

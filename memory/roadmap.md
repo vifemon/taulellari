@@ -71,7 +71,8 @@ Estado: en curso sobre `develop`.
 - [x] **Tema predeterminado:** iniciar la aplicacion en modo oscuro sin eliminar el selector de tema.
 - [x] **Navegacion responsive:** convertir la Navbar en un menu hamburguesa hasta `1100px`, con desplegable de ancho completo para tema, perfil o acceso y subida.
 - [x] **Perfil en smartphone:** repartir al 50% las acciones secundarias y permitir que el modal crezca y se desplace segun la cantidad de imagenes.
-- [x] **Controles de galeria simplificados:** mostrar los selectores de alcance y vista solo mediante iconos Lucide accesibles; usar `Users` y `MapPinned` para todas las publicaciones y mapa.
+- [x] **Controles de galeria responsive:** mostrar solo iconos Lucide en escritorio; hasta `600px`, colocar los dos selectores en bloques iguales a todo el ancho, con icono y texto completo en la opcion activa e icono solo en la inactiva.
+- [x] **Etiqueta de tema:** mostrar en tablet el modo actual junto al icono de sol o luna, manteniendo la accion contraria en `aria-label` y `title`.
 - [x] **Barra de galeria:** reducir el buscador a unos `360px`, alinearlo con el borde izquierdo de la galeria o mapa y situar los controles en el borde derecho.
 - [x] **Localizacion valenciana:** traducir todo el copy visible y accesible al valenciano de Valencia, declarar `ca-ES-valencia`, localizar fechas, validaciones y errores, y solicitar a Mapbox las direcciones en `ca`.
 - [x] **Internacionalizacion i18n:** instalar `i18next` y `react-i18next`, crear catalogos `val`/`es`, migrar el copy a claves `t`, persistir el idioma en cookie y localizar metadata, fechas, mapa, validaciones y errores mediante codigos estables.
