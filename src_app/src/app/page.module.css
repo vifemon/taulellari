@@ -1194,10 +1194,18 @@
   }
 
   .heroContent {
-    align-content: start;
+    align-content: center;
     align-self: stretch;
     gap: 18px;
+    min-height: 50svh;
     padding: 24px;
+  }
+
+  .heroContent h1 {
+    font-size: clamp(58px, 13vw, 96px);
+    font-weight: 950;
+    letter-spacing: -0.09em;
+    line-height: 0.82;
   }
 
   .publicGallery {

@@ -44,7 +44,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Idiomas disponibles:** valenciano de Valencia (`val`) y castellano (`es`). El valenciano sigue siendo el idioma predeterminado.
 - **Catalogos:** todo el copy visible y accesible vive en `src_app/src/translations/val.json` y `src_app/src/translations/es.json`. Las claves cubren navegacion, formularios, placeholders, estados, confirmaciones, validaciones, errores, metadata, mapa y etiquetas `aria`/`title`.
 - **Variante valenciana:** el catalogo `val` prioriza las formas propias del valenciano de Valencia frente a variantes orientales. Las futuras incorporaciones deben actualizar ambos JSON y mantener paridad de claves.
-- **Renderizado:** el layout lee la cookie `taulellari_locale`, crea una instancia i18next aislada y renderiza el mismo idioma en servidor y cliente. La preferencia se conserva durante un ano.
+- **Renderizado:** el layout lee la cookie `taulellari_locale`, crea una instancia i18next aislada y renderiza el mismo idioma en servidor y cliente. La preferencia se conserva durante un ano y el proveedor cliente resincroniza los catalogos cuando cambian durante Fast Refresh.
 - **Idioma del documento:** `val` se publica como `lang="ca-ES-valencia"` y `es` como `lang="es-ES"`. Las fechas y la metadata usan el locale activo.
 - **Selector:** la Navbar muestra el codigo activo `val` o `es` en un control circular de `42px`, equivalente al boton de tema y con tipografia compacta. Al pulsarlo cambia el catalogo, actualiza la cookie, sincroniza `html.lang` y refresca el contenido de servidor.
 - **Geocodificacion:** Mapbox recibe `language=ca` para `val` y `language=es` para castellano. El proveedor no ofrece un codigo separado para la variante valenciana; las etiquetas del mapa base CARTO siguen dependiendo del proveedor externo.
@@ -127,7 +127,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Modal responsive de detalle:** el detalle de una foto limita su altura al viewport y usa scroll interno para mantener la informacion y acciones accesibles en tablet y movil.
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), imagen fotografica de fondo, panel central con efecto glass y scroll hacia la galeria.
 - **Fondo animado del Hero:** la imagen se repite en una cinta vertical de cuatro paneles que avanza de arriba abajo en un ciclo lineal de `100s`. Los paneles alternos se reflejan verticalmente para ocultar el corte entre repeticiones; la capa es decorativa, no captura eventos y detiene su animacion cuando el usuario activa `prefers-reduced-motion`.
-- **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el contenedor ocupa toda la altura disponible.
+- **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el panel ocupa al menos el `50svh`, centra su contenido y refuerza el titulo con una escala tipografica de `58px` a `96px`.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Ancla de galeria:** la seccion `#galeria` reserva en su parte superior un espacio de `64px`, equivalente a la altura de la Navbar fija, mas su separacion visual habitual. El espacio deja ver el fondo real de la pagina para evitar cambios de tono y que el encabezado quede oculto al usar `Accedeix`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
@@ -136,7 +136,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Alcance de galeria:** el toggle permite mostrar todas las publicaciones o filtrar solo las del usuario autenticado; por defecto muestra todas.
 - **Controles de galeria:** en escritorio, los selectores de alcance y vista usan solo iconos Lucide accesibles (`Users`, `UserRound`, `Images` y `MapPinned`) y se situan en el extremo derecho de la fila del buscador. Hasta `600px`, el buscador ocupa todo el ancho y deja `16px` antes de una segunda fila con dos bloques iguales: la opcion activa muestra icono y texto, mientras la inactiva conserva solo el icono.
 - **Detalle de fotos multiples:** el modal conserva miniaturas y añade flechas no circulares para navegar por las fotos del mismo grupo, comenzando por la imagen seleccionada.
-- **Borrado de fotos:** se elimina solo la foto actual con confirmacion; si era la ultima, tambien se elimina la publicacion y sus metadatos.
+- **Borrado de fotos:** se elimina solo la foto actual con confirmacion; las fotos de un grupo explican que se conservaran las demas, mientras una publicacion con una unica foto usa una pregunta breve. Si era la ultima, tambien se elimina la publicacion y sus metadatos.
 - **Datos privados:** descripcion, coordenadas y metadatos sensibles se muestran solo a usuarios logeados.
 - **Perfil tipo Instagram:** el perfil de usuario muestra un grid pequeno de sus fotos y permite editar o borrar publicaciones propias.
 - **Perfil refinado:** el modal muestra identidad centrada, campos etiquetados, archivo personal con todas las fotos y borrado individual desde cada miniatura mediante `Trash2` y confirmacion. En smartphone crece segun la cantidad de imagenes, permite recorrer todo su contenido y reparte por igual el ancho de las acciones de cerrar sesion y borrar usuario.
@@ -156,7 +156,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 42 tests.
+- `npm run test` correcto con 43 tests.
 - `npm run build` correcto.
 - Rama actual de trabajo: `develop`.
 - `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive.

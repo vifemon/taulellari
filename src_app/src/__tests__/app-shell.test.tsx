@@ -264,6 +264,18 @@ describe("AppShell gallery search", () => {
     expect(await screen.findByText("Arxiu personal")).toBeDefined();
   });
 
+  it("shows the short confirmation for a single photo deleted from the profile", async () => {
+    mockAppShellFetch();
+
+    renderAppShell();
+
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar Portal azul, foto 1" }));
+
+    expect(await screen.findByText("Vols eliminar esta imatge?")).toBeDefined();
+    expect(screen.queryByText(/altres imatges del mateix grup/)).toBeNull();
+  });
+
   it("shows an empty search state when no images match", async () => {
     mockAppShellFetch();
 
@@ -336,7 +348,7 @@ describe("AppShell gallery search", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Esborrar" }));
 
     expect(
-      await screen.findByText("Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació."),
+      await screen.findByText("Vols eliminar esta imatge?"),
     ).toBeDefined();
   });
 

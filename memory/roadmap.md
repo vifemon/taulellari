@@ -78,6 +78,8 @@ Estado: en curso sobre `develop`.
 - [x] **Internacionalizacion i18n:** instalar `i18next` y `react-i18next`, crear catalogos `val`/`es`, migrar el copy a claves `t`, persistir el idioma en cookie y localizar metadata, fechas, mapa, validaciones y errores mediante codigos estables.
 - [x] **Selector de idioma:** mostrar `val` o `es` en un control circular equivalente al boton de tema y distribuir tema, idioma y perfil en tres columnas iguales en tablet y smartphone, manteniendo la subida en una segunda fila completa.
 - [x] **Ancla de galeria:** reservar sobre el encabezado de `#galeria` un espacio con el fondo real de la pagina equivalente a la altura de la Navbar fija para evitar que `Accedeix` deje el titulo oculto.
+- [x] **Confirmacion de foto unica:** simplificar el mensaje de borrado cuando la publicacion contiene una sola imagen, cubrir tambien el flujo desde el perfil y resincronizar los catalogos i18next durante Fast Refresh.
+- [x] **Hero movil refinado:** limitar el panel a un minimo de `50svh`, centrar su contenido y aumentar la presencia tipografica del titulo hasta `96px` en pantallas de `860px` o menos.
 - [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
 
 ## Fase 2: Contenerizacion Y Despliegue

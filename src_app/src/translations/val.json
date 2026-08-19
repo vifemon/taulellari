@@ -120,7 +120,7 @@
     },
     "deletePhoto": {
       "kicker": "Eliminar la imatge",
-      "lastPhotoWarning": "Vols eliminar esta imatge? És l'última del grup i, per tant, també s'eliminarà la publicació.",
+      "lastPhotoWarning": "Vols eliminar esta imatge?",
       "groupPhotoWarning": "Vols eliminar esta imatge? Si és així, s'eliminarà la imatge actual i es conservaran les altres imatges del mateix grup.",
       "cancel": "Cancel·lar",
       "confirm": "Eliminar"

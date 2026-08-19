@@ -120,7 +120,7 @@
     },
     "deletePhoto": {
       "kicker": "Eliminar la imagen",
-      "lastPhotoWarning": "¿Quieres eliminar esta imagen? Es la última del grupo y, por tanto, también se eliminará la publicación.",
+      "lastPhotoWarning": "¿Quieres eliminar esta imagen?",
       "groupPhotoWarning": "¿Quieres eliminar esta imagen? Si es así, se eliminará la imagen actual y se conservarán las demás imágenes del mismo grupo.",
       "cancel": "Cancelar",
       "confirm": "Eliminar"
