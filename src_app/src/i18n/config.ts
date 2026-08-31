@@ -1,6 +1,6 @@
 export const SUPPORTED_LOCALES = ["val", "es"] as const;
 export const DEFAULT_LOCALE = "val";
-export const LOCALE_COOKIE_NAME = "taulellari_locale";
+export const LEGACY_LOCALE_COOKIE_NAME = "taulellari_locale";
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 

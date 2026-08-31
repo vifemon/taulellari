@@ -177,11 +177,13 @@
       "invalidRegistration": "Los datos de registro no son válidos",
       "emailTaken": "Este correo electrónico ya está registrado",
       "loginFailed": "No se ha podido iniciar la sesión",
-      "registerFailed": "No se ha podido completar el registro"
+      "registerFailed": "No se ha podido completar el registro",
+      "logoutFailed": "No se ha podido cerrar la sesión"
     },
     "profile": {
       "invalid": "Los datos del perfil no son válidos",
-      "updateFailed": "No se ha podido actualizar el perfil"
+      "updateFailed": "No se ha podido actualizar el perfil",
+      "deleteFailed": "No se ha podido borrar el usuario"
     },
     "publication": {
       "notFound": "No se ha encontrado la publicación",

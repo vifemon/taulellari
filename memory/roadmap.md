@@ -80,6 +80,7 @@ Estado: en curso sobre `develop`.
 - [x] **Ancla de galeria:** reservar sobre el encabezado de `#galeria` un espacio con el fondo real de la pagina equivalente a la altura de la Navbar fija para evitar que `Accedeix` deje el titulo oculto.
 - [x] **Confirmacion de foto unica:** simplificar el mensaje de borrado cuando la publicacion contiene una sola imagen, cubrir tambien el flujo desde el perfil y resincronizar los catalogos i18next durante Fast Refresh.
 - [x] **Hero movil refinado:** limitar el panel a un minimo de `50svh`, centrar su contenido y aumentar la presencia tipografica del titulo hasta `96px` en pantallas de `860px` o menos.
+- [x] **Estado y preferencias centralizados:** inicializar la sesion en servidor y reunir idioma, tema, vista y alcance en `AppStateProvider`, persistiendo los ajustes no sensibles en una cookie validada y manteniendo el token de autenticacion separado y HTTP-only.
 - [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
 
 ## Fase 2: Contenerizacion Y Despliegue

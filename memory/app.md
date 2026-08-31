@@ -44,9 +44,9 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Idiomas disponibles:** valenciano de Valencia (`val`) y castellano (`es`). El valenciano sigue siendo el idioma predeterminado.
 - **Catalogos:** todo el copy visible y accesible vive en `src_app/src/translations/val.json` y `src_app/src/translations/es.json`. Las claves cubren navegacion, formularios, placeholders, estados, confirmaciones, validaciones, errores, metadata, mapa y etiquetas `aria`/`title`.
 - **Variante valenciana:** el catalogo `val` prioriza las formas propias del valenciano de Valencia frente a variantes orientales. Las futuras incorporaciones deben actualizar ambos JSON y mantener paridad de claves.
-- **Renderizado:** el layout lee la cookie `taulellari_locale`, crea una instancia i18next aislada y renderiza el mismo idioma en servidor y cliente. La preferencia se conserva durante un ano y el proveedor cliente resincroniza los catalogos cuando cambian durante Fast Refresh.
+- **Renderizado:** el layout obtiene el idioma desde `taulellari_preferences`, crea una instancia i18next aislada y renderiza el mismo idioma en servidor y cliente. La preferencia se conserva durante un ano y el proveedor cliente resincroniza los catalogos cuando cambian durante Fast Refresh.
 - **Idioma del documento:** `val` se publica como `lang="ca-ES-valencia"` y `es` como `lang="es-ES"`. Las fechas y la metadata usan el locale activo.
-- **Selector:** la Navbar muestra el codigo activo `val` o `es` en un control circular de `42px`, equivalente al boton de tema y con tipografia compacta. Al pulsarlo cambia el catalogo, actualiza la cookie, sincroniza `html.lang` y refresca el contenido de servidor.
+- **Selector:** la Navbar muestra el codigo activo `val` o `es` en un control circular de `42px`, equivalente al boton de tema y con tipografia compacta. Al pulsarlo cambia el catalogo, actualiza las preferencias, sincroniza `html.lang` y refresca el contenido de servidor.
 - **Geocodificacion:** Mapbox recibe `language=ca` para `val` y `language=es` para castellano. El proveedor no ofrece un codigo separado para la variante valenciana; las etiquetas del mapa base CARTO siguen dependiendo del proveedor externo.
 - **Errores traducibles:** las APIs y validaciones devuelven codigos estables, no frases. `AppShell` transforma esos codigos en claves i18n para que un mensaje visible cambie de idioma junto con la interfaz.
 - **Excepcion valenciana:** el acceso anonimo conserva deliberadamente `Log in` en `val`; el catalogo castellano muestra `Entrar`.
@@ -62,7 +62,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Acceso:** autenticacion real con email y contrasena.
 - **Registro:** el usuario debe tener email, nombre, apellidos y contrasena.
 - **Contrasenas:** almacenamiento siempre encriptado mediante hash seguro; nunca se guardan contrasenas en texto plano.
-- **Sesion:** cookie HTTP-only firmada en servidor mediante `AUTH_SECRET`.
+- **Sesion:** `taulellari_session` es una cookie HTTP-only firmada en servidor mediante `AUTH_SECRET`; nunca se mezcla con preferencias accesibles desde JavaScript. El usuario inicial se resuelve en servidor antes de renderizar la pagina.
 - **CRUD de usuarios:** crear, leer, actualizar y borrar usuarios desde flujos protegidos.
 - **Perfil:** cada usuario autenticado tendra una vista de perfil con sus publicaciones y opciones para editar o borrar sus fotos.
 - **Rol inicial:** el usuario autenticado puede subir, editar y borrar sus propias publicaciones.
@@ -133,7 +133,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
 - **Tarjetas de galeria:** las tarjetas muestran solo la imagen; al pasar el cursor o enfocar una imagen con titulo, aparece un overlay oscuro con el titulo.
 - **Layout de galeria:** las imagenes se muestran en columnas masonry responsive, conservando su proporcion natural; usa cuatro columnas en desktop y dos en tablet y mobile.
-- **Alcance de galeria:** el toggle permite mostrar todas las publicaciones o filtrar solo las del usuario autenticado; por defecto muestra todas.
+- **Alcance de galeria:** el toggle permite mostrar todas las publicaciones o filtrar solo las del usuario autenticado; por defecto muestra todas y vuelve a ese alcance cuando no existe una sesion valida.
 - **Controles de galeria:** en escritorio, los selectores de alcance y vista usan solo iconos Lucide accesibles (`Users`, `UserRound`, `Images` y `MapPinned`) y se situan en el extremo derecho de la fila del buscador. Hasta `600px`, el buscador ocupa todo el ancho y deja `16px` antes de una segunda fila con dos bloques iguales: la opcion activa muestra icono y texto, mientras la inactiva conserva solo el icono.
 - **Detalle de fotos multiples:** el modal conserva miniaturas y añade flechas no circulares para navegar por las fotos del mismo grupo, comenzando por la imagen seleccionada.
 - **Borrado de fotos:** se elimina solo la foto actual con confirmacion; las fotos de un grupo explican que se conservaran las demas, mientras una publicacion con una unica foto usa una pregunta breve. Si era la ultima, tambien se elimina la publicacion y sus metadatos.
@@ -142,6 +142,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Perfil refinado:** el modal muestra identidad centrada, campos etiquetados, archivo personal con todas las fotos y borrado individual desde cada miniatura mediante `Trash2` y confirmacion. En smartphone crece segun la cantidad de imagenes, permite recorrer todo su contenido y reparte por igual el ancho de las acciones de cerrar sesion y borrar usuario.
 - **Identidad visual:** paleta inspirada en Manises y boton de modo claro/oscuro en la Navbar.
 - **Selector de tema:** la Navbar usa `Sun` en modo claro y `Moon` en modo oscuro. En tablet, el texto visible indica el estado actual (`Mode clar` o `Mode fosc`), mientras la etiqueta accesible describe la accion disponible. El modo oscuro es el estado predeterminado.
+- **Estado centralizado:** `AppStateProvider` mantiene el usuario autenticado, idioma, tema, vista de galeria o mapa y alcance de publicaciones. Las cuatro preferencias no sensibles se validan y persisten durante un ano en la cookie `taulellari_preferences`; la antigua `taulellari_locale` solo se lee como migracion y se elimina al inicializar el cliente.
 - **Navegacion responsive:** hasta `1100px`, la Navbar sustituye las acciones de escritorio por un boton hamburguesa a la derecha. Tema, idioma y perfil o acceso se reparten por igual la primera fila en tres columnas; la subida ocupa toda la segunda fila. En smartphone se ocultan las etiquetas secundarias de tema y perfil para evitar desbordamientos.
 - **Alineacion de iconos:** los controles de tema y subida usan contenedores centrados y el icono `Plus` de Lucide para mantener una alineacion visual consistente.
 - **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
@@ -156,7 +157,7 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 43 tests.
+- `npm run test` correcto con 50 tests.
 - `npm run build` correcto.
 - Rama actual de trabajo: `develop`.
 - `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive.

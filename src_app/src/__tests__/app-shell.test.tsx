@@ -1,11 +1,25 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { AppStateProvider } from "../app-state/provider";
+import {
+  APP_PREFERENCES_COOKIE_NAME,
+  DEFAULT_APP_PREFERENCES,
+  type AppPreferences,
+  parseAppPreferences,
+} from "../app-state/preferences";
 import { AppShell } from "../app/app-shell";
+import type { AuthUser } from "../auth/types";
 import { type Locale } from "../i18n/config";
 import { AppI18nProvider } from "../i18n/provider";
 
 const { refreshMock } = vi.hoisted(() => ({ refreshMock: vi.fn() }));
+const AUTH_USER: AuthUser = {
+  id: 1,
+  email: "ana@example.com",
+  nombre: "Ana",
+  apellidos: "Soler",
+};
 
 vi.mock("next/image", () => ({
   default: ({ alt, src }: { alt: string; src: string }) => {
@@ -56,13 +70,31 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   document.cookie = "taulellari_locale=; Path=/; Max-Age=0";
+  document.cookie = `${APP_PREFERENCES_COOKIE_NAME}=; Path=/; Max-Age=0`;
   document.documentElement.lang = "ca-ES-valencia";
 });
 
-function renderAppShell(locale: Locale = "val") {
+function renderAppShell(
+  locale: Locale = "val",
+  {
+    preferences = {},
+    user = AUTH_USER,
+  }: {
+    preferences?: Partial<AppPreferences>;
+    user?: AuthUser | null;
+  } = {},
+) {
+  const initialPreferences = {
+    ...DEFAULT_APP_PREFERENCES,
+    ...preferences,
+    locale,
+  };
+
   return render(
     <AppI18nProvider initialLocale={locale}>
-      <AppShell />
+      <AppStateProvider initialPreferences={initialPreferences} initialUser={user}>
+        <AppShell />
+      </AppStateProvider>
     </AppI18nProvider>,
   );
 }
@@ -109,12 +141,14 @@ describe("AppShell gallery search", () => {
       expect(screen.getByText("Portal azul")).toBeDefined();
       expect(screen.queryByText("Rosa verde")).toBeNull();
     });
+    expect(readStoredPreferences().galleryScope).toBe("mine");
     expect(screen.getByText("Les meues publicacions")).toBeDefined();
     expect(screen.queryByText("Totes les publicacions")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Totes les publicacions" }));
 
     expect(await screen.findByText("Rosa verde")).toBeDefined();
+    expect(readStoredPreferences().galleryScope).toBe("all");
   });
 
   it("switches between gallery and map views", async () => {
@@ -139,10 +173,43 @@ describe("AppShell gallery search", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Activar el mode clar" }));
     expect(map.getAttribute("data-theme")).toBe("light");
+    expect(readStoredPreferences()).toMatchObject({ galleryView: "map", theme: "light" });
 
     fireEvent.click(screen.getByRole("button", { name: "Vista de galeria" }));
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
+    expect(readStoredPreferences().galleryView).toBe("gallery");
+  });
+
+  it("initializes the interface from centralized preferences", async () => {
+    const fetchMock = mockAppShellFetch();
+
+    renderAppShell("es", {
+      preferences: {
+        galleryScope: "mine",
+        galleryView: "map",
+        theme: "light",
+      },
+    });
+
+    const map = await screen.findByRole("region", { name: "Mapa de publicaciones" });
+    expect(map.getAttribute("data-publication-ids")).toBe("1");
+    expect(map.getAttribute("data-theme")).toBe("light");
+    expect(screen.getByRole("button", { name: "Mis publicaciones" }).getAttribute("aria-pressed")).toBe("true");
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/auth/me");
+  });
+
+  it("resets a stored private scope for an anonymous session", async () => {
+    mockAppShellFetch();
+
+    renderAppShell("val", {
+      preferences: { galleryScope: "mine" },
+      user: null,
+    });
+
+    await screen.findByText("Portal azul");
+    expect(screen.getByRole("button", { name: "Totes les publicacions" }).getAttribute("aria-pressed")).toBe("true");
+    expect(readStoredPreferences().galleryScope).toBe("all");
   });
 
   it("opens the responsive navigation and exposes its actions", async () => {
@@ -222,6 +289,42 @@ describe("AppShell gallery search", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Canviar a castellà" }));
     expect(await screen.findByText("3 imágenes")).toBeDefined();
+  });
+
+  it("keeps the authenticated state when logout fails", async () => {
+    mockAppShellFetch({ logoutSucceeds: false });
+    renderAppShell("val", { preferences: { galleryScope: "mine" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Tancar la sessió" }));
+
+    expect(await screen.findByText("No s'ha pogut tancar la sessió")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Ana Soler" })).toBeDefined();
+    expect(readStoredPreferences().galleryScope).toBe("mine");
+  });
+
+  it("keeps the authenticated state when account deletion fails", async () => {
+    mockAppShellFetch({ accountDeleteStatus: 500 });
+    renderAppShell("val", { preferences: { galleryScope: "mine" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar l'usuari" }));
+
+    expect(await screen.findByText("No s'ha pogut esborrar l'usuari")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Ana Soler" })).toBeDefined();
+    expect(readStoredPreferences().galleryScope).toBe("mine");
+  });
+
+  it("clears stale authenticated state when account deletion returns unauthorized", async () => {
+    mockAppShellFetch({ accountDeleteStatus: 401 });
+    renderAppShell("val", { preferences: { galleryScope: "mine" } });
+
+    fireEvent.click(await screen.findByRole("button", { name: "El meu perfil: Ana" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Esborrar l'usuari" }));
+
+    expect(await screen.findByRole("button", { name: "Log in" })).toBeDefined();
+    expect(screen.queryByRole("heading", { name: "Ana Soler" })).toBeNull();
+    expect(readStoredPreferences().galleryScope).toBe("all");
   });
 
   it("translates the selected file count", async () => {
@@ -366,9 +469,9 @@ describe("AppShell gallery search", () => {
   });
 
   it("opens the login modal when an anonymous visitor clicks an image", async () => {
-    mockAppShellFetch({ authenticated: false });
+    mockAppShellFetch();
 
-    renderAppShell();
+    renderAppShell("val", { user: null });
 
     expect(await screen.findByRole("button", { name: "Log in" })).toBeDefined();
     fireEvent.click(await screen.findByRole("button", { name: "Veure els detalls de Portal azul" }));
@@ -377,9 +480,9 @@ describe("AppShell gallery search", () => {
   });
 
   it("opens the login modal when an anonymous visitor selects own publications", async () => {
-    mockAppShellFetch({ authenticated: false });
+    mockAppShellFetch();
 
-    renderAppShell();
+    renderAppShell("val", { user: null });
 
     fireEvent.click(await screen.findByRole("button", { name: "Les meues publicacions, inicia sessió" }));
 
@@ -387,9 +490,9 @@ describe("AppShell gallery search", () => {
   });
 
   it("changes the interface language and persists the selection", async () => {
-    mockAppShellFetch({ authenticated: false });
+    mockAppShellFetch();
 
-    renderAppShell();
+    renderAppShell("val", { user: null });
 
     expect(await screen.findByRole("heading", { name: "Taulells, mosaics, rajoles, xapats" })).toBeDefined();
     const languageButton = screen.getByRole("button", { name: "Canviar a castellà" });
@@ -402,7 +505,8 @@ describe("AppShell gallery search", () => {
     expect(screen.getByRole("button", { name: "Cambiar a valenciano" }).textContent).toBe("es");
     expect(screen.getByRole("button", { name: "Activar el modo claro" }).getAttribute("title")).toBe("Activar el modo claro");
     expect(document.documentElement.lang).toBe("es-ES");
-    expect(document.cookie).toContain("taulellari_locale=es");
+    expect(readStoredPreferences().locale).toBe("es");
+    expect(document.cookie).not.toContain("taulellari_locale=");
     expect(refreshMock).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: "Vista de mapa" }));
@@ -419,10 +523,10 @@ describe("AppShell gallery search", () => {
   });
 
   it("renders Spanish from the initial locale", async () => {
-    mockAppShellFetch({ authenticated: false });
+    mockAppShellFetch();
 
     document.documentElement.lang = "xx";
-    renderAppShell("es");
+    renderAppShell("es", { user: null });
 
     expect(await screen.findByRole("heading", { name: "Azulejos, mosaicos, baldosas, chapados" })).toBeDefined();
     expect(screen.getByRole("button", { name: "Cambiar a valenciano" }).textContent).toBe("es");
@@ -432,21 +536,26 @@ describe("AppShell gallery search", () => {
   });
 });
 
-function mockAppShellFetch({ authenticated = true, multiplePhotos = false } = {}) {
-  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+function mockAppShellFetch({
+  accountDeleteStatus = 200,
+  logoutSucceeds = true,
+  multiplePhotos = false,
+} = {}) {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
 
-    if (url === "/api/auth/me") {
-      return Response.json({
-        user: authenticated
-          ? {
-              id: 1,
-              email: "ana@example.com",
-              nombre: "Ana",
-              apellidos: "Soler",
-            }
-          : null,
-      });
+    if (url === "/api/auth/logout") {
+      return Response.json(
+        logoutSucceeds ? { ok: true } : { error: "Logout failed" },
+        { status: logoutSucceeds ? 200 : 500 },
+      );
+    }
+
+    if (url === "/api/users/me" && init?.method === "DELETE") {
+      return Response.json(
+        accountDeleteStatus === 200 ? { ok: true } : { error: "Delete failed" },
+        { status: accountDeleteStatus },
+      );
     }
 
     if (url === "/api/publicaciones") {
@@ -492,4 +601,14 @@ function mockAppShellFetch({ authenticated = true, multiplePhotos = false } = {}
   vi.stubGlobal("fetch", fetchMock);
 
   return fetchMock;
+}
+
+function readStoredPreferences() {
+  const prefix = `${APP_PREFERENCES_COOKIE_NAME}=`;
+  const value = document.cookie
+    .split("; ")
+    .find((cookie) => cookie.startsWith(prefix))
+    ?.slice(prefix.length);
+
+  return parseAppPreferences(value);
 }

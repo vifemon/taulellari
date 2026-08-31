@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Images, MapPinned, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, Users, X } from "lucide-react";
-import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState, useTransition } from "react";
+import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { LANGUAGE_TAGS, LOCALE_COOKIE_NAME, normalizeLocale } from "@/i18n/config";
+import { useAppState } from "@/app-state/provider";
+import type { GalleryScope, GalleryView } from "@/app-state/preferences";
+import type { AuthUser } from "@/auth/types";
+import { LANGUAGE_TAGS, normalizeLocale } from "@/i18n/config";
 import { getErrorTranslationKey } from "@/i18n/error-codes";
 
 import styles from "./page.module.css";
@@ -16,13 +18,6 @@ const PublicationMap = dynamic(
   () => import("./publication-map").then((module) => module.PublicationMap),
   { ssr: false },
 );
-
-type AuthUser = {
-  id: number;
-  email: string;
-  nombre: string;
-  apellidos: string;
-};
 
 type AddressSuggestion = {
   id: string;
@@ -45,38 +40,41 @@ type Publication = {
 };
 
 type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
-type GalleryScope = "all" | "mine";
-type GalleryView = "gallery" | "map";
 type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
-  const { i18n, t } = useTranslation();
-  const router = useRouter();
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const { t } = useTranslation();
+  const {
+    changeLocale,
+    galleryScope,
+    galleryView,
+    isLanguagePending,
+    locale,
+    setGalleryScope,
+    setGalleryView,
+    setTheme,
+    setUser,
+    theme,
+    user,
+  } = useAppState();
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [photoConfirmationOrigin, setPhotoConfirmationOrigin] = useState<PhotoConfirmationOrigin>("detail");
   const [galleryQuery, setGalleryQuery] = useState("");
-  const [galleryScope, setGalleryScope] = useState<GalleryScope>("all");
-  const [galleryView, setGalleryView] = useState<GalleryView>("gallery");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLanguagePending, startLanguageTransition] = useTransition();
   const navMenuId = useId();
   const navMenuButtonRef = useRef<HTMLButtonElement>(null);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
-  const locale = normalizeLocale(i18n.resolvedLanguage);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
   const visiblePublications = galleryScope === "mine"
     ? filteredPublications.filter((publication) => publication.isOwner)
     : filteredPublications;
 
   useEffect(() => {
-    refreshSession();
     refreshGallery();
   }, []);
 
@@ -111,18 +109,6 @@ export function AppShell() {
     desktopViewport.addEventListener("change", closeNavMenuOnDesktop);
     return () => desktopViewport.removeEventListener("change", closeNavMenuOnDesktop);
   }, []);
-
-  async function refreshSession() {
-    const response = await fetch("/api/auth/me");
-
-    if (!response.ok) {
-      setUser(null);
-      return;
-    }
-
-    const data: { user: AuthUser | null } = await response.json();
-    setUser(data.user);
-  }
 
   async function refreshGallery(): Promise<Publication[]> {
     const response = await fetch("/api/publicaciones");
@@ -209,9 +195,17 @@ export function AppShell() {
   }
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    setIsSubmitting(true);
+    setMessage("");
+    const response = await fetch("/api/auth/logout", { method: "POST" });
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      setMessage("errors.auth.logoutFailed");
+      return;
+    }
+
     setUser(null);
-    setGalleryScope("all");
     closeModal();
     await refreshGallery();
   }
@@ -223,13 +217,7 @@ export function AppShell() {
 
   function toggleLanguage() {
     const nextLocale = locale === "val" ? "es" : "val";
-    const secureAttribute = window.location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${LOCALE_COOKIE_NAME}=${nextLocale}; Path=/; Max-Age=31536000; SameSite=Lax${secureAttribute}`;
-    document.documentElement.lang = LANGUAGE_TAGS[nextLocale];
-
-    void i18n.changeLanguage(nextLocale).then(() => {
-      startLanguageTransition(() => router.refresh());
-    });
+    changeLocale(nextLocale);
   }
 
   return (
@@ -253,7 +241,7 @@ export function AppShell() {
           <button
             aria-label={t(theme === "light" ? "theme.activateDark" : "theme.activateLight")}
             className={`${styles.iconButton} ${styles.themeButton}`}
-            onClick={() => setTheme((currentTheme) => currentTheme === "light" ? "dark" : "light")}
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             title={t(theme === "light" ? "theme.activateDark" : "theme.activateLight")}
             type="button"
           >
@@ -491,9 +479,24 @@ export function AppShell() {
               isSubmitting={isSubmitting}
               message={message}
               onDeleteAccount={async () => {
-                await fetch("/api/users/me", { method: "DELETE" });
+                setIsSubmitting(true);
+                setMessage("");
+                const response = await fetch("/api/users/me", { method: "DELETE" });
+                setIsSubmitting(false);
+
+                if (response.status === 401) {
+                  setUser(null);
+                  closeModal();
+                  await refreshGallery();
+                  return;
+                }
+
+                if (!response.ok) {
+                  setMessage("errors.profile.deleteFailed");
+                  return;
+                }
+
                 setUser(null);
-                setGalleryScope("all");
                 closeModal();
                 await refreshGallery();
               }}
@@ -526,7 +529,7 @@ export function AppShell() {
               user={user}
             />
           ) : null}
-          {message ? <p className={styles.modalStatus}>{t(message)}</p> : null}
+          {message && modal !== "profile" ? <p className={styles.modalStatus}>{t(message)}</p> : null}
         </ModalShell>
       ) : null}
     </div>
@@ -1017,8 +1020,8 @@ function ProfileModal({
           </label>
           <button disabled={isSubmitting} type="submit">{t("profile.save")}</button>
           <div className={styles.profileSecondaryActions}>
-            <button className={styles.profileLogoutButton} onClick={onLogout} type="button">{t("profile.logout")}</button>
-            <button className={styles.dangerButton} onClick={onDeleteAccount} type="button">{t("profile.deleteAccount")}</button>
+            <button className={styles.profileLogoutButton} disabled={isSubmitting} onClick={onLogout} type="button">{t("profile.logout")}</button>
+            <button className={styles.dangerButton} disabled={isSubmitting} onClick={onDeleteAccount} type="button">{t("profile.deleteAccount")}</button>
           </div>
           {message ? <p className={styles.modalStatus}>{t(message)}</p> : null}
         </form>

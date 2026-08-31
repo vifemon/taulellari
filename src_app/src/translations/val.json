@@ -177,11 +177,13 @@
       "invalidRegistration": "Les dades de registre no són vàlides",
       "emailTaken": "Este correu electrònic ja està registrat",
       "loginFailed": "No s'ha pogut iniciar la sessió",
-      "registerFailed": "No s'ha pogut completar el registre"
+      "registerFailed": "No s'ha pogut completar el registre",
+      "logoutFailed": "No s'ha pogut tancar la sessió"
     },
     "profile": {
       "invalid": "Les dades del perfil no són vàlides",
-      "updateFailed": "No s'ha pogut actualitzar el perfil"
+      "updateFailed": "No s'ha pogut actualitzar el perfil",
+      "deleteFailed": "No s'ha pogut esborrar l'usuari"
     },
     "publication": {
       "notFound": "No s'ha trobat la publicació",

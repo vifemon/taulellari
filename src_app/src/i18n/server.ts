@@ -1,15 +1,15 @@
 import "server-only";
 
 import { createInstance } from "i18next";
-import { cookies } from "next/headers";
 import { cache } from "react";
 
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, SUPPORTED_LOCALES, normalizeLocale, type Locale } from "./config";
+import { getRequestPreferences } from "@/app-state/server";
+
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./config";
 import { i18nResources } from "./resources";
 
 export const getRequestLocale = cache(async (): Promise<Locale> => {
-  const cookieStore = await cookies();
-  return normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return (await getRequestPreferences()).locale;
 });
 
 export function getServerTranslator(locale: Locale) {
