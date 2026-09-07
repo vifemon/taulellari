@@ -238,7 +238,7 @@
   position: relative;
   z-index: 2;
   display: grid;
-  width: min(100%, 1120px);
+  width: min(80%, 896px);
   align-content: end;
   justify-items: center;
   gap: 24px;

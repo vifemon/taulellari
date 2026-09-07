@@ -11,6 +11,8 @@ import type { GalleryScope, GalleryView } from "@/app-state/preferences";
 import type { AuthUser } from "@/auth/types";
 import { LANGUAGE_TAGS, normalizeLocale } from "@/i18n/config";
 import { getErrorTranslationKey } from "@/i18n/error-codes";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { prefersReducedMotion } from "@/lib/motion";
 
 import styles from "./page.module.css";
 
@@ -68,11 +70,57 @@ export function AppShell() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navMenuId = useId();
   const navMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
   const visiblePublications = galleryScope === "mine"
     ? filteredPublications.filter((publication) => publication.isOwner)
     : filteredPublications;
+
+  useGSAP(() => {
+    const hero = heroRef.current;
+    const heroContent = heroContentRef.current;
+
+    if (prefersReducedMotion() || !hero || !heroContent) {
+      return;
+    }
+
+    const limitVelocity = gsap.utils.clamp(-2800, 2800);
+    const limitSkew = gsap.utils.clamp(-10, 10);
+    const skewTo = gsap.quickTo(heroContent, "skewY", {
+      duration: 0.36,
+      ease: "power3.out",
+    });
+    const returnSkew = gsap.delayedCall(0.08, () => skewTo(0)).pause();
+
+    gsap.set(heroContent, {
+      force3D: true,
+      transformOrigin: "50% 50%",
+      willChange: "transform",
+    });
+
+    const trigger = ScrollTrigger.create({
+      trigger: hero,
+      start: "top top",
+      end: "bottom top",
+      onUpdate: (self) => {
+        const velocity = limitVelocity(self.getVelocity());
+        skewTo(limitSkew(velocity / -240));
+        returnSkew.restart(true);
+      },
+      onLeave: () => skewTo(0),
+      onLeaveBack: () => skewTo(0),
+      onRefresh: () => skewTo(0),
+    });
+
+    return () => {
+      trigger.kill();
+      returnSkew.kill();
+      skewTo.tween.kill();
+      gsap.set(heroContent, { clearProps: "transform,transformOrigin,willChange" });
+    };
+  }, { scope: heroRef });
 
   useEffect(() => {
     refreshGallery();
@@ -287,14 +335,14 @@ export function AppShell() {
         </div>
       </nav>
 
-      <header className={styles.heroScreen} id="hero">
+      <header className={styles.heroScreen} id="hero" ref={heroRef}>
         <div aria-hidden="true" className={styles.heroBackgroundTrack}>
           <span className={styles.heroBackgroundTile} />
           <span className={`${styles.heroBackgroundTile} ${styles.heroBackgroundTileMirrored}`} />
           <span className={styles.heroBackgroundTile} />
           <span className={`${styles.heroBackgroundTile} ${styles.heroBackgroundTileMirrored}`} />
         </div>
-        <div className={styles.heroContent}>
+        <div className={styles.heroContent} ref={heroContentRef}>
           <span className={styles.kicker}>{t("hero.kicker")}</span>
           <h1>{t("hero.title")}</h1>
           <div className={styles.heroActions}>
@@ -695,7 +743,7 @@ function ModalShell({
   const { t } = useTranslation();
 
   return (
-    <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+    <div className={styles.modalBackdrop} data-lenis-prevent role="dialog" aria-modal="true">
       <div className={`${styles.modalCard} ${className ?? ""}`}>
         <button aria-label={t("common.close")} className={styles.closeButton} onClick={onClose} type="button">
           <X aria-hidden="true" size={20} strokeWidth={2.4} />

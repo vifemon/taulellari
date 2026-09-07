@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AppI18nProvider } from "@/i18n/provider";
 import { LANGUAGE_TAGS } from "@/i18n/config";
 import { getRequestLocale, getServerTranslator } from "@/i18n/server";
+import { SmoothScrollProvider } from "@/lib/smooth-scroll-provider";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,7 +37,9 @@ export default async function RootLayout({
   return (
     <html lang={LANGUAGE_TAGS[locale]} className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <AppI18nProvider initialLocale={locale}>{children}</AppI18nProvider>
+        <AppI18nProvider initialLocale={locale}>
+          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        </AppI18nProvider>
       </body>
     </html>
   );

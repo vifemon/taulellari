@@ -1,6 +1,12 @@
 # Roadmap: Taulellari
 
-Este documento actua como registro de estado y planificacion de tareas del proyecto. Divide el desarrollo de **Taulellari** en tres fases evolutivas y sirve para identificar que tareas estan completadas y cual es el siguiente paso tecnico a ejecutar.
+Este documento actua como registro de estado y planificacion de tareas del proyecto. Organiza las fases historicas del MVP, las entregas desplegables y las siguientes versiones de **Taulellari**.
+
+## Version 1.0: Producto Minimo Viable
+
+Estado: completada y estable en `develop`.
+
+Las fases 1, 1.5, 1.6, 1.7 y 1.8 forman la version `1.0.0`. Esta es la primera version funcional completa y la referencia que se preparara para el despliegue inicial.
 
 ## Fase 1: Producto Minimo Viable
 
@@ -64,7 +70,7 @@ Estado: completada y mergeada en `develop`.
 
 ## Fase 1.8: Correcciones
 
-Estado: en curso sobre `develop`.
+Estado: completada en `develop`; cierra el MVP `1.0.0`.
 
 - [x] **Hero glass:** reforzar el efecto glass del panel principal y actualizar la imagen fotografica de fondo.
 - [x] **Fondo infinito del Hero:** animar una cinta vertical repetitiva de la imagen principal con movimiento descendente suave, un ciclo de `100s`, uniones reflejadas sin salto y soporte para movimiento reducido.
@@ -81,13 +87,27 @@ Estado: en curso sobre `develop`.
 - [x] **Confirmacion de foto unica:** simplificar el mensaje de borrado cuando la publicacion contiene una sola imagen, cubrir tambien el flujo desde el perfil y resincronizar los catalogos i18next durante Fast Refresh.
 - [x] **Hero movil refinado:** limitar el panel a un minimo de `50svh`, centrar su contenido y aumentar la presencia tipografica del titulo hasta `96px` en pantallas de `860px` o menos.
 - [x] **Estado y preferencias centralizados:** inicializar la sesion en servidor y reunir idioma, tema, vista y alcance en `AppStateProvider`, persistiendo los ajustes no sensibles en una cookie validada y manteniendo el token de autenticacion separado y HTTP-only.
-- [ ] **Ajustes finales:** continuar realizando pequenas correcciones y refinamientos de forma iterativa.
+- [x] **Ajustes finales:** cerrar las correcciones iterativas y declarar estable el MVP `1.0.0`.
 
-## Fase 2: Contenerizacion Y Despliegue
+## Despliegue De La Version 1.0
 
-Estado: pendiente tras la Fase 1.8.
+Estado: siguiente frente operativo.
 
 - [ ] **Contenerizacion y despliegue:** creacion de `Dockerfile` y `docker-compose.yml` para desplegar el stack en Portainer sobre la Raspberry Pi.
+- [ ] **Validacion de infraestructura:** comprobar PostgreSQL, volumen persistente del SSD, `PHOTO_STORAGE_DIR`, secretos y acceso privado mediante Wireguard.
+- [ ] **Seguridad de dependencias:** resolver antes del despliegue los avisos de produccion detectados por `npm audit`, que afectan a Next.js y dependencias transitivas, y repetir toda la validacion tras actualizar.
+- [ ] **Primera entrega:** desplegar y verificar `1.0.0` antes de sustituirla por una version posterior.
+
+## Version 1.1: Movimiento Y Refinamiento Visual
+
+Estado: iniciada sobre `feature/v1.1-gsap`.
+
+- [x] **Integracion de GSAP:** incorporar `gsap`, `@gsap/react` y `ScrollTrigger` mediante un punto de registro compartido compatible con renderizado en servidor.
+- [x] **Primera animacion:** reducir un 20% el ancho del panel del Hero y traducir la velocidad vertical del scroll a un `skewY` limitado con retorno suave.
+- [x] **Accesibilidad y ciclo de vida:** respetar `prefers-reduced-motion` y limpiar el trigger, la llamada diferida y el tween al desmontar el Hero.
+- [x] **Rendimiento y regresion:** limitar la velocidad y deformacion, mantener el fondo continuo en CSS y validar ESLint, pruebas y build de produccion.
+- [x] **Lenis smooth scroll:** suavizar siempre el desplazamiento global y los anchors, sincronizar Lenis con el ticker de GSAP, respetar movimiento reducido y excluir los modales del suavizado.
+- [ ] **Redespliegue:** desplegar `1.1.0` solo cuando la integracion de GSAP este terminada y validada; hasta entonces `1.0.0` sigue siendo la referencia estable.
 
 ## Fase 3: Mapas Y Visualizacion Avanzada
 
@@ -105,10 +125,10 @@ Estado: ideas.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso tecnico es continuar la **Fase 1.8: Correcciones** de forma iterativa hasta cerrar los ajustes finales de la aplicacion.
+El siguiente paso operativo es preparar el despliegue de **Taulellari 1.0.0**. En `feature/v1.1-gsap`, el siguiente paso de desarrollo es revisar en navegador el comportamiento conjunto de Lenis y el skew cinetico antes de incorporar nuevos efectos.
 
 ## Ultimo Estado Git
 
-- Rama actual: `develop`.
-- `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive de la Fase 1.8.
-- La interfaz, metadata, etiquetas accesibles, validaciones y errores orientados al usuario se resuelven desde los catalogos descritos en `memory/app.md`.
+- Rama estable: `develop`, referencia del MVP `1.0.0`.
+- Rama de desarrollo activa: `feature/v1.1-gsap`.
+- La futura version `1.1.0` sera la siguiente candidata a redespliegue cuando complete su validacion.

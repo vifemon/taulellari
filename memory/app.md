@@ -2,6 +2,14 @@
 
 Este documento resume las especificaciones de producto de **Taulellari**. Define el proposito cultural del proyecto, el stack tecnologico fullstack, las restricciones de infraestructura local para Raspberry Pi y el modelo de datos base para usuarios y publicaciones.
 
+## Version Del Producto
+
+- **Version estable:** `1.0.0`.
+- **Hito:** Producto Minimo Viable completado.
+- **Alcance:** autenticacion, archivo fotografico con publicaciones de multiples imagenes, geolocalizacion, galeria y mapa, gestion de perfil, internacionalizacion y preferencias persistentes.
+- **Linea estable:** `develop` conserva la base funcional que se desplegara como version `1.0.0`.
+- **Siguiente version:** `1.1.0` inicia una linea separada de refinamiento de movimiento con GSAP y solo sustituira el despliegue de `1.0.0` cuando este terminada y validada.
+
 ## Vision General
 
 **Taulellari** es una plataforma web de uso personal para fotografiar, archivar, catalogar y geolocalizar azulejos, chapados y azulejeria tradicional de la zona de Valencia.
@@ -17,6 +25,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 ## Entorno Y Despliegue
 
+- **Proximo hito operativo:** preparar y validar el primer despliegue de la version `1.0.0`.
 - **Servidor de produccion:** Raspberry Pi como servidor domestico gestionado con Portainer.
 - **Acceso y seguridad:** uso privado y local a traves de VPN con Wireguard.
 - **Almacenamiento de fotos:** sistema de archivos local en un disco duro SSD conectado a la Raspberry Pi, mapeado mediante un volumen fisico de Docker.
@@ -38,6 +47,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Base de datos de desarrollo:** Drizzle tambien define un schema SQLite paralelo para `dev.db`; esta base es temporal y no sustituye PostgreSQL en produccion.
 - **Testing:** Vitest para pruebas de componentes y logica backend.
 - **Internacionalizacion:** `i18next` y `react-i18next` con recursos JSON cargados de forma estatica.
+- **Movimiento:** GSAP y `@gsap/react` para animaciones cineticas que necesitan responder al scroll; Lenis suaviza el desplazamiento global y comparte el ticker de GSAP; los efectos continuos sencillos permanecen en CSS.
 
 ## Idioma E Internacionalizacion
 
@@ -55,7 +65,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 ## Estado Actual
 
-Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalidad de mapa con OpenLayers** estan completadas y mergeadas en `develop`. La **Fase 1.8: Correcciones** esta en curso e incorpora ajustes visuales, mejoras responsive e internacionalizacion completa en valenciano de Valencia y castellano.
+Las fases de construccion y correccion del MVP estan completadas. El resultado se declara **Taulellari 1.0.0**, listo para iniciar su trabajo de contenerizacion y despliegue. En paralelo, la version **1.1.0** esta en curso sobre `feature/v1.1-gsap` y ya incorpora su primera integracion progresiva con GSAP sin alterar la base funcional.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -128,6 +138,8 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - **Hero inicial:** la home comienza con una seccion HERO a pantalla completa (`100vh`), imagen fotografica de fondo, panel central con efecto glass y scroll hacia la galeria.
 - **Fondo animado del Hero:** la imagen se repite en una cinta vertical de cuatro paneles que avanza de arriba abajo en un ciclo lineal de `100s`. Los paneles alternos se reflejan verticalmente para ocultar el corte entre repeticiones; la capa es decorativa, no captura eventos y detiene su animacion cuando el usuario activa `prefers-reduced-motion`.
 - **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el panel ocupa al menos el `50svh`, centra su contenido y refuerza el titulo con una escala tipografica de `58px` a `96px`.
+- **Hero cinetico 1.1:** el panel glass ocupa el 80% del ancho anterior, con un maximo de `896px`, y usa GSAP con `ScrollTrigger.getVelocity()` para aplicar un `skewY` vertical limitado entre `-10deg` y `10deg`. El efecto vuelve suavemente a reposo, limpia triggers y tweens al desmontarse y no se activa con `prefers-reduced-motion`.
+- **Scroll suavizado 1.1:** `SmoothScrollProvider` monta una instancia global de Lenis sin selector de activacion, interpola la rueda con `lerp: 0.09`, suaviza los enlaces internos y actualiza ScrollTrigger desde el ticker de GSAP. Lenis respeta en directo `prefers-reduced-motion`; los modales usan scroll nativo para no interferir con su contenido interno.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Ancla de galeria:** la seccion `#galeria` reserva en su parte superior un espacio de `64px`, equivalente a la altura de la Navbar fija, mas su separacion visual habitual. El espacio deja ver el fondo real de la pagina para evitar cambios de tono y que el encabezado quede oculto al usar `Accedeix`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
@@ -159,8 +171,8 @@ Las fases **1.6: Refinamiento y Ajustes** y **1.7: Implementacion de funcionalid
 - `npm run lint` correcto.
 - `npm run test` correcto con 50 tests.
 - `npm run build` correcto.
-- Rama actual de trabajo: `develop`.
-- `develop` contiene la internacionalizacion valenciano/castellano y el selector de idioma responsive.
+- Linea estable del MVP `1.0.0`: `develop`.
+- Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.
 
 ## Restricciones Importantes
 
