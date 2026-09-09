@@ -44,6 +44,14 @@
     "access": "Accedeix",
     "uploadImage": "Pujar imatge"
   },
+  "footer": {
+    "label": "Crèdits",
+    "credit": "{{name}} © {{year}}"
+  },
+  "loader": {
+    "gallery": "Carregant l'arxiu…",
+    "map": "Preparant el mapa…"
+  },
   "gallery": {
     "intro": {
       "kicker": "Galeria de publicacions",

@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { useLenis } from "lenis/react";
 import { ChevronLeft, ChevronRight, Images, MapPinned, Menu, Moon, Plus, Sun, Trash2, Upload, UserRound, Users, X } from "lucide-react";
-import { FormEvent, useDeferredValue, useEffect, useId, useRef, useState } from "react";
+import { FormEvent, useDeferredValue, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppState } from "@/app-state/provider";
@@ -13,13 +14,17 @@ import { LANGUAGE_TAGS, normalizeLocale } from "@/i18n/config";
 import { getErrorTranslationKey } from "@/i18n/error-codes";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
+import { getMinimumViewHeightToPreserveScroll } from "@/lib/preserve-scroll";
 
 import styles from "./page.module.css";
+import { TileLoader } from "./tile-loader";
 
 const PublicationMap = dynamic(
   () => import("./publication-map").then((module) => module.PublicationMap),
   { ssr: false },
 );
+const AUTHOR_NAME = "Vicent Ferrer Montañana";
+const COPYRIGHT_YEAR = "2026";
 
 type AddressSuggestion = {
   id: string;
@@ -46,6 +51,7 @@ type PhotoConfirmationOrigin = "detail" | "profile";
 
 export function AppShell() {
   const { t } = useTranslation();
+  const lenis = useLenis();
   const {
     changeLocale,
     galleryScope,
@@ -68,15 +74,27 @@ export function AppShell() {
   const [galleryQuery, setGalleryQuery] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGalleryDataLoading, setIsGalleryDataLoading] = useState(true);
+  const [isGalleryReady, setIsGalleryReady] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
   const navMenuId = useId();
   const navMenuButtonRef = useRef<HTMLButtonElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
+  const galleryViewFrameRef = useRef<HTMLDivElement>(null);
+  const galleryViewContentRef = useRef<HTMLDivElement>(null);
+  const galleryViewHeightReservedRef = useRef(false);
+  const pendingGalleryViewScrollRef = useRef<{ scrollY: number; view: GalleryView } | null>(null);
+  const footerRef = useRef<HTMLElement>(null);
+  const footerCreditRef = useRef<HTMLParagraphElement>(null);
   const deferredGalleryQuery = useDeferredValue(galleryQuery);
   const filteredPublications = filterPublications(publications, deferredGalleryQuery);
   const visiblePublications = galleryScope === "mine"
     ? filteredPublications.filter((publication) => publication.isOwner)
     : filteredPublications;
+  const hasVisibleGalleryPhotos = visiblePublications.some((publication) => publication.fotos.length > 0);
+  const isViewLoading = isGalleryDataLoading
+    || (galleryView === "gallery" ? hasVisibleGalleryPhotos && !isGalleryReady : !isMapReady);
 
   useGSAP(() => {
     const hero = heroRef.current;
@@ -122,9 +140,167 @@ export function AppShell() {
     };
   }, { scope: heroRef });
 
+  useGSAP(() => {
+    const footer = footerRef.current;
+    const credit = footerCreditRef.current;
+
+    if (!footer || !credit || prefersReducedMotion()) {
+      return;
+    }
+
+    const reveal = gsap.fromTo(
+      credit,
+      { autoAlpha: 0, yPercent: 85 },
+      {
+        autoAlpha: 1,
+        ease: "none",
+        scrollTrigger: {
+          end: "bottom bottom",
+          invalidateOnRefresh: true,
+          scrub: 0.45,
+          start: "top bottom",
+          trigger: footer,
+        },
+        yPercent: 0,
+      },
+    );
+    const resizeObserver = typeof ResizeObserver === "function"
+      ? new ResizeObserver(() => reveal.scrollTrigger?.refresh())
+      : null;
+    const galleryViewContent = galleryViewContentRef.current;
+
+    if (galleryViewContent) {
+      resizeObserver?.observe(galleryViewContent);
+    }
+
+    return () => {
+      resizeObserver?.disconnect();
+      reveal.scrollTrigger?.kill();
+      reveal.kill();
+      gsap.set(credit, { clearProps: "opacity,transform,visibility" });
+    };
+  }, { scope: footerRef });
+
+  useLayoutEffect(() => {
+    const pendingScroll = pendingGalleryViewScrollRef.current;
+    const frame = galleryViewFrameRef.current;
+    const content = galleryViewContentRef.current;
+
+    if (!pendingScroll || pendingScroll.view !== galleryView || !frame || !content) {
+      return;
+    }
+
+    const renderedViewHeight = frame.getBoundingClientRect().height;
+    const naturalViewHeight = content.getBoundingClientRect().height;
+    const minimumViewHeight = getMinimumViewHeightToPreserveScroll({
+      documentHeight: getDocumentHeight(),
+      naturalViewHeight,
+      renderedViewHeight,
+      scrollY: pendingScroll.scrollY,
+      viewportHeight: window.innerHeight,
+    });
+
+    if (minimumViewHeight > naturalViewHeight + 0.5) {
+      frame.style.minHeight = `${Math.ceil(minimumViewHeight + 1)}px`;
+      galleryViewHeightReservedRef.current = true;
+    } else {
+      frame.style.removeProperty("min-height");
+      galleryViewHeightReservedRef.current = false;
+    }
+
+    pendingGalleryViewScrollRef.current = null;
+
+    if (lenis) {
+      lenis.resize();
+      lenis.scrollTo(pendingScroll.scrollY, { force: true, immediate: true });
+      ScrollTrigger.refresh();
+    } else if (window.scrollY !== pendingScroll.scrollY) {
+      window.scrollTo({ top: pendingScroll.scrollY });
+    }
+  }, [galleryView, lenis]);
+
   useEffect(() => {
-    refreshGallery();
+    const frame = galleryViewFrameRef.current;
+    const content = galleryViewContentRef.current;
+
+    if (!frame || !content) {
+      return;
+    }
+
+    const observedFrame = frame;
+    const observedContent = content;
+
+    function releaseReservedHeight() {
+      if (!galleryViewHeightReservedRef.current) {
+        return;
+      }
+
+      const renderedViewHeight = observedFrame.getBoundingClientRect().height;
+      const naturalViewHeight = observedContent.getBoundingClientRect().height;
+      const minimumViewHeight = getMinimumViewHeightToPreserveScroll({
+        documentHeight: getDocumentHeight(),
+        naturalViewHeight,
+        renderedViewHeight,
+        scrollY: window.scrollY,
+        viewportHeight: window.innerHeight,
+      });
+
+      if (minimumViewHeight > naturalViewHeight + 0.5) {
+        return;
+      }
+
+      observedFrame.style.removeProperty("min-height");
+      galleryViewHeightReservedRef.current = false;
+
+      if (lenis) {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      }
+    }
+
+    const resizeObserver = typeof ResizeObserver === "function"
+      ? new ResizeObserver(releaseReservedHeight)
+      : null;
+    resizeObserver?.observe(observedContent);
+    window.addEventListener("scroll", releaseReservedHeight, { passive: true });
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("scroll", releaseReservedHeight);
+    };
+  }, [galleryView, lenis]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadInitialGallery() {
+      await refreshGallery();
+
+      if (isActive) {
+        setIsGalleryDataLoading(false);
+      }
+    }
+
+    void loadInitialGallery();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
+
+  useEffect(() => {
+    if (
+      galleryView !== "gallery"
+      || isGalleryDataLoading
+      || isGalleryReady
+      || !hasVisibleGalleryPhotos
+    ) {
+      return;
+    }
+
+    const fallback = window.setTimeout(() => setIsGalleryReady(true), 5000);
+    return () => window.clearTimeout(fallback);
+  }, [galleryView, hasVisibleGalleryPhotos, isGalleryDataLoading, isGalleryReady]);
 
   useEffect(() => {
     if (!isNavMenuOpen) {
@@ -159,7 +335,14 @@ export function AppShell() {
   }, []);
 
   async function refreshGallery(): Promise<Publication[]> {
-    const response = await fetch("/api/publicaciones");
+    let response: Response;
+
+    try {
+      response = await fetch("/api/publicaciones");
+    } catch {
+      setPublications([]);
+      return [];
+    }
 
     if (!response.ok) {
       setPublications([]);
@@ -268,6 +451,28 @@ export function AppShell() {
     changeLocale(nextLocale);
   }
 
+  function changeGalleryView(view: GalleryView) {
+    if (view === galleryView) {
+      return;
+    }
+
+    const frame = galleryViewFrameRef.current;
+    const scrollY = window.scrollY;
+
+    if (frame) {
+      frame.style.minHeight = `${Math.ceil(frame.getBoundingClientRect().height)}px`;
+      galleryViewHeightReservedRef.current = true;
+    }
+
+    if (view === "map") {
+      setIsMapReady(false);
+    }
+
+    lenis?.scrollTo(scrollY, { force: true, immediate: true });
+    pendingGalleryViewScrollRef.current = { scrollY, view };
+    setGalleryView(view);
+  }
+
   return (
     <div className={`${styles.app} ${styles[theme]}`}>
       <nav aria-label={t("navigation.label")} className={styles.navbar}>
@@ -374,30 +579,47 @@ export function AppShell() {
               onScopeChange={setGalleryScope}
               scope={galleryScope}
             />
-            <GalleryViewToggle onViewChange={setGalleryView} view={galleryView} />
+            <GalleryViewToggle onViewChange={changeGalleryView} view={galleryView} />
           </div>
         </div>
-        {galleryView === "gallery" ? (
-          <PublicationGallery
-            hasSearch={deferredGalleryQuery.trim().length > 0}
-            onOpen={openPublication}
-            publications={visiblePublications}
-          />
-        ) : (
-          <PublicationMap
-            onPublicationOpen={(publicationId) => {
-              const publication = visiblePublications.find(({ id }) => id === publicationId);
-              const photo = publication?.fotos[0];
+        <div
+          aria-busy={isViewLoading}
+          className={`${styles.galleryViewFrame} ${isViewLoading ? styles.galleryViewFrameLoading : ""}`}
+          ref={galleryViewFrameRef}
+        >
+          <div className={styles.galleryViewContent} ref={galleryViewContentRef}>
+            {galleryView === "gallery" ? (
+              <PublicationGallery
+                hasSearch={deferredGalleryQuery.trim().length > 0}
+                onImageReady={() => setIsGalleryReady(true)}
+                onOpen={openPublication}
+                publications={visiblePublications}
+              />
+            ) : (
+              <PublicationMap
+                onReady={() => setIsMapReady(true)}
+                onPublicationOpen={(publicationId) => {
+                  const publication = visiblePublications.find(({ id }) => id === publicationId);
+                  const photo = publication?.fotos[0];
 
-              if (publication && photo) {
-                openPublication(publication, photo.index);
-              }
-            }}
-            publications={visiblePublications}
-            theme={theme}
-          />
-        )}
+                  if (publication && photo) {
+                    openPublication(publication, photo.index);
+                  }
+                }}
+                publications={visiblePublications}
+                theme={theme}
+              />
+            )}
+          </div>
+          <TileLoader active={isViewLoading} view={galleryView} />
+        </div>
       </main>
+
+      <footer aria-label={t("footer.label")} className={styles.footerCredits} ref={footerRef}>
+        <p className={styles.footerCredit} ref={footerCreditRef}>
+          {t("footer.credit", { name: AUTHOR_NAME, year: COPYRIGHT_YEAR })}
+        </p>
+      </footer>
 
       {modal ? (
         <ModalShell
@@ -1269,10 +1491,12 @@ function DeletePhotoConfirmation({
 
 function PublicationGallery({
   hasSearch,
+  onImageReady,
   onOpen,
   publications,
 }: {
   hasSearch: boolean;
+  onImageReady: () => void;
   onOpen: (publication: Publication, photoIndex: number) => void;
   publications: Publication[];
 }) {
@@ -1299,7 +1523,14 @@ function PublicationGallery({
           >
             <div className={styles.publicImage}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt={publication.titulo ?? t("gallery.card.imageAltFallback")} decoding="async" loading="lazy" src={photo.url} />
+              <img
+                alt={publication.titulo ?? t("gallery.card.imageAltFallback")}
+                decoding="async"
+                loading="lazy"
+                onError={onImageReady}
+                onLoad={onImageReady}
+                src={photo.url}
+              />
             </div>
             {publication.titulo ? <span className={styles.publicImageOverlay}>{publication.titulo}</span> : null}
           </button>
@@ -1320,6 +1551,10 @@ function formatPublicationDate(value: string, locale: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function getDocumentHeight() {
+  return Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
 }
 
 function useSuggestionsMaxHeight(active: boolean) {

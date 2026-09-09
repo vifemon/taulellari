@@ -222,10 +222,12 @@ function toPublicationFeatures(publications: MapPublication[]) {
 
 export function PublicationMap({
   onPublicationOpen,
+  onReady,
   publications,
   theme,
 }: {
   onPublicationOpen: (publicationId: number) => void;
+  onReady: () => void;
   publications: MapPublication[];
   theme: MapTheme;
 }) {
@@ -236,6 +238,7 @@ export function PublicationMap({
   const publicationSourceRef = useRef<VectorSource | null>(null);
   const recenterButtonRef = useRef<HTMLButtonElement | null>(null);
   const onPublicationOpenRef = useRef(onPublicationOpen);
+  const onReadyRef = useRef(onReady);
   const themeRef = useRef<MapTheme>(theme);
   const controlLabelsRef = useRef({
     attributions: t("map.controls.attributions"),
@@ -282,6 +285,21 @@ export function PublicationMap({
     });
     mapRef.current = map;
     publicationLayer.setStyle((feature) => getClusterStyles(feature, themeRef.current, () => map.render()));
+    let isReady = false;
+    let readyFallback = 0;
+
+    function markMapReady() {
+      if (isReady) {
+        return;
+      }
+
+      isReady = true;
+      window.clearTimeout(readyFallback);
+      onReadyRef.current();
+    }
+
+    map.once("rendercomplete", markMapReady);
+    readyFallback = window.setTimeout(markMapReady, 5000);
 
     const recenterButton = document.createElement("button");
     recenterButton.setAttribute("aria-label", controlLabelsRef.current.recenter);
@@ -341,6 +359,8 @@ export function PublicationMap({
     map.on("singleclick", handleMapClick);
 
     return () => {
+      window.clearTimeout(readyFallback);
+      map.un("rendercomplete", markMapReady);
       map.removeControl(recenterControl);
       queueMicrotask(() => recenterButtonRoot.unmount());
       map.un("singleclick", handleMapClick);
@@ -375,6 +395,10 @@ export function PublicationMap({
   useEffect(() => {
     onPublicationOpenRef.current = onPublicationOpen;
   }, [onPublicationOpen]);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   useEffect(() => {
     themeRef.current = theme;

@@ -542,6 +542,103 @@
   font-weight: 900;
 }
 
+.galleryViewFrame,
+.galleryViewContent {
+  width: 100%;
+  min-width: 0;
+}
+
+.galleryViewFrame {
+  position: relative;
+  overflow-anchor: none;
+}
+
+.galleryViewFrameLoading {
+  min-height: clamp(420px, 65vh, 720px);
+}
+
+.tileLoader {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: grid;
+  visibility: hidden;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  opacity: 0;
+  padding: 32px;
+  pointer-events: none;
+  transition:
+    opacity 260ms ease,
+    visibility 0s linear 260ms;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.tileLoaderActive {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.tileLoaderMark {
+  display: grid;
+  width: clamp(62px, 8vw, 82px);
+  aspect-ratio: 1;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
+  background: color-mix(in srgb, var(--tile) 84%, transparent);
+  box-shadow:
+    0 16px 36px rgba(6, 16, 35, 0.14),
+    inset 0 0 0 2px color-mix(in srgb, var(--white) 20%, transparent);
+  transform: rotate(45deg);
+}
+
+.tileLoaderMark span {
+  border: 1px solid color-mix(in srgb, var(--white) 24%, transparent);
+  background: var(--blue);
+}
+
+.tileLoaderMark span:nth-child(2n),
+.tileLoaderMark span:nth-child(5) {
+  background: var(--ochre);
+}
+
+.tileLoader p {
+  color: var(--muted);
+  font-family: var(--font-geist-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.footerCredits {
+  display: grid;
+  min-height: clamp(112px, 18svh, 176px);
+  overflow: hidden;
+  place-items: center;
+  padding: 32px 18px 44px;
+}
+
+.footerCredit {
+  width: fit-content;
+  border-top: 1px solid color-mix(in srgb, var(--ochre) 48%, transparent);
+  color: color-mix(in srgb, var(--ink) 58%, transparent);
+  font-family: var(--font-geist-mono);
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding-top: 12px;
+  text-align: center;
+}
+
 .publicGallery {
   column-count: 4;
   column-gap: 18px;

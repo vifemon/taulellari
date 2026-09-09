@@ -100,6 +100,24 @@ function renderAppShell(
 }
 
 describe("AppShell gallery search", () => {
+  it("shows the tile loader until the initial gallery and first image are ready", async () => {
+    let releasePublications = () => {};
+    const waitForPublications = new Promise<void>((resolve) => {
+      releasePublications = resolve;
+    });
+    mockAppShellFetch({ waitForPublications });
+
+    renderAppShell();
+
+    expect(screen.getByRole("status").textContent).toContain("Carregant l'arxiu…");
+    releasePublications();
+
+    const firstImage = await screen.findByAltText("Portal azul");
+    fireEvent.load(firstImage);
+
+    await waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+  });
+
   it("filters gallery images by title, description or metadata without calling address search", async () => {
     const fetchMock = mockAppShellFetch();
 
@@ -133,6 +151,7 @@ describe("AppShell gallery search", () => {
 
     expect(await screen.findByText("Portal azul")).toBeDefined();
     expect(screen.getByText("Rosa verde")).toBeDefined();
+    expect(screen.getByRole("contentinfo", { name: "Crèdits" }).textContent).toContain("Vicent Ferrer Montañana © 2026");
     expect(screen.getByText("Totes les publicacions")).toBeDefined();
 
     fireEvent.click(screen.getByRole("button", { name: "Les meues publicacions" }));
@@ -540,6 +559,7 @@ function mockAppShellFetch({
   accountDeleteStatus = 200,
   logoutSucceeds = true,
   multiplePhotos = false,
+  waitForPublications = Promise.resolve(),
 } = {}) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
@@ -559,6 +579,8 @@ function mockAppShellFetch({
     }
 
     if (url === "/api/publicaciones") {
+      await waitForPublications;
+
       return Response.json({
         publicaciones: [
           {

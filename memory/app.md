@@ -8,7 +8,7 @@ Este documento resume las especificaciones de producto de **Taulellari**. Define
 - **Hito:** Producto Minimo Viable completado.
 - **Alcance:** autenticacion, archivo fotografico con publicaciones de multiples imagenes, geolocalizacion, galeria y mapa, gestion de perfil, internacionalizacion y preferencias persistentes.
 - **Linea estable:** `develop` conserva la base funcional que se desplegara como version `1.0.0`.
-- **Siguiente version:** `1.1.0` inicia una linea separada de refinamiento de movimiento con GSAP y solo sustituira el despliegue de `1.0.0` cuando este terminada y validada.
+- **Siguiente version:** `1.1.0` desarrolla una linea separada de movimiento y experiencia visual con GSAP, Lenis y estados de carga tematicos; solo sustituira el despliegue de `1.0.0` cuando este terminada y validada.
 
 ## Vision General
 
@@ -65,7 +65,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 
 ## Estado Actual
 
-Las fases de construccion y correccion del MVP estan completadas. El resultado se declara **Taulellari 1.0.0**, listo para iniciar su trabajo de contenerizacion y despliegue. En paralelo, la version **1.1.0** esta en curso sobre `feature/v1.1-gsap` y ya incorpora su primera integracion progresiva con GSAP sin alterar la base funcional.
+Las fases de construccion y correccion del MVP estan completadas. El resultado se declara **Taulellari 1.0.0**, listo para iniciar su trabajo de contenerizacion y despliegue. En paralelo, la version **1.1.0** esta en curso sobre `feature/v1.1-gsap` e incorpora movimiento GSAP, scroll Lenis, cambios de vista estables, footer parallax y loader tematico sin alterar la base funcional.
 
 ## Gestion De Usuarios: Fase 1.5
 
@@ -140,6 +140,9 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 - **Hero responsive:** hasta `1100px` las acciones se apilan verticalmente y el boton de subida centra su icono y texto; hasta `860px` el panel ocupa al menos el `50svh`, centra su contenido y refuerza el titulo con una escala tipografica de `58px` a `96px`.
 - **Hero cinetico 1.1:** el panel glass ocupa el 80% del ancho anterior, con un maximo de `896px`, y usa GSAP con `ScrollTrigger.getVelocity()` para aplicar un `skewY` vertical limitado entre `-10deg` y `10deg`. El efecto vuelve suavemente a reposo, limpia triggers y tweens al desmontarse y no se activa con `prefers-reduced-motion`.
 - **Scroll suavizado 1.1:** `SmoothScrollProvider` monta una instancia global de Lenis sin selector de activacion, interpola la rueda con `lerp: 0.09`, suaviza los enlaces internos y actualiza ScrollTrigger desde el ticker de GSAP. Lenis respeta en directo `prefers-reduced-motion`; los modales usan scroll nativo para no interferir con su contenido interno.
+- **Cambio de vista estable 1.1:** al alternar entre galeria y mapa se conserva el `scrollY` absoluto. La vista saliente reserva altura antes del cambio, Lenis se redimensiona y restaura la posicion antes de pintar, y la reserva se elimina cuando la nueva altura natural ya puede sostener el viewport. El contenido intercambiable desactiva el anclaje automatico del navegador para evitar correcciones enfrentadas.
+- **Footer de creditos 1.1:** el final de la galeria o mapa muestra de forma sutil `Vicent Ferrer Montañana © 2026`. El credito entra desde abajo durante el ultimo tramo de scroll y revierte progresivamente su opacidad y desplazamiento al subir mediante GSAP; ScrollTrigger recalcula su posicion cuando cambia la altura de la vista y el footer permanece estatico con movimiento reducido.
+- **Loader de archivo 1.1:** el espacio estable de galeria o mapa muestra un mosaico 3x3 animado con rotacion y pulsos GSAP durante la peticion inicial, hasta que la primera imagen esta disponible y durante el primer render de OpenLayers. No bloquea el Hero, usa la paleta activa, dispone de copy accesible en ambos idiomas, respeta movimiento reducido y cuenta con limites de espera para no quedar activo indefinidamente.
 - **Navegacion interna:** los enlaces a secciones como `#hero` y `#galeria` usan scroll suave, respetando `prefers-reduced-motion`.
 - **Ancla de galeria:** la seccion `#galeria` reserva en su parte superior un espacio de `64px`, equivalente a la altura de la Navbar fija, mas su separacion visual habitual. El espacio deja ver el fondo real de la pagina para evitar cambios de tono y que el encabezado quede oculto al usar `Accedeix`.
 - **Galeria publica:** la galeria muestra publicamente solo fotos.
@@ -169,7 +172,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 50 tests.
+- `npm run test` correcto con 53 tests.
 - `npm run build` correcto.
 - Linea estable del MVP `1.0.0`: `develop`.
 - Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.

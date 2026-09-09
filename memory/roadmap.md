@@ -107,25 +107,14 @@ Estado: iniciada sobre `feature/v1.1-gsap`.
 - [x] **Accesibilidad y ciclo de vida:** respetar `prefers-reduced-motion` y limpiar el trigger, la llamada diferida y el tween al desmontar el Hero.
 - [x] **Rendimiento y regresion:** limitar la velocidad y deformacion, mantener el fondo continuo en CSS y validar ESLint, pruebas y build de produccion.
 - [x] **Lenis smooth scroll:** suavizar siempre el desplazamiento global y los anchors, sincronizar Lenis con el ticker de GSAP, respetar movimiento reducido y excluir los modales del suavizado.
+- [x] **Cambio de vista sin salto:** conservar el `scrollY` absoluto al alternar entre mapa y galeria mediante una reserva temporal de altura, resincronizacion de Lenis y retirada automatica del espacio cuando deja de ser necesario.
+- [x] **Footer de creditos:** añadir al final de ambas vistas un credito discreto con revelado parallax reversible mediante GSAP, recalculo ante cambios de altura y fallback sin animacion para movimiento reducido.
+- [x] **Loader de azulejos:** cubrir el espacio galeria/mapa durante la carga inicial, primera imagen y montaje de OpenLayers con un mosaico tematico animado por GSAP, accesible, localizado y sin bloquear el Hero.
 - [ ] **Redespliegue:** desplegar `1.1.0` solo cuando la integracion de GSAP este terminada y validada; hasta entonces `1.0.0` sigue siendo la referencia estable.
-
-## Fase 3: Mapas Y Visualizacion Avanzada
-
-Estado: futuro.
-
-- [ ] **Busqueda geografica:** filtrar azulejos cercanos a la ubicacion actual del usuario mediante consultas espaciales en la base de datos con PostGIS.
-- [ ] **Filtros y etiquetas:** anadir categorizacion por epocas, estilos arquitectonicos o barrios de Valencia, por ejemplo El Carmen, Ruzafa o Cabanyal.
-
-## Fase 4: Comunidad Y Mejoras
-
-Estado: ideas.
-
-- [ ] **Social:** permitir que otros usuarios, como familiares o amigos conectados a la VPN, puedan comentar o dar me gusta a los azulejos de otros.
-- [ ] **Exportacion:** boton para descargar el archivo fotografico y de coordenadas en formatos estandar como JSON o KML por seguridad.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso operativo es preparar el despliegue de **Taulellari 1.0.0**. En `feature/v1.1-gsap`, el siguiente paso de desarrollo es revisar en navegador el comportamiento conjunto de Lenis y el skew cinetico antes de incorporar nuevos efectos.
+El siguiente paso operativo es preparar el despliegue de **Taulellari 1.0.0**. En `feature/v1.1-gsap`, corresponde validar en navegador el cambio de vista sin salto, el footer parallax y el loader tematico antes de cerrar `1.1.0` como siguiente candidata a despliegue.
 
 ## Ultimo Estado Git
 

@@ -44,6 +44,14 @@
     "access": "Acceder",
     "uploadImage": "Subir imagen"
   },
+  "footer": {
+    "label": "Créditos",
+    "credit": "{{name}} © {{year}}"
+  },
+  "loader": {
+    "gallery": "Cargando el archivo…",
+    "map": "Preparando el mapa…"
+  },
   "gallery": {
     "intro": {
       "kicker": "Galería de publicaciones",
