@@ -6,24 +6,33 @@ import OlMap from "ol/Map";
 import View from "ol/View";
 import Control from "ol/control/Control";
 import { defaults as defaultControls } from "ol/control/defaults";
-import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
+import VectorTileLayer from "ol/layer/VectorTile";
 import Point from "ol/geom/Point";
 import { fromLonLat } from "ol/proj";
 import Cluster from "ol/source/Cluster";
 import VectorSource from "ol/source/Vector";
-import XYZ from "ol/source/XYZ";
 import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from "ol/style";
+import { applyBackground, applyStyle } from "ol-mapbox-style";
 import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { useTranslation } from "react-i18next";
 
+import {
+  addCartoApiKey,
+  createBrandedCartoStyle,
+  getCartoStyleDocumentUrl,
+  getCartoStyleUrl,
+  getMapPalette,
+  parseMapStyle,
+  type MapLabelLanguage,
+  type MapTheme,
+} from "./carto-map-style";
 import styles from "./page.module.css";
 
 const VALENCIAN_COMMUNITY_CENTER = fromLonLat([-0.55, 39.45]);
 const VALENCIAN_COMMUNITY_ZOOM = 8;
 
-type MapTheme = "light" | "dark";
 type MapPublication = {
   id: number;
   fotos: { url: string }[];
@@ -35,26 +44,6 @@ const markerStyles = new Map<string, Style[]>();
 const clusterStyles = new Map<string, Style>();
 const thumbnailCanvases = new Map<string, HTMLCanvasElement | null>();
 const MARKER_IMAGE_SIZE = 46;
-
-export function getBaseMapUrl(theme: MapTheme) {
-  const variant = theme === "dark" ? "dark_all" : "light_all";
-
-  return `https://{a-d}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`;
-}
-
-function createBaseMapSource(theme: MapTheme, contributorsLabel: string) {
-  return new XYZ({
-    attributions: [
-      `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ${contributorsLabel}`,
-      '&copy; <a href="https://carto.com/attributions">CARTO</a>',
-    ],
-    url: getBaseMapUrl(theme),
-  });
-}
-
-function getTertiaryColor(theme: MapTheme) {
-  return theme === "dark" ? "#e6a95e" : "#cf8944";
-}
 
 function loadThumbnail(photoUrl: string, redraw: () => void) {
   if (thumbnailCanvases.has(photoUrl)) {
@@ -96,6 +85,7 @@ function getMarkerStyles(photoUrl: string, photoCount: number, theme: MapTheme, 
   }
 
   const thumbnail = thumbnailCanvases.get(photoUrl);
+  const palette = getMapPalette(theme);
 
   if (thumbnail === undefined) {
     loadThumbnail(photoUrl, redraw);
@@ -104,9 +94,9 @@ function getMarkerStyles(photoUrl: string, photoCount: number, theme: MapTheme, 
   const styles: Style[] = [
     new Style({
       image: new CircleStyle({
-        fill: new Fill({ color: "#f3e3c4" }),
+        fill: new Fill({ color: palette.markerFill }),
         radius: 29,
-        stroke: new Stroke({ color: "#123f83", width: 4 }),
+        stroke: new Stroke({ color: palette.markerStroke, width: 4 }),
       }),
     }),
   ];
@@ -129,9 +119,9 @@ function getMarkerStyles(photoUrl: string, photoCount: number, theme: MapTheme, 
       new Style({
         image: new CircleStyle({
           displacement: [19, -19],
-          fill: new Fill({ color: getTertiaryColor(theme) }),
+          fill: new Fill({ color: palette.accent }),
           radius: 12,
-          stroke: new Stroke({ color: "#123f83", width: 3 }),
+          stroke: new Stroke({ color: palette.markerStroke, width: 3 }),
         }),
         text: new Text({
           fill: new Fill({ color: "#ffffff" }),
@@ -159,11 +149,12 @@ function getClusterStyle(photoCount: number, theme: MapTheme) {
     return cachedStyle;
   }
 
+  const palette = getMapPalette(theme);
   const style = new Style({
     image: new CircleStyle({
-      fill: new Fill({ color: getTertiaryColor(theme) }),
+      fill: new Fill({ color: palette.accent }),
       radius: 24,
-      stroke: new Stroke({ color: "#123f83", width: 4 }),
+      stroke: new Stroke({ color: palette.markerStroke, width: 4 }),
     }),
     text: new Text({
       fill: new Fill({ color: "#ffffff" }),
@@ -220,12 +211,67 @@ function toPublicationFeatures(publications: MapPublication[]) {
   });
 }
 
+async function loadBaseMapStyle({
+  apiKey,
+  language,
+  theme,
+}: {
+  apiKey: string;
+  language: MapLabelLanguage;
+  theme: MapTheme;
+}) {
+  const styleUrl = getCartoStyleUrl(theme, apiKey);
+  const response = await fetch(styleUrl);
+
+  if (!response.ok) {
+    throw new Error(`CARTO map style request failed with status ${response.status}`);
+  }
+
+  return createBrandedCartoStyle(parseMapStyle(await response.json()), theme, language);
+}
+
+async function createBaseMapLayer({
+  apiKey,
+  contributorsLabel,
+  language,
+  theme,
+}: {
+  apiKey: string;
+  contributorsLabel: string;
+  language: MapLabelLanguage;
+  theme: MapTheme;
+}) {
+  const style = await loadBaseMapStyle({ apiKey, language, theme });
+  const layer = new VectorTileLayer({
+    className: `ol-base-map-${theme}-${language}`,
+    declutter: true,
+  });
+  const styleOptions = {
+    styleUrl: getCartoStyleDocumentUrl(theme),
+    transformRequest: (resourceUrl: string, resourceType: string) => {
+      const keyedUrl = addCartoApiKey(resourceUrl, apiKey);
+      return resourceType === "SpriteImage" ? new Request(keyedUrl) : keyedUrl;
+    },
+  };
+
+  await applyStyle(layer, style, styleOptions);
+  await applyBackground(layer, style, styleOptions);
+  layer.getSource()?.setAttributions([
+    `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ${contributorsLabel}`,
+    '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+  ]);
+
+  return layer;
+}
+
 export function PublicationMap({
+  cartoApiKey,
   onPublicationOpen,
   onReady,
   publications,
   theme,
 }: {
+  cartoApiKey: string;
   onPublicationOpen: (publicationId: number) => void;
   onReady: () => void;
   publications: MapPublication[];
@@ -234,9 +280,13 @@ export function PublicationMap({
   const { i18n, t } = useTranslation();
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<OlMap | null>(null);
-  const baseLayerRef = useRef<TileLayer<XYZ> | null>(null);
+  const baseLayerRef = useRef<VectorTileLayer | null>(null);
   const publicationSourceRef = useRef<VectorSource | null>(null);
   const recenterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const mapReadyRef = useRef(false);
+  const baseLayerApiKeyRef = useRef(cartoApiKey);
+  const baseLayerCacheRef = useRef(new Map<string, VectorTileLayer>());
+  const baseLayerRequestsRef = useRef(new Map<string, Promise<VectorTileLayer>>());
   const onPublicationOpenRef = useRef(onPublicationOpen);
   const onReadyRef = useRef(onReady);
   const themeRef = useRef<MapTheme>(theme);
@@ -254,7 +304,12 @@ export function PublicationMap({
       return;
     }
 
-    const baseLayer = new TileLayer({ source: createBaseMapSource("light", controlLabelsRef.current.contributors) });
+    const baseLayerCache = baseLayerCacheRef.current;
+    const baseLayerRequests = baseLayerRequestsRef.current;
+    const baseLayer = new VectorTileLayer({
+      className: "ol-base-map-placeholder",
+      declutter: true,
+    });
     const publicationSource = new VectorSource();
     const clusterSource = new Cluster({
       distance: 56,
@@ -266,7 +321,10 @@ export function PublicationMap({
 
     const map = new OlMap({
       controls: defaultControls({
-        attributionOptions: { tipLabel: controlLabelsRef.current.attributions },
+        attributionOptions: {
+          collapsible: false,
+          tipLabel: controlLabelsRef.current.attributions,
+        },
         rotateOptions: { tipLabel: controlLabelsRef.current.resetRotation },
         zoomOptions: {
           zoomInTipLabel: controlLabelsRef.current.zoomIn,
@@ -285,21 +343,6 @@ export function PublicationMap({
     });
     mapRef.current = map;
     publicationLayer.setStyle((feature) => getClusterStyles(feature, themeRef.current, () => map.render()));
-    let isReady = false;
-    let readyFallback = 0;
-
-    function markMapReady() {
-      if (isReady) {
-        return;
-      }
-
-      isReady = true;
-      window.clearTimeout(readyFallback);
-      onReadyRef.current();
-    }
-
-    map.once("rendercomplete", markMapReady);
-    readyFallback = window.setTimeout(markMapReady, 5000);
 
     const recenterButton = document.createElement("button");
     recenterButton.setAttribute("aria-label", controlLabelsRef.current.recenter);
@@ -323,7 +366,11 @@ export function PublicationMap({
     map.addControl(recenterControl);
 
     function handleMapClick(event: { pixel: number[] }) {
-      const clusterFeature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature) as FeatureLike | undefined;
+      const clusterFeature = map.forEachFeatureAtPixel(
+        event.pixel,
+        (feature) => feature,
+        { layerFilter: (layer) => layer === publicationLayer },
+      ) as FeatureLike | undefined;
       const publications = clusterFeature?.get("features") as Feature<Point>[] | undefined;
 
       if (!clusterFeature || !publications?.length) {
@@ -359,8 +406,6 @@ export function PublicationMap({
     map.on("singleclick", handleMapClick);
 
     return () => {
-      window.clearTimeout(readyFallback);
-      map.un("rendercomplete", markMapReady);
       map.removeControl(recenterControl);
       queueMicrotask(() => recenterButtonRoot.unmount());
       map.un("singleclick", handleMapClick);
@@ -369,6 +414,9 @@ export function PublicationMap({
       baseLayerRef.current = null;
       publicationSourceRef.current = null;
       recenterButtonRef.current = null;
+      mapReadyRef.current = false;
+      baseLayerCache.clear();
+      baseLayerRequests.clear();
     };
   }, []);
 
@@ -402,9 +450,128 @@ export function PublicationMap({
 
   useEffect(() => {
     themeRef.current = theme;
-    baseLayerRef.current?.setSource(createBaseMapSource(theme, t("map.attribution.contributors")));
-    mapRef.current?.render();
-  }, [i18n.resolvedLanguage, t, theme]);
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const activeMap = map;
+    let cancelled = false;
+    let readyHandler: (() => void) | null = null;
+    let readyTimeout: number | null = null;
+    const language: MapLabelLanguage = i18n.resolvedLanguage === "es" ? "es" : "ca";
+    const contributorsLabel = controlLabelsRef.current.contributors;
+    const apiKeyChanged = baseLayerApiKeyRef.current !== cartoApiKey;
+
+    if (apiKeyChanged) {
+      baseLayerApiKeyRef.current = cartoApiKey;
+      baseLayerCacheRef.current.clear();
+      baseLayerRequestsRef.current.clear();
+    }
+
+    function markMapReady() {
+      if (cancelled || mapReadyRef.current) {
+        return;
+      }
+
+      mapReadyRef.current = true;
+      if (readyTimeout !== null) {
+        window.clearTimeout(readyTimeout);
+        readyTimeout = null;
+      }
+      onReadyRef.current();
+    }
+
+    if (!mapReadyRef.current) {
+      readyTimeout = window.setTimeout(markMapReady, 5000);
+    }
+    activeMap.render();
+
+    async function getBaseMapLayer(requestedTheme: MapTheme) {
+      const requestedCacheKey = `${requestedTheme}:${language}`;
+      let requestedLayer = baseLayerCacheRef.current.get(requestedCacheKey);
+
+      if (!requestedLayer) {
+        let request = baseLayerRequestsRef.current.get(requestedCacheKey);
+
+        if (!request) {
+          request = createBaseMapLayer({
+            apiKey: cartoApiKey,
+            contributorsLabel,
+            language,
+            theme: requestedTheme,
+          });
+          baseLayerRequestsRef.current.set(requestedCacheKey, request);
+        }
+
+        try {
+          requestedLayer = await request;
+          if (baseLayerApiKeyRef.current === cartoApiKey) {
+            baseLayerCacheRef.current.set(requestedCacheKey, requestedLayer);
+          }
+        } finally {
+          if (baseLayerRequestsRef.current.get(requestedCacheKey) === request) {
+            baseLayerRequestsRef.current.delete(requestedCacheKey);
+          }
+        }
+      }
+
+      return requestedLayer;
+    }
+
+    async function updateBaseMap() {
+      try {
+        const nextBaseLayer = await getBaseMapLayer(theme);
+
+        if (cancelled) {
+          return;
+        }
+
+        const layers = activeMap.getLayers();
+        const currentBaseLayer = baseLayerRef.current;
+        const currentIndex = currentBaseLayer ? layers.getArray().indexOf(currentBaseLayer) : -1;
+
+        if (currentBaseLayer !== nextBaseLayer || currentIndex === -1) {
+          if (currentIndex === -1) {
+            layers.insertAt(0, nextBaseLayer);
+          } else {
+            layers.setAt(currentIndex, nextBaseLayer);
+          }
+          baseLayerRef.current = nextBaseLayer;
+        }
+
+        if (!mapReadyRef.current) {
+          readyHandler = markMapReady;
+          activeMap.once("rendercomplete", readyHandler);
+        }
+
+        activeMap.renderSync();
+
+        const alternateTheme: MapTheme = theme === "light" ? "dark" : "light";
+        void getBaseMapLayer(alternateTheme).catch(() => undefined);
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("Unable to load the CARTO base map");
+        markMapReady();
+      }
+    }
+
+    void updateBaseMap();
+
+    return () => {
+      cancelled = true;
+      if (readyHandler) {
+        activeMap.un("rendercomplete", readyHandler);
+      }
+      if (readyTimeout !== null) {
+        window.clearTimeout(readyTimeout);
+      }
+    };
+  }, [cartoApiKey, i18n.resolvedLanguage, theme]);
 
   useEffect(() => {
     const source = publicationSourceRef.current;

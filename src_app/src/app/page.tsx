@@ -6,6 +6,12 @@ import { AppShell } from "./app-shell";
 import styles from "./page.module.css";
 
 export default async function Home() {
+  const cartoApiKey = process.env.CARTO_API_KEY?.trim();
+
+  if (!cartoApiKey) {
+    throw new Error("CARTO_API_KEY is required for the publication map");
+  }
+
   const [initialPreferences, initialUser] = await Promise.all([
     getRequestPreferences(),
     getCurrentUser(),
@@ -18,7 +24,7 @@ export default async function Home() {
         initialUser={initialUser}
         key={initialUser?.id ?? "anonymous"}
       >
-        <AppShell />
+        <AppShell cartoApiKey={cartoApiKey} />
       </AppStateProvider>
     </div>
   );

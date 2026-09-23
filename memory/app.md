@@ -119,7 +119,10 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 - **Datos a guardar:** al seleccionar la direccion, se extraeran y guardaran la latitud y longitud exactas en la tabla `publicaciones`.
 - **Formulario de subida:** el selector de direccion evita reabrir sugerencias tras una seleccion valida y su desplegable usa la altura visible disponible antes de activar scroll interno.
 - **Fotos multiples:** todos los archivos seleccionados se guardan y se mantienen agrupados bajo la misma publicacion y sus metadatos comunes.
-- **Visualizacion cartografica:** OpenLayers muestra las publicaciones geolocalizadas sobre Carto Positron en modo claro y Carto Dark Matter en modo oscuro, centrado inicialmente en la Comunitat Valenciana.
+- **Visualizacion cartografica:** OpenLayers y `ol-mapbox-style` muestran las publicaciones geolocalizadas sobre los mapas vectoriales de CARTO, con una adaptacion intensa de la paleta crema, azul y ocre en modo claro y oscuro, centrada inicialmente en la Comunitat Valenciana.
+- **Configuracion cartografica:** `CARTO_API_KEY` se lee en servidor y se entrega al mapa cliente en tiempo de ejecucion; la clave queda visible en las peticiones cartograficas como exige la integracion web de CARTO, pero nunca se versiona en el repositorio.
+- **Estilos y localizacion cartografica:** Voyager sirve de estructura clara y Dark Matter de estructura oscura; colores, carreteras, agua, edificios, limites y etiquetas se transforman en cliente, y los nombres priorizan catalan o castellano segun el idioma activo.
+- **Cambio de tema cartografico:** cada combinacion de tema e idioma usa un identificador y una capa vectorial propios para aislar las caches de `ol-mapbox-style`; la capa alternativa se precarga y el selector sustituye la capa base sin reconstruir el mapa ni conservar colores del tema anterior.
 - **Marcadores y clusters:** los marcadores individuales usan una miniatura circular de la foto principal y muestran el total de fotos cuando corresponde; `ol/source/Cluster` agrupa puntos cercanos o con coordenadas identicas, indicando el total de imagenes con el color terciario.
 - **Interaccion cartografica:** los marcadores siguen la busqueda y el alcance de publicaciones, abren el detalle existente al pulsarlos y los clusters de coordenadas distintas hacen zoom progresivo. El control `LocateFixed` restablece la vista inicial de la Comunitat Valenciana.
 
@@ -172,7 +175,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 53 tests.
+- `npm run test` correcto con 55 tests.
 - `npm run build` correcto.
 - Linea estable del MVP `1.0.0`: `develop`.
 - Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.

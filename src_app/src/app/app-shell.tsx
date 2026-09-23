@@ -49,7 +49,7 @@ type Publication = {
 type Modal = "login" | "register" | "upload" | "profile" | "detail" | "photo-confirm" | "edit" | null;
 type PhotoConfirmationOrigin = "detail" | "profile";
 
-export function AppShell() {
+export function AppShell({ cartoApiKey }: { cartoApiKey: string }) {
   const { t } = useTranslation();
   const lenis = useLenis();
   const {
@@ -597,6 +597,7 @@ export function AppShell() {
               />
             ) : (
               <PublicationMap
+                cartoApiKey={cartoApiKey}
                 onReady={() => setIsMapReady(true)}
                 onPublicationOpen={(publicationId) => {
                   const publication = visiblePublications.find(({ id }) => id === publicationId);
