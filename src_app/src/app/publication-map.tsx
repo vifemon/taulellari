@@ -281,6 +281,7 @@ export function PublicationMap({
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<OlMap | null>(null);
   const baseLayerRef = useRef<VectorTileLayer | null>(null);
+  const publicationLayerRef = useRef<VectorLayer | null>(null);
   const publicationSourceRef = useRef<VectorSource | null>(null);
   const recenterButtonRef = useRef<HTMLButtonElement | null>(null);
   const mapReadyRef = useRef(false);
@@ -317,6 +318,7 @@ export function PublicationMap({
     });
     const publicationLayer = new VectorLayer({ source: clusterSource });
     baseLayerRef.current = baseLayer;
+    publicationLayerRef.current = publicationLayer;
     publicationSourceRef.current = publicationSource;
 
     const map = new OlMap({
@@ -342,7 +344,9 @@ export function PublicationMap({
       }),
     });
     mapRef.current = map;
-    publicationLayer.setStyle((feature) => getClusterStyles(feature, themeRef.current, () => map.render()));
+    publicationLayer.setStyle(
+      (feature) => getClusterStyles(feature, themeRef.current, () => publicationLayer.changed()),
+    );
 
     const recenterButton = document.createElement("button");
     recenterButton.setAttribute("aria-label", controlLabelsRef.current.recenter);
@@ -412,6 +416,7 @@ export function PublicationMap({
       map.setTarget(undefined);
       mapRef.current = null;
       baseLayerRef.current = null;
+      publicationLayerRef.current = null;
       publicationSourceRef.current = null;
       recenterButtonRef.current = null;
       mapReadyRef.current = false;
@@ -450,6 +455,7 @@ export function PublicationMap({
 
   useEffect(() => {
     themeRef.current = theme;
+    publicationLayerRef.current?.changed();
     const map = mapRef.current;
 
     if (!map) {

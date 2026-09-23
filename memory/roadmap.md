@@ -111,6 +111,7 @@ Estado: iniciada sobre `feature/v1.1-gsap`.
 - [x] **Footer de creditos:** añadir al final de ambas vistas un credito discreto con revelado parallax reversible mediante GSAP, recalculo ante cambios de altura y fallback sin animacion para movimiento reducido.
 - [x] **Loader de azulejos:** cubrir el espacio galeria/mapa durante la carga inicial, primera imagen y montaje de OpenLayers con un mosaico tematico animado por GSAP, accesible, localizado y sin bloquear el Hero.
 - [x] **Mapa vectorial de marca:** migrar las teselas raster de CARTO a Voyager y Dark Matter vectoriales con API key, paletas crema, azul y ocre, etiquetas cartograficas localizadas, marcadores adaptados y cambio de tema inmediato mediante capas aisladas y precargadas.
+- [x] **Marcadores reactivos:** invalidar la capa vectorial cuando termina de cargar una miniatura o cambia el tema para actualizar imagenes y bordes sin exigir una interaccion posterior con el mapa.
 - [ ] **Redespliegue:** desplegar `1.1.0` solo cuando la integracion de GSAP este terminada y validada; hasta entonces `1.0.0` sigue siendo la referencia estable.
 
 ## Siguiente Paso Tecnico
