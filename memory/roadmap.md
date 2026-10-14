@@ -116,7 +116,15 @@ Estado: iniciada sobre `feature/v1.1-gsap`.
 
 ## Siguiente Paso Tecnico
 
-El siguiente paso operativo es preparar el despliegue de **Taulellari 1.0.0**. En `feature/v1.1-gsap`, corresponde validar en navegador el cambio de vista sin salto, el footer parallax y el loader tematico antes de cerrar `1.1.0` como siguiente candidata a despliegue.
+Preparacion Docker en curso tras integrar `feature/v1.1-gsap` en `develop`:
+Dockerfile ARM64 con salida standalone y arranque que ejecuta migraciones antes
+de Next.js. NVMe y carpetas `/srv/taulellari/{photos,postgres,backups}` comprobados.
+Pendientes Compose/Portainer, HTTPS y validacion real de imagen y migraciones en
+la Raspberry. Procedimiento y detalles en `DEPLOYMENT.md`.
+
+La candidata al primer despliegue es el contenido actual de `develop`, que ya
+incluye los cambios de `1.1`. Queda por fijar su version y etiqueta de entrega
+antes de publicar la imagen definitiva.
 
 ## Ultimo Estado Git
 

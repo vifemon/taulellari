@@ -175,7 +175,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- `npm run test` correcto con 55 tests.
+- Suites de Vitest correctas: 34 tests backend y 26 frontend (60 en total), incluidos los casos del arranque con migraciones PostgreSQL.
 - `npm run build` correcto.
 - Linea estable del MVP `1.0.0`: `develop`.
 - Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.
