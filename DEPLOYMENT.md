@@ -30,15 +30,27 @@ Para esta primera instalacion, con PostgreSQL vacio y fotos nuevas:
 sudo ls -ld /srv
 sudo install -d -m 0755 /srv/taulellari
 sudo install -d -o 1000 -g 1000 -m 0750 /srv/taulellari/photos
-sudo install -d -o root -g root -m 0700 /srv/taulellari/postgres_data
+sudo install -d -o 999 -g root -m 0700 /srv/taulellari/postgres_data
 sudo ls -ld /srv/taulellari/photos /srv/taulellari/postgres_data
 findmnt -T /srv/taulellari/photos
 ```
 
-La app corre como `node` (UID/GID 1000:1000). La imagen oficial PostgreSQL
-inicializa su directorio y ajusta el propietario de sus datos al arrancar;
-no forzar UID 1000 para PostgreSQL. Los comandos anteriores de propietarios
-son para la primera instalacion, no para ejecutarlos sobre una BD en uso.
+La app corre como `node` (UID/GID 1000:1000). En `postgres:16-bookworm`, PostgreSQL
+usa UID 999. Tanto la raiz del bind `postgres_data` como su subdirectorio `pgdata`
+deben ser accesibles para ese usuario. El entrypoint ajusta el propietario de
+`PGDATA`, pero no necesariamente el de la carpeta padre: dejar esa carpeta como
+root con modo 700 impide el arranque. Con modo 700 solo importa el propietario;
+el grupo puede seguir siendo root. No forzar UID 1000 para PostgreSQL.
+Los comandos anteriores son para la primera instalacion.
+
+Si se preparo la carpeta padre con root/700 y fallo el primer despliegue,
+con el contenedor detenido basta corregir esa carpeta, sin borrar datos:
+
+```bash
+sudo chown 999 /srv/taulellari/postgres_data
+sudo chmod 0700 /srv/taulellari/postgres_data
+sudo ls -ldn /srv/taulellari/postgres_data /srv/taulellari/postgres_data/pgdata
+```
 
 El bind de fotos va a `/data/taulellari/photos`; la BD guarda las rutas absolutas
 internas, asi que conservar ese destino entre actualizaciones. PostgreSQL usa
