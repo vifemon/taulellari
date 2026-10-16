@@ -118,9 +118,13 @@ Estado: iniciada sobre `feature/v1.1-gsap`.
 
 Preparacion Docker en curso tras integrar `feature/v1.1-gsap` en `develop`:
 Dockerfile ARM64 con salida standalone y arranque que ejecuta migraciones antes
-de Next.js. NVMe y carpetas `/srv/taulellari/{photos,postgres,backups}` comprobados.
-Pendientes Compose/Portainer, HTTPS y validacion real de imagen y migraciones en
-la Raspberry. Procedimiento y detalles en `DEPLOYMENT.md`.
+de Next.js. NVMe comprobado en `/`; datos del stack bajo `/srv/taulellari`.
+Compose de Portainer simplificado en `docker-compose.yml`: solo `db` (PostgreSQL
+16) y `app`, publicada directamente por HTTP en `192.168.1.10:3001` para LAN/VPN.
+`SESSION_COOKIE_SECURE=false` habilita la sesion HTTP manteniendo el build de
+produccion. Bind mounts: `/srv/taulellari/photos` y `/srv/taulellari/postgres_data`.
+Pendientes construir la imagen y validar migraciones, login y persistencia reales
+en la Raspberry. Procedimiento y detalles en `DEPLOYMENT.md`.
 
 La candidata al primer despliegue es el contenido actual de `develop`, que ya
 incluye los cambios de `1.1`. Queda por fijar su version y etiqueta de entrega

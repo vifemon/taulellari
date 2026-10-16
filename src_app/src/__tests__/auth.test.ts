@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createSessionToken,
   SESSION_MAX_AGE_SECONDS,
+  sessionCookieOptions,
   verifySessionToken,
 } from "../auth/session";
 import { normalizeEmail } from "../auth/email";
@@ -43,6 +44,46 @@ describe("session helpers", () => {
         now + SESSION_MAX_AGE_SECONDS * 1000 + 1,
       ),
     ).toBeNull();
+  });
+});
+
+describe("session cookie transport", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("allows HTTP in production when explicitly configured for LAN/VPN", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SESSION_COOKIE_SECURE", "false");
+
+    expect(sessionCookieOptions()).toEqual({
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+  });
+
+  it("defaults to secure cookies in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SESSION_COOKIE_SECURE", undefined);
+    expect(sessionCookieOptions().secure).toBe(true);
+  });
+
+  it("defaults to HTTP-compatible cookies in development", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("SESSION_COOKIE_SECURE", undefined);
+    expect(sessionCookieOptions().secure).toBe(false);
+  });
+
+  it("can require HTTPS independently of NODE_ENV", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("SESSION_COOKIE_SECURE", "true");
+    expect(sessionCookieOptions().secure).toBe(true);
+  });
+
+  it("rejects invalid values instead of silently disabling secure cookies", () => {
+    vi.stubEnv("SESSION_COOKIE_SECURE", "flase");
+    expect(() => sessionCookieOptions()).toThrow("SESSION_COOKIE_SECURE must be true or false");
   });
 });
 

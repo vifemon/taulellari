@@ -30,6 +30,7 @@ El objetivo principal es salvaguardar visualmente este patrimonio cultural media
 - **Acceso y seguridad:** uso privado y local a traves de VPN con Wireguard.
 - **Almacenamiento de fotos:** sistema de archivos local en un disco duro SSD conectado a la Raspberry Pi, mapeado mediante un volumen fisico de Docker.
 - **Directorio configurable de fotos:** la app usara `PHOTO_STORAGE_DIR` absoluto para escribir las imagenes en el volumen local; si no se configura, en desarrollo usara `uploads/`.
+- **Despliegue LAN/VPN:** `docker-compose.yml` usa solo PostgreSQL 16 y la app en `http://192.168.1.10:3001`, con bind mounts `/srv/taulellari/postgres_data` y `/srv/taulellari/photos`. El stack fija `SESSION_COOKIE_SECURE=false` para sesiones HTTP; fuera del stack se conserva `Secure` por defecto en produccion. Procedimiento en `DEPLOYMENT.md`.
 - **Restriccion de infraestructura:** no se usan servicios en la nube para imagenes como S3, Cloudinary u otros equivalentes.
 - **Base de datos:** PostgreSQL independiente corriendo en su propio contenedor Docker junto a la app.
 - **Desarrollo local en Windows:** durante `npm run dev`, si `NODE_ENV` es `development`, la app usa SQLite local en `dev.db` mediante Drizzle para probar login, publicaciones y galeria sin levantar PostgreSQL.
@@ -175,7 +176,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- Suites de Vitest correctas: 34 tests backend y 26 frontend (60 en total), incluidos los casos del arranque con migraciones PostgreSQL.
+- Suites de Vitest correctas: 39 tests backend y 26 frontend (65 en total), incluidos los casos del arranque con migraciones PostgreSQL y cookies HTTP/HTTPS.
 - `npm run build` correcto.
 - Linea estable del MVP `1.0.0`: `develop`.
 - Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.

@@ -67,12 +67,20 @@ export function verifySessionToken(
 }
 
 export function sessionCookieOptions() {
+  const configuredSecure = process.env.SESSION_COOKIE_SECURE;
+
+  if (configuredSecure !== undefined && configuredSecure !== "true" && configuredSecure !== "false") {
+    throw new Error("SESSION_COOKIE_SECURE must be true or false");
+  }
+
   return {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: "/",
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: configuredSecure === undefined
+      ? process.env.NODE_ENV === "production"
+      : configuredSecure === "true",
   };
 }
 

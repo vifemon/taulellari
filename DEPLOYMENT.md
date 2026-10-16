@@ -1,138 +1,172 @@
-# Despliegue de Taulellari en Raspberry Pi
+# Taulellari: despliegue local/VPN con Portainer
 
-## Estado
+## Arquitectura
 
-Preparacion del primer despliegue con base PostgreSQL y fotos nuevas, sin importar
-SQLite ni las imagenes de pruebas. El Dockerfile y el arranque con migraciones
-estan implementados. Pendiente: construir y probar la imagen en ARM64, ejecutar
-las migraciones contra PostgreSQL real, preparar Compose para Portainer y HTTPS.
+Acceso directo a **http://192.168.1.10:3001** desde la LAN o WireGuard.
+`docker-compose.yml`, en la raiz, contiene exactamente dos servicios:
 
-## Servidor comprobado
+| Servicio | Imagen | Puerto publicado | Persistencia en el NVMe |
+| --- | --- | --- | --- |
+| `db` | `postgres:16-bookworm` | Ninguno | `/srv/taulellari/postgres_data` |
+| `app` | Imagen local indicada en `TAULELLARI_IMAGE` | `3001:3000` | `/srv/taulellari/photos` |
 
-- Raspberry Pi con 16 GB de RAM, Debian 13 y arquitectura `aarch64` (`linux/arm64`).
-- IP LAN: `192.168.1.10`; acceso remoto mediante WireGuard existente.
-- Docker Compose v2.40.3.
-- El NVMe `/dev/nvme0n1p2` esta montado en `/`; `/srv/taulellari` reside en el NVMe.
-- Carpetas preparadas: `photos`, `postgres` y `backups` bajo `/srv/taulellari`.
-- Se comprobaron libres `3001/TCP` y `443/TCP`. El puerto publicado definitivo
-  depende del proxy HTTPS; volver a comprobarlo antes de desplegar.
-- No se requieren nuevos puertos abiertos en el router. PostgreSQL no publicara
-  su puerto al host. El stack tendra su propia red Docker.
+El stack no utiliza proxy, certificados ni DuckDNS. La VPN existente sigue
+funcionando con su configuracion actual. No se necesita un registro DNS para
+Taulellari ni abrir puertos nuevos en el router.
 
-## Construccion de la imagen
+La Raspberry usa Debian 13, ARM64 (`aarch64`), 16 GB de RAM y Compose v2.40.3.
+El NVMe `/dev/nvme0n1p2` esta montado en `/`, por lo que `/srv/taulellari` reside
+en el NVMe. Se comprobo libre 3001/TCP; volver a comprobarlo antes de desplegar.
 
-El contexto de construccion es **`src_app/`**, no la raiz del repositorio.
-Desde la raiz, en una maquina con Docker y soporte para la arquitectura destino:
+Las redes Docker pertenecen al stack: `database` es interna, compartida por
+`db` y `app`; `web` permite a la app recibir conexiones y consultar Mapbox/CARTO.
+No se usan redes externas ni se modifican contenedores existentes.
+
+## 1. Crear las dos carpetas de datos
+
+Para esta primera instalacion, con PostgreSQL vacio y fotos nuevas:
 
 ```bash
+sudo ls -ld /srv
+sudo install -d -m 0755 /srv/taulellari
+sudo install -d -o 1000 -g 1000 -m 0750 /srv/taulellari/photos
+sudo install -d -o root -g root -m 0700 /srv/taulellari/postgres_data
+sudo ls -ld /srv/taulellari/photos /srv/taulellari/postgres_data
+findmnt -T /srv/taulellari/photos
+```
+
+La app corre como `node` (UID/GID 1000:1000). La imagen oficial PostgreSQL
+inicializa su directorio y ajusta el propietario de sus datos al arrancar;
+no forzar UID 1000 para PostgreSQL. Los comandos anteriores de propietarios
+son para la primera instalacion, no para ejecutarlos sobre una BD en uso.
+
+El bind de fotos va a `/data/taulellari/photos`; la BD guarda las rutas absolutas
+internas, asi que conservar ese destino entre actualizaciones. PostgreSQL usa
+`/var/lib/postgresql/data/pgdata`, dentro del bind de `postgres_data`.
+Los mounts tienen `create_host_path: false` y deben existir antes de arrancar.
+
+Las carpetas propuestas anteriormente (`postgres`, `traefik`, `certificates`,
+`backups`) no se usan en este Compose. No se eliminan automaticamente. No importar
+`dev.db`, `uploads/` ni datos de otro PostgreSQL: este primer despliegue comienza
+con los dos directorios de datos nuevos/vacios.
+
+## 2. Descargar el codigo y construir en la Raspberry
+
+Comprobar Git y que la ruta elegida para el repositorio no exista ya:
+
+```bash
+git --version
+ls -ld "$HOME/taulellari"
+```
+
+Si la segunda orden indica que no existe, descargar:
+
+```bash
+git clone --branch develop https://github.com/vifemon/taulellari.git "$HOME/taulellari"
+cd "$HOME/taulellari"
 docker build --platform linux/arm64 -t taulellari:local ./src_app
 ```
 
-En la Raspberry la construccion sera ARM64 nativa. El Dockerfile usa Node 22 sobre
-Debian Bookworm slim e instala las dependencias con `npm ci`; incluye compiladores
-solo en las etapas de construccion para los modulos nativos que los necesiten.
-El build requiere acceso a npm y a Google Fonts usados por `next/font`.
+Si ya hay un checkout, revisar su rama y cambios locales antes de actualizarlo.
+No sobrescribirlo. La imagen debe construirse en el mismo Docker host gestionado
+por Portainer. La etiqueta `taulellari:local` sirve para esta primera instalacion;
+registrar el commit construido con `git rev-parse HEAD`.
 
-La secuencia es:
+El contexto del build es **`src_app/`**. El Dockerfile usa Node 22 Bookworm slim,
+`npm ci` y salida standalone de Next.js. Se instalan herramientas de compilacion
+solo en las etapas de build para los modulos nativos. El build necesita acceso
+a npm y Google Fonts; no necesita credenciales ni conecta a la BD de produccion.
 
-1. Instalar dependencias y compilar Next.js con `npm run build`.
-2. Crear la imagen final con la salida standalone, `public`, recursos estaticos,
-   migraciones y sus dependencias de ejecucion (`pg` y `drizzle-orm`).
-3. Al arrancar el contenedor, comprobar configuracion y carpeta de fotos.
-4. Conectar a PostgreSQL y aplicar migraciones pendientes.
-5. Solo tras completar las migraciones, ejecutar `node server.js`.
+`.dockerignore` excluye `.env*`, SQLite, imagenes de pruebas, `node_modules` y
+builds locales. Las dependencias nativas se construyen para ARM64, no se copian
+las de Windows. La imagen final incluye las migraciones y sus dependencias.
 
-**El build no ejecuta migraciones ni necesita credenciales de produccion.**
-`.dockerignore` excluye `.env*`, bases SQLite, fotos de pruebas, `node_modules` y
-salidas de build locales. Las dependencias nativas se instalan para la arquitectura
-de la imagen; no se copian las de Windows.
+## 3. Variables en Portainer
 
-La etiqueta `local` sirve para la primera prueba. Antes de desplegar una entrega
-se fijara una etiqueta de version/commit. Una imagen construida en otro ordenador
-debera transferirse o publicarse en un registro accesible desde la Raspberry.
-El editor de Compose de Portainer necesitara esa imagen disponible.
+Crear un stack **Docker standalone**, no Swarm, llamado `taulellari`. Pegar el
+contenido de `docker-compose.yml` en el editor y rellenar las variables de
+`deploy/portainer.env.example`:
 
-## Variables de ejecucion
-
-| Variable | Uso |
+| Variable | Valor |
 | --- | --- |
-| `DATABASE_URL` | URL PostgreSQL con usuario, contrasena, nombre del servicio Docker y base de datos. No usar `localhost` para otro contenedor. |
-| `AUTH_SECRET` | Secreto aleatorio persistente para firmar las sesiones. |
-| `MAPBOX_ACCESS_TOKEN` | Geocodificacion desde el servidor. |
-| `CARTO_API_KEY` | Mapas vectoriales; esta clave se entrega al navegador. |
-| `PHOTO_STORAGE_DIR` | Ruta absoluta **dentro del contenedor**, propuesta: `/data/taulellari/photos`. |
+| `TAULELLARI_IMAGE` | `taulellari:local`, la imagen construida en la Raspberry. |
+| `POSTGRES_PASSWORD` | Generar con `openssl rand -hex 32`. |
+| `AUTH_SECRET` | Ejecutar de nuevo `openssl rand -hex 32` para un valor distinto. |
+| `MAPBOX_ACCESS_TOKEN` | Token para autocompletar direcciones. |
+| `CARTO_API_KEY` | Clave para los mapas vectoriales, entregada al navegador. |
 
-Estas cinco variables son obligatorias en el entrypoint. Se suministraran en
-Portainer, nunca en el Dockerfile ni en archivos versionados con valores reales.
-`NODE_ENV=production`, `HOSTNAME=0.0.0.0` y `PORT=3000` vienen definidos en la imagen.
-`EXPOSE 3000` describe el puerto interno: no publica el puerto 3000 del host, que
-ya usa Open WebUI. `SQLITE_DATABASE_URL` no se usa en produccion.
+Guardar los valores directamente en Portainer y en un gestor de contrasenas;
+no pegarlos en el chat ni versionar un archivo con credenciales reales.
+El Compose construye `DATABASE_URL` con el servicio `db`, usuario/base `taulellari`
+y la misma `POSTGRES_PASSWORD`. Usar hexadecimal evita caracteres reservados en
+la URL. No es necesario introducir `DATABASE_URL` por separado.
 
-## Persistencia y permisos
+La configuracion de la app incluye:
 
-El futuro Compose montara `/srv/taulellari/photos` del host sobre
-`/data/taulellari/photos` del contenedor y configurara `PHOTO_STORAGE_DIR` con esa
-ruta interna. La base de datos guarda rutas absolutas de fotos: conservar esta
-ruta interna entre actualizaciones y restauraciones.
-
-La imagen ejecuta la app como usuario `node`, UID/GID **1000:1000**. Antes del
-primer arranque, la carpeta `photos` debe permitir lectura, escritura y acceso a
-ese usuario. Para la carpeta nueva creada durante la preparacion:
-
-```bash
-sudo chown 1000:1000 /srv/taulellari/photos
-sudo chmod 0750 /srv/taulellari/photos
+```text
+NODE_ENV=production                 (definido en la imagen)
+PHOTO_STORAGE_DIR=/data/taulellari/photos
+SESSION_COOKIE_SECURE=false
 ```
 
-No aplicar esos propietarios a `postgres`: sus permisos se definiran al elegir
-la imagen PostgreSQL. El entrypoint no cambia permisos ni crea carpetas del host.
-Comprueba que `PHOTO_STORAGE_DIR` existe y es accesible; el bind mount debe quedar
-declarado y comprobado en Compose. No copiar datos de `dev.db` ni de `uploads/`.
+`SESSION_COOKIE_SECURE=false` permite la cookie de sesion sobre HTTP, incluso
+en un build de produccion. Se conservan `HttpOnly`, `SameSite=Lax`, firma HMAC,
+duracion y validacion de la sesion. Login y registro usan la misma funcion de
+opciones. Las cookies de preferencias ya siguen el protocolo del navegador.
 
-## Migraciones PostgreSQL
+Fuera de este Compose, si se omite `SESSION_COOKIE_SECURE`, el valor predeterminado
+es `true` en produccion y `false` en desarrollo. Tambien admite `true` explicito;
+cualquier otro valor se rechaza. No cambiar `NODE_ENV` a development para habilitar
+HTTP: eso seleccionaria SQLite en vez de PostgreSQL.
 
-- Esquema: `src_app/src/db/schema.ts`.
-- Historial versionado: `src_app/drizzle/0000_*.sql` a `0004_*.sql` y `meta/`.
-- `npm run db:generate` no detecta cambios pendientes respecto al snapshot actual.
-- No se regeneran ni borran migraciones historicas al arrancar.
-- `scripts/migrate-postgres.mjs` usa el migrador de Drizzle directamente; no
-  necesita `drizzle-kit` en la imagen de produccion.
-- Drizzle registra las migraciones aplicadas en `drizzle.__drizzle_migrations`.
-  Reiniciar no recrea tablas ni borra datos: solo aplica las pendientes.
-- El script reintenta errores transitorios de conexion hasta 12 veces, con
-  timeout de conexion de 5 segundos y pausas de 2 segundos. Credenciales invalidas
-  y errores SQL hacen fallar el arranque.
-- Un bloqueo advisory de PostgreSQL serializa las migraciones si se solapan dos
-  contenedores durante una actualizacion; el timeout de espera del bloqueo es 60 s.
-- Las conexiones se cierran incluso si falla una migracion. Los logs muestran el
-  codigo de error sin imprimir credenciales ni consultas SQL.
-- `entrypoint.sh` termina con error si falla la migracion y usa `exec` para iniciar
-  Next.js, de modo que el servidor recibe las senales de parada de Docker.
+No activar en Portainer opciones que fuercen descargar la imagen local de la app;
+el Compose utiliza `pull_policy: never` para ella. PostgreSQL si se descarga del
+registro. `SQLITE_DATABASE_URL`, `DUCKDNS_TOKEN` y `ACME_EMAIL` no son necesarios.
 
-Para cambios futuros, generar y revisar SQL **antes del build**. Nunca usar
-`db:push` como procedimiento de despliegue. En una actualizacion con datos reales,
-respaldar PostgreSQL y las fotos antes de aplicar cambios; el arranque automatico
-no sustituye un procedimiento de backup ni implementa un rollback automatico.
+## 4. Arranque y migraciones
 
-## Verificacion antes del primer despliegue
+1. PostgreSQL 16 inicializa la base vacia en el NVMe.
+2. Su healthcheck debe estar correcto antes de iniciar la app.
+3. `scripts/entrypoint.sh` valida las variables y acceso a la carpeta de fotos.
+4. `scripts/migrate-postgres.mjs` aplica las migraciones pendientes de `drizzle/`.
+5. Solo si terminan correctamente arranca Next.js en el puerto interno 3000.
 
-Validacion local: lint, tests y build de Next.js; pruebas del migrador con dobles
-de PostgreSQL para conexion tardia, credenciales invalidas, error SQL y agotamiento
-de reintentos. Estas pruebas no ejecutan el SQL sobre un servidor PostgreSQL real.
+Las cinco migraciones existentes concuerdan con el snapshot actual segun
+`npm run db:generate`. No se generan nuevas migraciones durante el arranque.
+Drizzle registra las aplicadas en `drizzle.__drizzle_migrations`: reiniciar no
+borra datos ni recrea tablas. El runner usa `pg` y `drizzle-orm`, sin necesitar
+`drizzle-kit` en la imagen final.
 
-Pendiente de comprobar en Docker:
+El script reintenta conexiones transitorias hasta 12 veces, con timeout de 5 s
+y pausas de 2 s. Un advisory lock serializa migraciones concurrentes (espera
+maxima del bloqueo: 60 s). Credenciales invalidas o errores SQL abortan el arranque.
+Las conexiones se cierran incluso al fallar y no se imprimen secretos ni SQL.
+`exec` entrega las senales de parada al servidor Next.js.
 
-1. Construir la imagen ARM64 sin archivos `.env` ni datos de pruebas.
-2. Arrancar PostgreSQL vacio y saludable, despues la app con sus variables y mount.
-3. Verificar las tres tablas y las cinco migraciones registradas.
-4. Reiniciar y comprobar que no se vuelven a aplicar ni se duplican datos.
-5. Verificar que un fallo de migracion impide iniciar la web.
-6. Con HTTPS configurado, registrar un usuario y subir/leer una imagen; recrear
-   los contenedores y comprobar que usuario e imagen siguen disponibles.
+## 5. Validacion en Portainer y navegador
 
-## Siguiente paso: Compose y HTTPS
+1. Desplegar y comprobar que `db` y `app` aparecen saludables.
+2. Revisar los logs de la app: deben indicar que las migraciones terminaron.
+3. Entrar en **http://192.168.1.10:3001**, registrar el primer usuario y recargar:
+   la sesion debe mantenerse. Comprobar tambien salir y volver a entrar.
+4. Subir una foto y verla; comprobar que existe en `/srv/taulellari/photos`.
+5. Repetir desde el movil con datos moviles y WireGuard activo.
+6. Recrear los contenedores conservando los mounts y verificar usuario y fotos.
 
-Preparar un stack aislado en Portainer con PostgreSQL y la imagen de la app,
-healthcheck de PostgreSQL, bind mounts y politica de reinicio. Resolver el proxy
-HTTPS y el certificado antes de usar el login: las cookies de produccion son
-`Secure`, incluso cuando se accede mediante WireGuard.
+El healthcheck de la app consulta `/api/publicaciones`, comprobando tambien la BD.
+`unless-stopped` reinicia procesos que terminan; estar `unhealthy` por si solo no
+produce un reinicio automatico. Los logs tienen rotacion configurada.
+
+Antes de nuevas entregas, respaldar BD y fotos de forma coordinada. No usar
+`db:push` como despliegue ni borrar los mounts. Cambiar `POSTGRES_PASSWORD` en
+Portainer despues de inicializar la BD no cambia la contrasena almacenada en
+PostgreSQL: el cambio debe hacerse coordinadamente. Cambiar `AUTH_SECRET` invalida
+las sesiones existentes.
+
+## Estado de validacion
+
+Lint, pruebas de cookies/migrador y build se validan localmente. El entorno Windows
+no tiene Docker: falta construir la imagen en la Raspberry y ejecutar realmente
+las migraciones y las pruebas de persistencia/login sobre PostgreSQL 16.
+La sintaxis YAML puede comprobarse localmente; la validacion de Compose sera con
+`docker compose config --quiet`, suministrando sus variables sin imprimir secretos.
