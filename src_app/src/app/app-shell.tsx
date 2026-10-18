@@ -1113,7 +1113,19 @@ function UploadModal({
           <Upload size={24} strokeWidth={2} />
         </span>
         {files.length > 0 ? <small>{t("publication.upload.filesSelected", { count: files.length })}</small> : null}
-        <input id={fileInputId} accept="image/*" capture="environment" className={styles.hiddenFileInput} multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []))} type="file" />
+        <input
+          id={fileInputId}
+          accept="image/*"
+          className={styles.fileUploadInput}
+          multiple
+          onChange={(event) => {
+            const selectedFiles = Array.from(event.target.files ?? []);
+            if (selectedFiles.length > 0) {
+              setFiles(selectedFiles);
+            }
+          }}
+          type="file"
+        />
       </label>
       <button disabled={isSubmitting || !selectedAddress || files.length < 1} type="submit">{t("publication.upload.save")}</button>
     </form>

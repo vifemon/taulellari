@@ -175,10 +175,48 @@ Portainer despues de inicializar la BD no cambia la contrasena almacenada en
 PostgreSQL: el cambio debe hacerse coordinadamente. Cambiar `AUTH_SECRET` invalida
 las sesiones existentes.
 
+## 6. Actualizar la app desde Portainer
+
+En la Raspberry, actualizar el checkout de `develop` y construir una imagen con
+etiqueta nueva. Ejecutar el build solo si el pull termina correctamente:
+
+```bash
+cd "$HOME/taulellari"
+git pull --ff-only origin develop
+```
+
+Tras confirmar que el pull ha terminado sin errores:
+
+```bash
+IMAGE_TAG="taulellari:$(git rev-parse --short HEAD)"
+docker build --platform linux/arm64 -t "$IMAGE_TAG" ./src_app
+```
+
+Si el build termina correctamente, mostrar la etiqueta que usar en Portainer:
+
+```bash
+echo "$IMAGE_TAG"
+docker image ls "$IMAGE_TAG"
+```
+
+En **Stacks > taulellari > Editor**, cambiar solo `TAULELLARI_IMAGE` en las variables
+del stack por la etiqueta mostrada y pulsar **Update the stack**. Mantener
+desactivada la opcion de volver a descargar imagenes (*Re-pull image*), porque
+la imagen de la app se ha construido localmente. La etiqueta distinta hace que
+Compose recree `app` con el nuevo codigo; un simple Restart del contenedor viejo
+no cambia su imagen. Conservar las demas variables y los bind mounts, sin borrar
+el stack ni sus datos. PostgreSQL no necesita cambiar para una correccion de UI.
+
+Esperar a que `app` este saludable, recargar la web y comprobar el cambio. Para
+el selector de fotos, probar en Chrome Android elegir varias imagenes, cancelar
+sin perder la seleccion anterior y guardar una publicacion. Las pruebas jsdom
+no pueden abrir ni verificar el selector nativo de Android.
+
 ## Estado de validacion
 
-Lint, pruebas de cookies/migrador y build se validan localmente. El entorno Windows
-no tiene Docker: falta construir la imagen en la Raspberry y ejecutar realmente
-las migraciones y las pruebas de persistencia/login sobre PostgreSQL 16.
+Lint, pruebas y build se validan localmente. El usuario ha confirmado el primer
+despliegue funcionando en la Raspberry tras corregir los permisos de PostgreSQL.
+El entorno Windows no tiene Docker ni Android: cada nueva imagen se construye
+en la Raspberry y los cambios de selector nativo se comprueban en el dispositivo.
 La sintaxis YAML puede comprobarse localmente; la validacion de Compose sera con
 `docker compose config --quiet`, suministrando sus variables sin imprimir secretos.

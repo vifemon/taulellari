@@ -357,6 +357,9 @@ describe("AppShell gallery search", () => {
 
     const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
     expect(fileInput).not.toBeNull();
+    expect(fileInput!.accept).toBe("image/*");
+    expect(fileInput!.multiple).toBe(true);
+    expect(fileInput!.hasAttribute("capture")).toBe(false);
     const firstFile = new File(["one"], "one.jpg", { type: "image/jpeg" });
     const secondFile = new File(["two"], "two.jpg", { type: "image/jpeg" });
 
@@ -368,6 +371,30 @@ describe("AppShell gallery search", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Canviar a castellà" }));
     expect(await screen.findByText("2 archivos seleccionados")).toBeDefined();
+  });
+
+  it("keeps selected photos when the picker is cancelled and replaces them on a new selection", async () => {
+    mockAppShellFetch();
+    renderAppShell();
+
+    const navigation = await screen.findByRole("navigation", { name: "Navegació principal" });
+    await screen.findByRole("button", { name: "El meu perfil: Ana" });
+    fireEvent.click(within(navigation).getByRole("button", { name: "Pujar imatge" }));
+
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const firstFile = new File(["one"], "one.jpg", { type: "image/jpeg" });
+    const secondFile = new File(["two"], "two.jpg", { type: "image/jpeg" });
+    fireEvent.change(fileInput, { target: { files: [firstFile, secondFile] } });
+    expect(await screen.findByText("2 fitxers seleccionats")).toBeDefined();
+
+    fireEvent(fileInput, new Event("cancel", { bubbles: true }));
+    expect(screen.getByText("2 fitxers seleccionats")).toBeDefined();
+    // Some browser/OS picker combinations report an empty change on dismissal.
+    fireEvent.change(fileInput, { target: { files: [] } });
+    expect(screen.getByText("2 fitxers seleccionats")).toBeDefined();
+
+    fireEvent.change(fileInput, { target: { files: [secondFile] } });
+    expect(await screen.findByText("1 fitxer seleccionat")).toBeDefined();
   });
 
   it("confirms deleting a profile thumbnail without leaving the profile flow", async () => {

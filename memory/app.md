@@ -165,6 +165,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 - **Navegacion responsive:** hasta `1100px`, la Navbar sustituye las acciones de escritorio por un boton hamburguesa a la derecha. Tema, idioma y perfil o acceso se reparten por igual la primera fila en tres columnas; la subida ocupa toda la segunda fila. En smartphone se ocultan las etiquetas secundarias de tema y perfil para evitar desbordamientos.
 - **Alineacion de iconos:** los controles de tema y subida usan contenedores centrados y el icono `Plus` de Lucide para mantener una alineacion visual consistente.
 - **Formulario de subida refinado:** descripcion opcional limitada como el titulo, selector de imagenes personalizado con icono de subida y estados visuales compatibles con modo claro/oscuro.
+- **Seleccion de fotos movil:** el input nativo acepta multiples imagenes sin `capture` y cubre el area del selector de forma transparente para recibir directamente el toque. Cancelar conserva la seleccion anterior; una nueva seleccion la sustituye. La interfaz de galeria/archivos concreta depende de Chrome y Android.
 - **Subida sin limite fijo:** el selector acepta cualquier numero de imagenes compatibles; el limite practico queda condicionado por tamano, almacenamiento y recursos del servidor.
 - **Iconografia:** los iconos nuevos deben importarse desde `lucide-react`; el selector de imagenes usa el componente `Upload`.
 
@@ -176,7 +177,7 @@ Las fases de construccion y correccion del MVP estan completadas. El resultado s
 
 - `npm run db:dev:init` correcto.
 - `npm run lint` correcto.
-- Suites de Vitest correctas: 39 tests backend y 26 frontend (65 en total), incluidos los casos del arranque con migraciones PostgreSQL y cookies HTTP/HTTPS.
+- Suites de Vitest: 39 tests backend y 27 frontend (66 en total), incluidos los casos del arranque con migraciones PostgreSQL, cookies HTTP/HTTPS y seleccion/cancelacion de fotos.
 - `npm run build` correcto.
 - Linea estable del MVP `1.0.0`: `develop`.
 - Rama de trabajo para `1.1.0`: `feature/v1.1-gsap`.
